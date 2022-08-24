@@ -1,77 +1,80 @@
-# Affresco
+# Mosaico
 
-![Affresco](http://www.hotelfororomano.com/wp-content/gallery/gallery-arte-braocca-roma/vita-di-mose-affresco-cappella-sistina-michelangelo.jpg)
+The new and shiny sites!
 
-Affresco (IPA: */af'fresko/*) is KSF Media's frontend monorepo: as many beautiful scenes are contained in a fresco, many beautiful frontends can be found in this repo.
+It's a server side rendered react thing. The idea is that the first pageload will be returned from the server and after that it acts like a single page app.
 
-![production](https://github.com/KSF-Media/affresco/workflows/production/badge.svg)
-
-| Deploy | Lang(s) |
-| --- | --- |
-| [Mitt Konto](https://konto.ksfmedia.fi/) | PureScript |
-| [KSF National Elections](https://frontends.ksfmedia.fi/elections/index.html) | JavaScript |
-| [KSF EU Elections](https://frontends.ksfmedia.fi/elections-eu/index.html) | JavaScript |
-| [App Article View](https://app-article.ksfmedia.fi/) | PS/JS |
-| [Scripts](https://frontends.ksfmedia.fi/scripts) | JS |
-| [Vetrina (test)](https://frontends.ksfmedia.fi/vetrina/index.html) | PS |
-| [Podcasts](https://frontends.ksfmedia.fi/podcasts/index.html) | JS |
-| [Podcasts (VN)](https://frontends.ksfmedia.fi/podcasts-vn/index.html) | JS |
-
-## Developing
-
-To install all packages run `yarn install` in the root of the repo.
-
-You might also want to install the tools globally for more convenience: `npm install -g purescript spago parcel`
-
-We have different kinds of apps, and they require different initial setup. Move inside of some app's folder (e.g. `apps/mitt-konto`), and then:
-- JavaScript only: no setup needed
-- PureScript only: run `spago build --watch` to get a file-watching build, or use some editor integration to do this watch/rebuild for you (e.g. see [here](https://github.com/purescript/documentation/blob/master/ecosystem/Editor-and-tool-support.md) for the things mentioning "ide")
-- Mixed JavaScript/PureScript: run `yarn build-purs` to get the compiled PureScript bundle in the right place
-
-After this initial setup, running `yarn start` should give you a hot reloading local dev server.
-
-### Structure
-
-It's a monorepo, and there's a separation between **packages** and **apps**:
-- **packages** are actual npm packages (should be prefixed with `@affresco/`), and represent units of compilation to be included in apps.
-
-  Each package should include an entry point file. This is typically `index.js` in the root of the package directory.
-
-  The granularity here is important: JS packages might be as small as we wish, PureScript packages should be as big as possible - this is because their size is not really important for PureScript apps, but it should be so that we can easily include them into JS apps by just compiling a bundle (e.g. the `login` is a separate package. See the `package.json` in `apps/app-article` for how to compile it.
-
-  When making a new PureScript package, add it to the global `packages.dhall` - after that you'll be able to import it in your apps or in other packages (note that the compiler will prevent you from having circular dependencies anyways.
-- **apps** is where all the applications are. These are not supposed to be required in any other application, however a `package.json` should still exist for internal and external dependencies, and build scripts.
-
-
-### Sharing assets
-
-All assets are shared by all packages and apps:
-- all styles are in `less`
-- all fonts in `fonts`
-- all images in `images`
-
-### Styles
-
-All styles should be placed under `/less`. The file should be named after the component it belongs to. Also note that the file `Components.less` conveniently imports every `less` file associated with a component. Newly created styles should be added to this file.
-
-### Production build
-
-#### Apps
-
-For building and deploying single page applications from `apps/`, the `deploy.rb` script is used.
+To run things:
 ```
-$ ruby deploy.rb $APP_NAME
+yarn install
+yarn build
+yarn start
 ```
 
-#### Scripts
+## Development
 
-For static scripts, the build command is defined in CI. In this case, we just want to minify all content under `scripts/`.
+We can mentally divide Mosaico into two parts: the server code and the browser code. In production, both parts are required in order to run it as designed. However, as building the server dependent parts and restarting the thing continuously takes time and requires patience, it might be desired to run only the browser part when developing Mosaico. That is, if the development work does not concern the server itself. You can start the development server using Browsersync with `yarn start-dev`.
+
+`yarn start-dev` will run two parallel jobs:
 ```
-# A simple one-liner to minify all js files
-ruby -e 'Dir.glob("scripts/**/*.js").each { |f| `uglifyjs #{f} -o #{f.gsub(/js\z/, "min.js")}` }'
+# Watches for purescript changes
+spago build --watch
+
+# Runs Browsersync and hot-reloads browser on ./dist and ./web changes
+# On ./web changes, runs esbuild too
+node ./run/hot-reload.js
 ```
-Here, for example, a file `scripts/apps/appScript.js` is minified to `scripts/apps/appScript.min.js`.
+Basically we are watching for purescript code changes and bundled javascript changes and syncing those to the browser.
 
-### Adding a new deployment
+When developing the server side bits, you need to restart the server after any changes with `yarn start` or `spago run`. Note that if your server side code requires also changes to the browser side of things, you need to build the static files with esbuild before running your server. This is what `yarn build` does. This is a bit clumsy and again, a bit time consuming. The smoothest way of doing this currently is to run these commands (related [Spago issue](https://github.com/purescript/spago/issues/506)):
+```
+$ spago run
+$ yarn start-dev
+```
 
-See the [CI README](./ci/README.md) for info about the CI setup, and how to add a new app
+
+Under `web/` we have `index.html` and `index.js` which can be thought of as templates that we load in the browser. This is the entry point for Mosaico react component. In fact, with these files alone, one could run a single page app version of Mosaico (`yarn start-dev`). When the node server of Mosaico is involved, however, the server might want to write something to the files. Or more specifically, it will write to the esbuild built version of these files, located under `dist/`. This is what `yarn build` will do. Each yarn command is defined in `package.json` under `scripts` object. Let's look at what `yarn build` does:
+
+```
+"scripts": {
+  "yarn build": "yarn run build-app && yarn run build-spa",
+  ...
+}
+```
+
+First we run `spago build` (`yarn run build-app`) which compiles our PureScript code into `output/`. This is important, as we use the compiled PureScript in `web/index.js`
+
+```
+...
+var Mosaico = require("../output/Mosaico/index.js").jsApp();
+...
+
+```
+
+After that, we run `node -e 'require(\"./run/build\").runBuild()` (`yarn run build-spa`). Here, we build the file `index.js` we have under `web/` into a destination directory `dist/assets/`. Esbuild does its thing: it finds every dependency it needs and places them into `dist/assets/`. Unlike Parcel, esbuild will not handle html files automatically. In stead, in `run/build.js` we manually copy `web/index.html` and our static pages from `static/*` into `dist/`.
+
+On static pages, the app initialization expects the selector "#app .mosaico--static-content" to match with the element containing the static content.  This assumption isn't checked at build time.
+
+## Tests
+
+Launch site as described in the Development sections.  The tests may
+fail with ads, consider using `export DISABLE_ADS=1` before launching
+Mosaico if that happens.
+
+The test expects to get account data for testing from environment
+variables.
+
+```
+export TEST_USER=
+export TEST_PASSWORD=
+export ENTITLED_USER=
+export ENTITLED_PASSWORD=
+export LETTERA_URL=
+```
+
+```
+spago -x test.dhall test
+```
+
+## Static Pages
+Since the js script does not work if inserted as inner html, therefore the script is in an external file. The js file has identical name as the html file and fetched at the same time as the html file and run after the DOM tree is built. When developing, `yarn start-dev` will include the static files and hot-reload changes in the browser. Both html and js files for static pages are found in `static/` directory.
