@@ -2,30 +2,48 @@ image: ksfmedia/diskho:lts-18.13
 
 variables:
   DOCKER_DRIVER: overlay2
-  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_STRATEGY: normal
   CI_SCRIPTS: "${CI_PROJECT_DIR}/infra/ci-scripts"
   YARN_CACHE: "${CI_PROJECT_DIR}/.yarn-cache"
 
 .mosaico-ci-variables: &mosaico-ci-vars
   SERVICE_NAME: mosaico
   MULTIPAPER: "true"
-.app-article-ci-variables: &app-article-ci-vars
-  SERVICE_NAME: app-article-server
-  LETTERA_INTERNAL: "http://lettera/v3"
-  AAS_LETTERA_URL: "https://lettera.staging.ksfmedia.fi/v3"
-  AAP_LETTERA_URL: "https://lettera.api.ksfmedia.fi/v3"
 
 before_script:
   - eval `${CI_SCRIPTS}/prepare_stage_envvars.py ${CI_ENVIRONMENT_SLUG}`
 
 stages:
-  - build
+  - branch-build
+  - trunk-build
   - docker
   - deploy
 
 # Build template
+.branch-build-n-test:
+  stage: branch-build
+  environment: staging/$SERVICE_NAME
+  except:
+    - master
+  cache:
+    key: "affresco-yarn-cache"
+    paths:
+      - $YARN_CACHE
+  script:
+    - env
+    - apt-get update
+    - apt-get install -qqy wget gnupg
+    - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+    - sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive apt-get install -qqy --no-install-recommends curl ruby-full sudo make git google-chrome-stable fonts-freefont-ttf libxss1
+  # Install base packages
+    - yarn --cwd $CI_PROJECT_DIR install
+    - yarn --cwd $CI_PROJECT_DIR build
+    - yarn --cwd $CI_PROJECT_DIR test
+
 .build-app:
-  stage: build
+  stage: trunk-build
   environment: staging/$SERVICE_NAME
   only:
     - master
@@ -39,7 +57,7 @@ stages:
     when: always
     expire_in: 7 days
   script:
-    - $CI_SCRIPTS/affresco/app-build.sh
+    - $CI_SCRIPTS/affresco/mosaico-build.sh
 
 # Docker build template
 .build-docker:
@@ -72,13 +90,13 @@ stages:
     - $CI_SCRIPTS/affresco/app-upload.sh
 
 # Build apps
+mosaico-branch-build:
+  extends: .branch-build-n-test
+  variables: *mosaico-ci-vars
+
 mosaico-build:
   extends: .build-app
   variables: *mosaico-ci-vars
-
-app-article-build:
-  extends: .build-app
-  variables: *app-article-ci-vars
 
 # Build docker images
 
@@ -103,12 +121,6 @@ mosaico-docker-build-on:
   variables:
     SERVICE_NAME: mosaico-on
 
-app-article-docker-build:
-  extends: .build-docker
-  needs: 
-    - app-article-build
-  variables: *app-article-ci-vars
-
 # Deploy Staging
 deploy-mosaico-hbl-staging:
   extends: .deploy
@@ -118,7 +130,7 @@ deploy-mosaico-hbl-staging:
   variables:
     SERVICE_NAME: mosaico-hbl
     PAPER: "hbl"
-    LETTERA_INTERNAL: "http://lettera/v4beta"
+    LETTERA_INTERNAL: "http://lettera/v4"
 
 deploy-mosaico-vn-staging:
   extends: .deploy
@@ -128,7 +140,7 @@ deploy-mosaico-vn-staging:
   variables:
     SERVICE_NAME: mosaico-vn
     PAPER: "vn"
-    LETTERA_INTERNAL: "http://lettera/v4beta"
+    LETTERA_INTERNAL: "http://lettera/v4"
 
 deploy-mosaico-on-staging:
   extends: .deploy
@@ -138,14 +150,7 @@ deploy-mosaico-on-staging:
   variables:
     SERVICE_NAME: mosaico-on
     PAPER: "ön"
-    LETTERA_INTERNAL: "http://lettera/v4beta"
-
-deploy-app-article-staging:
-  extends: .deploy
-  needs: 
-    - app-article-build
-    - app-article-docker-build
-  variables: *app-article-ci-vars
+    LETTERA_INTERNAL: "http://lettera/v4"
 
 # Deploy production
 
@@ -159,7 +164,7 @@ deploy-mosaico-hbl-production:
   variables:
     SERVICE_NAME: mosaico-hbl
     PAPER: "hbl"
-    LETTERA_INTERNAL: "http://lettera/v4beta"
+    LETTERA_INTERNAL: "http://lettera/v4"
 
 deploy-mosaico-vn-production:
   extends: .deploy
@@ -171,7 +176,7 @@ deploy-mosaico-vn-production:
   variables:
     SERVICE_NAME: mosaico-vn
     PAPER: "vn"
-    LETTERA_INTERNAL: "http://lettera/v4beta"
+    LETTERA_INTERNAL: "http://lettera/v4"
 
 deploy-mosaico-on-production:
   extends: .deploy
@@ -183,13 +188,4 @@ deploy-mosaico-on-production:
   variables:
     SERVICE_NAME: mosaico-on
     PAPER: "ön"
-    LETTERA_INTERNAL: "http://lettera/v4beta"
-
-deploy-app-article-production:
-  extends: .deploy
-  needs: 
-    - app-article-build
-    - app-article-docker-build
-  environment: production/$SERVICE_NAME
-  when: manual
-  variables: *app-article-ci-vars
+    LETTERA_INTERNAL: "http://lettera/v4"

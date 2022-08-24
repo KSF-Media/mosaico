@@ -3,4 +3,4 @@
 	url = ../../TACO/infra.git
 [submodule "affresco"]
 	path = affresco
-	url = git@github.com:KSF-Media/affresco.git
+	url = https://github.com/KSF-Media/affresco.git
