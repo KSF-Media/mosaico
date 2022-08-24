@@ -82,10 +82,10 @@ let additions =
         , repo = "https://github.com/megamaddu/purescript-uuid.git"
         , version = "7bb5a90c9b11f6a33ac7610608a650e4d58aeac9"
         }
-      , affresco-components = ./packages/components/spago.dhall as Location
-      , affresco-test = ./packages/test/spago.dhall as Location
-      , affresco-user = ./packages/user/spago.dhall as Location
-      , affresco-vetrina = ./packages/vetrina/spago.dhall as Location
+      , affresco-components = ./affresco/packages/components/spago.dhall as Location
+      , affresco-test = ./affresco/packages/test/spago.dhall as Location
+      , affresco-user = ./affresco/packages/user/spago.dhall as Location
+      , affresco-vetrina = ./affresco/packages/vetrina/spago.dhall as Location
       }
 
 in  upstream // additions
