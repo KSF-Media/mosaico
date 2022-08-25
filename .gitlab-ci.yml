@@ -30,7 +30,6 @@ stages:
     paths:
       - $YARN_CACHE
   script:
-    - env
     - apt-get update
     - apt-get install -qqy wget gnupg
     - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
@@ -38,7 +37,8 @@ stages:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -qqy --no-install-recommends curl ruby-full sudo make git google-chrome-stable fonts-freefont-ttf libxss1
   # Install base packages
-    - yarn --cwd $CI_PROJECT_DIR install
+    - NODE_ENV=development yarn --cwd $CI_PROJECT_DIR install
+    - unset PUBLIC_URL
     - yarn --cwd $CI_PROJECT_DIR build
     - yarn --cwd $CI_PROJECT_DIR test
 
