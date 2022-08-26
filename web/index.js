@@ -56,6 +56,8 @@ if (module.hot) {
 
 console.log("starting");
 
+var startConsentCookieSetup = require("../output/Consent.Consent/index.js").startConsentCookieSetupJS()
+
 window.googletag = window.googletag || { cmd: [] };
 
 // My suggestion would be to set all the ad slots in viewport on the initial
