@@ -22,7 +22,6 @@ stages:
 # Build template
 .branch-build-n-test:
   stage: branch-build
-  environment: staging/$SERVICE_NAME
   except:
     - master
   cache:
@@ -30,14 +29,9 @@ stages:
     paths:
       - $YARN_CACHE
   script:
-    - apt-get update
-    - apt-get install -qqy wget gnupg
-    - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
-    - sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-    - apt-get update
-    - DEBIAN_FRONTEND=noninteractive apt-get install -qqy --no-install-recommends curl ruby-full sudo make git google-chrome-stable fonts-freefont-ttf libxss1
-  # Install base packages
+    # Install all project dependencies 
     - NODE_ENV=development yarn --cwd $CI_PROJECT_DIR install
+    # Need to unset PUBLIC_URL for the tests to work
     - unset PUBLIC_URL
     - yarn --cwd $CI_PROJECT_DIR build
     - yarn --cwd $CI_PROJECT_DIR test
