@@ -22,6 +22,7 @@ stages:
 # Build template
 .branch-build-n-test:
   stage: branch-build
+  environment: test
   except:
     - master
   script:
