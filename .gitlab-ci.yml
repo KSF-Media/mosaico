@@ -4,6 +4,7 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_SUBMODULE_STRATEGY: normal
   CI_SCRIPTS: "${CI_PROJECT_DIR}/infra/ci-scripts"
+  YARN_CACHE: "${CI_PROJECT_DIR}/.yarn-cache"
 
 .mosaico-ci-variables: &mosaico-ci-vars
   SERVICE_NAME: mosaico
