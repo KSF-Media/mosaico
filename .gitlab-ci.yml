@@ -4,7 +4,6 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_SUBMODULE_STRATEGY: normal
   CI_SCRIPTS: "${CI_PROJECT_DIR}/infra/ci-scripts"
-  YARN_CACHE: "${CI_PROJECT_DIR}/.yarn-cache"
 
 .mosaico-ci-variables: &mosaico-ci-vars
   SERVICE_NAME: mosaico
@@ -24,10 +23,6 @@ stages:
   stage: branch-build
   except:
     - master
-  cache:
-    key: "affresco-yarn-cache"
-    paths:
-      - $YARN_CACHE
   script:
     # Install all project dependencies 
     - NODE_ENV=development yarn --cwd $CI_PROJECT_DIR install
@@ -41,10 +36,6 @@ stages:
   environment: staging/$SERVICE_NAME
   only:
     - master
-  cache:
-    key: "affresco-yarn-cache"
-    paths:
-      - $YARN_CACHE
   artifacts:
     paths:
       - artifacts/
