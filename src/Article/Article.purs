@@ -405,7 +405,7 @@ renderElement imageComponent boxComponent onArticleClick el =  case el of
       }
   Question question -> DOM.p
       { className: block <> " " <> block <> "__question"
-      , children: [ DOM.text question ]
+      , dangerouslySetInnerHTML: { __html: question }
       }
   Related related -> DOM.figure
       { className: block <> " " <> block <> "__related"

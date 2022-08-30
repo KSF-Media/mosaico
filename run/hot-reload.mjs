@@ -12,7 +12,7 @@ bs.watch("static/*").on("change", file => {
 bs.watch([
   "./web/*",
   "./output/Mosaico/index.js",
-  "../../less/**/*",
+  "./less/**/*",
   "./src/_site.scss",
   "./src/css/**/*",
 ]).on("change", file => {
