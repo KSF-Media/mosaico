@@ -58,6 +58,7 @@ import Mosaico.Header.Menu as Menu
 import Mosaico.Paper (mosaicoPaper, _mosaicoPaper)
 import Mosaico.Profile as Profile
 import Mosaico.Search as Search
+import Mosaico.Version (mosaicoVersion)
 import Mosaico.Webview as Webview
 import MosaicoServer (MainContent, MainContentType(..))
 import MosaicoServer as MosaicoServer
@@ -306,7 +307,7 @@ main = do
 
 getHealthz :: {guards :: {clientip :: Maybe String}} -> Aff String
 getHealthz {guards: {clientip}} =
-  pure $ "OK " <> fromMaybe "" clientip
+  pure $ "OK " <> fromMaybe "" clientip <> "\n" <> mosaicoVersion
 
 getClientIP :: HTTP.Request -> Aff (Maybe String)
 getClientIP req =

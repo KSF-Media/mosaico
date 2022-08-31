@@ -24,3 +24,4 @@ yarn-error.log
 .log
 *.code-workspace
 .env.development
+src/Version.js

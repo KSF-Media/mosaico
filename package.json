@@ -35,7 +35,7 @@
     "start-dev": "yarn run build:watch",
     "build": "yarn run build-app && yarn run build-spa",
     "build:watch": "concurrently \"yarn:build-app:watch\" \"yarn:build-spa:watch\"",
-    "build-app": "spago build",
+    "build-app": "echo \"export const mosaicoVersion = \\\"$(git show -s --format=%aI-%h)\\\"\" > src/Version.js && spago build",
     "build-app:watch": "spago build --watch",
     "build-spa": "node --input-type=module -e 'import {runBuild} from \"./run/build.mjs\"; runBuild();'",
     "build-spa:watch": "yarn run build-spa && node ./run/hot-reload.mjs",
