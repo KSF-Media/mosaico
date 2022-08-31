@@ -22,7 +22,7 @@ stages:
 # Build template
 .branch-build-n-test:
   stage: branch-build
-  environment: test
+  environment: test/$CI_COMMIT_BRANCH
   except:
     - master
   script:
