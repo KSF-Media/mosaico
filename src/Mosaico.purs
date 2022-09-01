@@ -6,7 +6,7 @@ import Control.Alt ((<|>))
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core (toArray, toBoolean, toString) as JSON
 import Data.Argonaut.Decode (decodeJson)
-import Data.Array (catMaybes, find, index, length, mapMaybe, null)
+import Data.Array (cons, catMaybes, find, index, length, mapMaybe, null)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..), hush)
 import Data.Foldable (foldMap, elem)
@@ -38,7 +38,7 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User, logout, magicLogin)
 import KSF.User.Cusno (Cusno)
 import Lettera as Lettera
-import Lettera.Models (ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, articleToArticleStub, categoriesMap, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, readArticleType, tagToURIComponent)
+import Lettera.Models (ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, readArticleType, tagToURIComponent)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendArticleAnalytics, sendPageView)
 import Mosaico.Article as Article
@@ -159,7 +159,7 @@ mosaicoComponent
   -> Render Unit (UseEffect (Tuple Routes.MosaicoPage (Maybe Cusno)) (UseEffect Unit (UseState State Unit))) JSX
 mosaicoComponent initialValues props = React.do
   let setTitle t = Web.setTitle t =<< Web.document =<< Web.window
-      initialCatMap = categoriesMap props.categoryStructure
+      initialCatMap = categoriesMap $ correctionsCategory `cons` props.categoryStructure
       initialPath = getPathFromLocationState initialValues.locationState
   state /\ setState <- useState initialValues.state
                          { article = Right <$> props.article
@@ -371,7 +371,8 @@ routeListener c setState oldLoc location = do
         _                    -> sendPageView
     Left _     -> pure unit
   where
-    getRoute l = match (Routes.routes c) $ Routes.stripFragment $ l.pathname <> l.search
+    routes = Routes.routes $ Map.union c $ categoriesMap [ correctionsCategory ]
+    getRoute l = match routes $ Routes.stripFragment $ l.pathname <> l.search
     isSearch (Right (Routes.SearchPage _ _)) = true
     isSearch _ = false
 
@@ -705,7 +706,7 @@ render props setState state components router onPaywallEvent =
                 <>
                      [ guard showAds Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false }
                      , content
-                     , guard (not props.headless) (footer mosaicoPaper onStaticPageClick) --remember to hide footer if headless
+                     , guard (not props.headless) (footer mosaicoPaper onCategoryClick onStaticPageClick) --remember to hide footer if headless
                      , guard showAside $ DOM.aside
                          { className: "mosaico--aside"
                          , children:

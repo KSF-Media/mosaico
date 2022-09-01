@@ -51,7 +51,7 @@ render props = DOM.div_
             <>
             [ props.mainContent.content ] <>
             guard (not props.headless)
-              [ footer mosaicoPaper mempty
+              [ footer mosaicoPaper mempty mempty
               , case props.mainContent.type of
                   FrontpageContent -> aside
                   TagListContent _ -> aside
