@@ -27,13 +27,13 @@ searchComponent = do
 render :: Maybe String -> (Maybe String -> Effect Unit) -> Props -> JSX
 render query setQuery { doSearch, searching } =
   DOM.div
-    { className: "mosaico-search"
+    { className: "pb-3 max-w-xl mb-3 mosaico-search md:pb-5 [grid-area:search]"
     , children:
         [ DOM.form
-            { className: "mosaico-search__form"
+            { className: "flex border border-gray-300 border-solid mosaico-search__form"
             , children:
                 [ DOM.span
-                    { className: "mosaico-search__input"
+                    { className: "flex-auto"
                     , children:
                         [ InputField.inputField
                             { type_: InputField.Text
@@ -48,12 +48,12 @@ render query setQuery { doSearch, searching } =
                         ]
                     }
                 , DOM.span
-                    { className: "mosaico-search__submit"
+                    { className: "flex justify-center items-center"
                     , children:
                         [ DOM.button
                             { type: "submit"
-                            , className: "mosaico-search__button"
-                            , children: [ DOM.span_ [] ]
+                            , className: "flex justify-center items-center mr-1 w-8 h-8 bg-green-500 rounded-md border-0 mosaico-search__button hover:bg-green-300"
+                            , children: [ DOM.span { className: "w-6 h-6 bg-white maskimage-search mask-size-6" } ]
                             , disabled: isNothing query || query == Just "" || searching
                             }
                         ]

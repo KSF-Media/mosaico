@@ -49,6 +49,7 @@ const maskImagePlugin = plugin(
         hbl: `url(../images/logo-hbl.svg)`,
         vn: `url(../images/logo-vn.svg)`,
         on: `url(../images/logo-on.svg)`,
+        search: `url("../images/icon-mosaico-search.svg")`,
       },
     },
   }
@@ -93,6 +94,10 @@ module.exports = {
       black: "#000000",
       blue: {
         link: "#00698e",
+      },
+      green: {
+        300: "#249c25", // button-color-primary-hover
+        500: "#00810a", // button-color-primary
       },
       hbl: "#f07e26",
       on: "#518196",
