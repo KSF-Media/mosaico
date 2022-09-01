@@ -148,10 +148,12 @@ spec ::
                 , query :: DraftParams
                 }
          , getArticle ::
-              GET "/artikel/<..uuidOrSlug>"
+              -- headless parameter to render article body only
+              GET "/artikel/<..uuidOrSlug>?headless=<headless>"
                 { response :: ResponseBody
                 , params :: { uuidOrSlug :: List String }
                 , guards :: Guards ("clientip" : Nil)
+                , query :: { headless :: Maybe Boolean }
                 }
          , adsTxt ::
               GET "/ads.txt"
@@ -321,18 +323,18 @@ getDraftArticle
   -> Aff (Response ResponseBody)
 getDraftArticle env { params: {aptomaId}, query } = do
   article <- Lettera.getDraftArticle aptomaId query
-  renderArticle env article mempty mempty
+  renderArticle env article mempty mempty false
 
 getArticle
   :: Env
-  -> { params :: { uuidOrSlug :: List String }, guards :: { clientip :: Maybe String } }
+  -> { params :: { uuidOrSlug :: List String }, guards :: { clientip :: Maybe String }, query :: { headless :: Maybe Boolean } }
   -> Aff (Response ResponseBody)
-getArticle env { params: { uuidOrSlug: (uuid : _) }, guards: { clientip } }
+getArticle env { params: { uuidOrSlug: (uuid : _) }, guards: { clientip }, query: { headless } }
   | Just articleId <- UUID.parseUUID uuid = do
       { pageContent: article, mostReadArticles, latestArticles } <-
         parallelWithCommonLists env.cache $ Lettera.getArticle articleId mosaicoPaper Nothing clientip
       Cache.addHeaderAge 60 <$>
-        renderArticle env article (Cache.getContent mostReadArticles) (Cache.getContent latestArticles)
+        renderArticle env article (Cache.getContent mostReadArticles) (Cache.getContent latestArticles) (fromMaybe false headless)
 getArticle env { params: { uuidOrSlug: path }, guards: { clientip } }
   | (slug : _) <- path
   , not $ String.null slug
@@ -363,8 +365,9 @@ renderArticle
   -> Either String FullArticle
   -> Array ArticleStub
   -> Array ArticleStub
+  -> Boolean
   -> Aff (Response ResponseBody)
-renderArticle env fullArticle mostReadArticles latestArticles = do
+renderArticle env fullArticle mostReadArticles latestArticles headless = do
   let mosaico = MosaicoServer.app
       htmlTemplate = cloneTemplate env.htmlTemplate
   case fullArticle of
@@ -398,6 +401,7 @@ renderArticle env fullArticle mostReadArticles latestArticles = do
                             , mostReadArticles
                             , latestArticles
                             , categoryStructure: env.categoryStructure
+                            , headless
                             }
 
       html <- liftEffect do
@@ -408,6 +412,7 @@ renderArticle env fullArticle mostReadArticles latestArticles = do
               , "latestArticles"    /\ (JSON.fromArray $ map articleStubToJson latestArticles)
               , "categoryStructure" /\ encodeJson env.categoryStructure
               , "breakingNews"      /\ JSON.jsonNull
+              , "headless"          /\ JSON.fromBoolean headless
               ]
             metaTags =
                 DOM.renderToStaticMarkup $
@@ -430,8 +435,8 @@ renderArticle env fullArticle mostReadArticles latestArticles = do
                             }
                         }
                     ]
-              where
-                description = if null article.preamble then fold (Paper.paperDescription mosaicoPaper) else fold article.preamble
+                where
+                  description = if null article.preamble then fold (Paper.paperDescription mosaicoPaper) else fold article.preamble
 
         appendMosaico mosaicoString htmlTemplate >>= appendVars (mkWindowVariables windowVars) >>= appendHead metaTags
 
@@ -487,6 +492,7 @@ menu env _ = do
             , mostReadArticles: mempty
             , latestArticles: mempty
             , categoryStructure: env.categoryStructure
+            , headless: false
           }
   html <- liftEffect do
             let windowVars =
@@ -535,6 +541,7 @@ tagList env { params: { tag } } = do
               }
           }
       , categoryStructure: env.categoryStructure
+      , headless: false
       , mostReadArticles
       , latestArticles
       }
@@ -569,6 +576,7 @@ epaperPage env {} = do
           , categoryStructure: env.categoryStructure
           , mostReadArticles
           , latestArticles
+          , headless: false
           }
 
 
@@ -600,6 +608,7 @@ staticPage env { params: { pageName } } = do
               , mostReadArticles
               , latestArticles
               , categoryStructure: env.categoryStructure
+              , headless: false
               }
       html <- liftEffect do
         let windowVars =
@@ -644,6 +653,7 @@ debugList env { params: { uuid } } = do
           , mostReadArticles
           , latestArticles
           , categoryStructure: env.categoryStructure
+          , headless: false
           }
 
 categoryPage :: Env -> { params :: { categoryName :: String }, guards :: { category :: Category} } -> Aff (Response ResponseBody)
@@ -775,14 +785,15 @@ renderCategoryPage env (Category category@{ label, type: categoryType, url}) = d
           , mostReadArticles
           , latestArticles
           , categoryStructure: env.categoryStructure
+          , headless: false
           }
     title = if label == frontpageCategoryLabel then Paper.paperName mosaicoPaper else unwrap label
     startpageDescription = Paper.paperDescription mosaicoPaper
     startpageMeta = DOM.renderToStaticMarkup $
       DOM.fragment
         [ DOM.meta { property: "og:type", content: "website" }
-        , DOM.meta { property: "og:image", content: fallbackImageShare mosaicoPaper }
         , DOM.meta { property: "og:title", content: title }
+        , DOM.meta { property: "og:image", content: fallbackImageShare mosaicoPaper }
         , foldMap (\content -> DOM.meta { property: "og:description", content }) startpageDescription
         , foldMap (\content -> DOM.meta { name: "description", content }) startpageDescription
         ]
@@ -819,6 +830,7 @@ searchPage env { query: { search } } = do
                           , mostReadArticles: Cache.getContent mostReadArticles
                           , latestArticles: Cache.getContent latestArticles
                           , categoryStructure: env.categoryStructure
+                          , headless: false
                           }
   html <- liftEffect do
             let windowVars =
@@ -848,6 +860,7 @@ profilePage env {} = do
                           , mostReadArticles: Cache.getContent mostReadArticles
                           , latestArticles: Cache.getContent latestArticles
                           , categoryStructure: env.categoryStructure
+                          , headless: false
                           }
   html <- liftEffect do
     let windowVars =
@@ -905,6 +918,7 @@ notFound env mainContent maybeMostReadArticles maybeLatestArticles = do
                         , mostReadArticles: fromMaybe [] maybeMostReadArticles
                         , latestArticles: fromMaybe [] maybeLatestArticles
                         , categoryStructure: env.categoryStructure
+                        , headless: false
                         }
   html <- liftEffect $ do
     let windowVars =

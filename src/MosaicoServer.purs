@@ -3,6 +3,7 @@ module MosaicoServer where
 import Prelude
 
 import Data.Maybe (Maybe(Nothing))
+import Data.Monoid (guard)
 import KSF.Paper as Paper
 import Lettera.Models (ArticleStub, Category, Tag, categoriesMap)
 import Mosaico.Footer (footer)
@@ -18,6 +19,7 @@ type Props =
   , mostReadArticles :: Array ArticleStub
   , latestArticles :: Array ArticleStub
   , categoryStructure :: Array Category
+  , headless :: Boolean
   }
 
 type MainContent =
@@ -42,32 +44,37 @@ app = render
 render :: Props -> JSX
 render props = DOM.div_
     [ DOM.div
-       { className: "mosaico grid " <> menuOpen
-       , id: Paper.toString mosaicoPaper
-       , children:
-           [ Header.topLine
-           , Header.render 0
-             { changeRoute: const mempty
-             , categoryStructure: props.categoryStructure
-             , catMap: categoriesMap props.categoryStructure
-             , onCategoryClick: const mempty
-             , user: Nothing
-             , onLogin: mempty
-             , onProfile: mempty
-             , onStaticPageClick: mempty
-             , onMenuClick: mempty
-             , showHeading: false
-             }
-           , props.mainContent.content
-           , footer mosaicoPaper mempty
-           , case props.mainContent.type of
-                 FrontpageContent -> aside
-                 TagListContent _ -> aside
-                 _ -> mempty
-           ]
-       }
+        { className: "mosaico grid " <> menuOpen
+        , id: Paper.toString mosaicoPaper
+        , children:
+            guard (not props.headless) header
+            <>
+            [ props.mainContent.content ] <>
+            guard (not props.headless)
+              [ footer mosaicoPaper mempty
+              , case props.mainContent.type of
+                  FrontpageContent -> aside
+                  TagListContent _ -> aside
+                  _ -> mempty
+              ]
+        }
     ]
   where
+    header =
+      [ Header.topLine
+      , Header.render 0
+          { changeRoute: const mempty
+          , categoryStructure: props.categoryStructure
+          , catMap: categoriesMap props.categoryStructure
+          , onCategoryClick: const mempty
+          , user: Nothing
+          , onLogin: mempty
+          , onProfile: mempty
+          , onStaticPageClick: mempty
+          , onMenuClick: mempty
+          , showHeading: false
+          }
+      ]
     aside =
       DOM.aside
         { className: "mosaico--aside"
