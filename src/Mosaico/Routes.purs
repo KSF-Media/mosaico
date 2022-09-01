@@ -5,6 +5,7 @@ import Prelude
 import Effect (Effect)
 import Foreign (Foreign)
 import Data.Foldable (oneOf)
+import Data.Int as Int
 import Data.List (List(..))
 import Data.Maybe (Maybe(..))
 import Data.Semiring.Free (free)
@@ -33,7 +34,7 @@ data MosaicoPage
   | StaticPage String
   | CategoryPage Category
   | TagPage Tag
-  | SearchPage (Maybe String)
+  | SearchPage (Maybe String) (Maybe Int)
   | DebugPage String -- Used for testing
   | DeployPreview -- Used for deploy previews only
   | MenuPage
@@ -54,7 +55,7 @@ routes categories = root *> oneOf
   , TagPage <<< uriComponentToTag <$> (lit "tagg" *> str)
   , Frontpage <$ end
   , MenuPage <$ lit "meny"
-  , SearchPage <$> (lit "sök" *> optionalMatch (param "q")) <* end
+  , SearchPage <$> (lit "sök" *> optionalMatch (param "q")) <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
   , DebugPage <$> (lit "debug" *> str)
   , DeployPreview <$ str <* lit "mosaico" <* lit "index.html" <* end
   , CategoryPage <$> categoryRoute

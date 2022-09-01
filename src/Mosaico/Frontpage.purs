@@ -35,6 +35,7 @@ data Frontpage = List ListFrontpageProps | Prerendered PrerenderedFrontpageProps
 type ListFrontpageProps =
   { label :: Maybe String
   , content :: Maybe (Array ArticleStub)
+  , footer :: JSX
   , onArticleClick :: ArticleStub -> EventHandler
   , onTagClick :: Tag -> EventHandler
   }
@@ -52,7 +53,7 @@ render (List props) =
         { className: "mx-4 mosaico--article-list md:mx-0"
         , children:
           [ maybeLabel props.label
-          , genericRender (\list -> map renderListArticle list) mempty props.content
+          , genericRender (\list -> map renderListArticle list <> [props.footer]) mempty props.content
           ]
         }
       where

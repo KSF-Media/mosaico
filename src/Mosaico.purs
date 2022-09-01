@@ -103,6 +103,7 @@ type State =
   , logger :: Sentry.Logger
   , scrollToYPosition :: Maybe Number
   , starting :: Boolean
+  , loadingFeed :: Boolean
   }
 
 type SetState = (State -> State) -> Effect Unit
@@ -176,7 +177,9 @@ mosaicoComponent initialValues props = React.do
                          }
 
   let setFeed feed content =
-        liftEffect $ setState $ \s -> s { feeds = HashMap.insert feed content s.feeds }
+        liftEffect $ setState $ \s -> s { feeds = HashMap.insert feed content s.feeds
+                                        , loadingFeed = false
+                                        }
       loadArticle articleId withAnalytics = Aff.launchAff_ do
         case UUID.parseUUID articleId of
           Nothing -> liftEffect $ setState _ { article = Just $ Left unit }
@@ -249,24 +252,25 @@ mosaicoComponent initialValues props = React.do
         }
     pure $ Aff.launchAff_ giveUpLogin
 
-  let setFrontpage feedName = Aff.launchAff_ do
+  let setFrontpage feedName limit = Aff.launchAff_ do
         -- In SPA mode, this may be called before catMap has been
         -- populated to state.  Synchronize with an AVar.
         catMap <- Aff.AVar.read initialValues.catMap
         cache <- Aff.AVar.read initialValues.cache
-        fresh <- Cache.isFresh cache catMap feedName
+        fresh <- Cache.isFresh cache catMap feedName limit
         when (not fresh) $ liftEffect $
           setState $ \s -> s { feeds = HashMap.delete feedName s.feeds }
+        liftEffect $ setState _ { loadingFeed = true }
         foldMap (Cache.parallelLoadFeeds cache setFeed) $
-          (map <<< map) (Tuple feedName) $ Cache.loadFeed cache catMap feedName
+          (map <<< map) (Tuple feedName) $ Cache.loadFeed cache catMap feedName limit
       onPaywallEvent = do
         maybe (pure unit) (\u -> loadArticle u true) $ _.article.uuid <$> (join <<< map hush $ state.article)
 
   useEffect (state.route /\ map _.cusno (join state.user)) do
     case state.route of
-      Routes.Frontpage -> setFrontpage (CategoryFeed frontpageCategoryLabel)
-      Routes.TagPage tag -> setFrontpage (TagFeed tag)
-      Routes.SearchPage (Just query) -> setFrontpage (SearchFeed query)
+      Routes.Frontpage -> setFrontpage (CategoryFeed frontpageCategoryLabel) Nothing
+      Routes.TagPage tag -> setFrontpage (TagFeed tag) Nothing
+      Routes.SearchPage (Just query) limit -> setFrontpage (SearchFeed query) limit
       Routes.ArticlePage articleId
         | Just article <- map _.article (join $ map hush state.article)
         , articleId == article.uuid
@@ -276,7 +280,7 @@ mosaicoComponent initialValues props = React.do
             -- We already get it when trying to resolve authed user on startup
             loadArticle articleId false
         | otherwise -> loadArticle articleId true
-      Routes.CategoryPage (Category c) -> setFrontpage (CategoryFeed c.label)
+      Routes.CategoryPage (Category c) -> setFrontpage (CategoryFeed c.label) Nothing
       Routes.StaticPage page
         | Just (StaticPageResponse r) <- state.staticPage
         , r.pageName == page
@@ -296,7 +300,7 @@ mosaicoComponent initialValues props = React.do
     case state.route of
       Routes.Frontpage -> setTitle $ Paper.paperName mosaicoPaper
       Routes.TagPage tag -> setTitle $ unwrap tag
-      Routes.SearchPage _ -> setTitle "Sök"
+      Routes.SearchPage _ _ -> setTitle "Sök"
       Routes.ProfilePage -> setTitle "Min profil"
       Routes.MenuPage -> setTitle "Meny"
       Routes.NotFoundPage _ -> setTitle "Oops... 404"
@@ -315,6 +319,12 @@ mosaicoComponent initialValues props = React.do
       -- the page is basically blank, so the browser loses the position anyway (there's nothing to recover to).
       -- If we want to fix this, we'd have to keep prev article in state too.
       { route: Routes.ArticlePage _ } -> scrollToYPos 0
+      -- Keep position when getting more results.
+      { route: Routes.SearchPage s1 l1
+      , prevRoute: Just (Tuple (Routes.SearchPage s2 l2) _)
+      , scrollToYPosition: pos }      ->
+        when (s1 /= s2 || fromMaybe 20 l1 <= fromMaybe 20 l2) $
+          scrollToYPos $ maybe 0 ceil pos
       { scrollToYPosition: Just y }   -> scrollToYPos (ceil y)
       { scrollToYPosition: Nothing }  -> scrollToYPos 0
 
@@ -345,7 +355,8 @@ routeListener :: Categories -> ((State -> State) -> Effect Unit) -> Maybe Locati
 routeListener c setState oldLoc location = do
   runEffectFn1 refreshAdsImpl ["mosaico-ad__top-parade", "mosaico-ad__parade"]
 
-  let newRoute = match (Routes.routes c) $ Routes.stripFragment $ location.pathname <> location.search
+  let newRoute = getRoute location
+      oldRoute = getRoute <$> oldLoc
       (locationState :: Maybe Routes.RouteState) = hush $ JSON.read location.state
       oldPath = maybe "" (\l -> l.pathname <> l.search) oldLoc
 
@@ -355,7 +366,8 @@ routeListener c setState oldLoc location = do
   -- old content)
   let setYPosition { yPositionOnLeave: Just y } = setState _ { scrollToYPosition = Just y }
       setYPosition _ = setState _ { scrollToYPosition = Nothing }
-  foldMap setYPosition locationState
+  when (not (isSearch newRoute && maybe false isSearch oldRoute)) $
+    foldMap setYPosition locationState
 
   case newRoute of
     Right path -> do
@@ -370,6 +382,10 @@ routeListener c setState oldLoc location = do
         Routes.ArticlePage _ -> pure unit
         _                    -> sendPageView
     Left _     -> pure unit
+  where
+    getRoute l = match (Routes.routes c) $ Routes.stripFragment $ l.pathname <> l.search
+    isSearch (Right (Routes.SearchPage _ _)) = true
+    isSearch _ = false
 
 type InitialValues =
   { state :: State
@@ -420,6 +436,7 @@ getInitialValues = do
         , logger
         , scrollToYPosition: Nothing
         , starting: true
+        , loadingFeed: false
         }
     , components:
         { loginModalComponent
@@ -511,11 +528,20 @@ render props setState state components router onPaywallEvent =
          | Nothing <- state.article -> mosaicoLayoutNoAside loadingSpinner
          | otherwise -> mosaicoLayoutNoAside $ renderArticle (Right notFoundArticle)
        Routes.Frontpage -> renderFrontpage
-       Routes.SearchPage Nothing ->
+       Routes.SearchPage Nothing _ ->
           mosaicoDefaultLayout $ components.searchComponent { query: Nothing, doSearch, searching: false }
-       Routes.SearchPage query@(Just queryString) ->
+       Routes.SearchPage query@(Just queryString) limit ->
           let frontpageArticles = HashMap.lookup (SearchFeed queryString) state.feeds
+              content = case frontpageArticles of
+                Just (ArticleList articles) -> Just articles
+                _                           -> Nothing
+              -- Don't use state.loadingFeed for this, this'll show
+              -- the existing results while loading more.
               searching = isNothing frontpageArticles
+              footer = if noResults
+                       then mempty
+                       else if state.loadingFeed then loadingSpinner
+                            else Search.moreButton $ doSearchLimit queryString $ maybe 40 (_ + 20) limit
               noResults = case frontpageArticles of
                 Just (ArticleList list)
                   | null list -> true
@@ -525,7 +551,15 @@ render props setState state components router onPaywallEvent =
               label = if noResults
                       then Just "Inga resultat"
                       else Just $ "Sökresultat: " <> queryString
-          in frontpage (Just header) label frontpageArticles
+          in mosaicoDefaultLayout $
+             header <>
+             (Frontpage.render $ Frontpage.List
+              { label
+              , content
+              , footer
+              , onArticleClick
+              , onTagClick
+              })
        Routes.NotFoundPage _ -> mosaicoLayoutNoAside $ renderArticle (Right notFoundArticle)
        Routes.TagPage tag ->
          let maybeFeed = HashMap.lookup (TagFeed tag) state.feeds
@@ -595,6 +629,7 @@ render props setState state components router onPaywallEvent =
       (Frontpage.render $ Frontpage.List
         { label
         , content
+        , footer: mempty
         , onArticleClick
         , onTagClick
         })
@@ -710,7 +745,7 @@ render props setState state components router onPaywallEvent =
     showAds = not props.globalDisableAds && case state.route of
       Routes.Frontpage -> true
       Routes.TagPage _ -> true
-      Routes.SearchPage _ -> true
+      Routes.SearchPage _ _ -> true
       Routes.DraftPage -> false
       Routes.ProfilePage -> false
       Routes.ArticlePage _ -> case state.article of
@@ -781,6 +816,9 @@ render props setState state components router onPaywallEvent =
 
     -- Search is done via the router
     doSearch query = Routes.changeRoute router ("/sök?q=" <> query)
+
+    doSearchLimit query limit =
+      Routes.changeRoute router ("/sök?q=" <> query <> ("&c=" <> show limit))
 
     simpleRoute = Routes.changeRoute router
 

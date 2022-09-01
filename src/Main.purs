@@ -202,9 +202,11 @@ spec ::
                 , guards :: Guards ("category" : Nil)
                 }
           , searchPage ::
-              GET "/sök?q=<search>"
+              GET "/sök?q=<search>&c=<limit>"
                 { response :: ResponseBody
-                , query :: { search :: Maybe String }
+                , query :: { search :: Maybe String
+                           , limit :: Maybe Int
+                           }
                 }
           , notFoundPage ::
               GET "/<..path>"
@@ -536,6 +538,7 @@ tagList env { params: { tag } } = do
           , content: Frontpage.render $ Frontpage.List
               { label: mempty
               , content: Just articles
+              , footer: mempty
               , onArticleClick: const mempty
               , onTagClick: const mempty
               }
@@ -646,6 +649,7 @@ debugList env { params: { uuid } } = do
               , content: Frontpage.render $ Frontpage.List
                   { label: mempty
                   , content: pure <$> article
+                  , footer: mempty
                   , onArticleClick: const mempty
                   , onTagClick: const mempty
                   }
@@ -679,6 +683,7 @@ renderCategoryPage env (Category category@{ label, type: categoryType, url}) = d
                      , content: Frontpage.render $ Frontpage.List
                                   { label: Just $ unwrap label
                                   , content: Just articles
+                                  , footer: mempty
                                   , onArticleClick: const mempty
                                   , onTagClick: const mempty
                                   }
@@ -798,13 +803,13 @@ renderCategoryPage env (Category category@{ label, type: categoryType, url}) = d
         , foldMap (\content -> DOM.meta { name: "description", content }) startpageDescription
         ]
 
-searchPage :: Env -> { query :: { search :: Maybe String } } -> Aff (Response ResponseBody)
-searchPage env { query: { search } } = do
+searchPage :: Env -> { query :: { search :: Maybe String, limit :: Maybe Int } } -> Aff (Response ResponseBody)
+searchPage env { query: { search, limit } } = do
   let query = if (trim <$> search) == Just "" then Nothing else search
   searchComponent <- liftEffect Search.searchComponent
   { pageContent: articles, mostReadArticles, latestArticles } <-
     parallelWithCommonLists env.cache $
-    maybe (pure mempty) (pure <<< join <<< fromFoldable <=< Lettera.search 0 20 mosaicoPaper) query
+    maybe (pure mempty) (pure <<< join <<< fromFoldable <=< Lettera.search 0 (fromMaybe 20 limit) mosaicoPaper) query
   let mosaico = MosaicoServer.app
       htmlTemplate = cloneTemplate env.htmlTemplate
       noResults = isJust query && null articles
@@ -823,6 +828,7 @@ searchPage env { query: { search } } = do
                                             then Just "Inga resultat"
                                             else ("Sökresultat: " <> _) <$> query
                                    , content: Just articles
+                                   , footer: mempty
                                    , onArticleClick: const mempty
                                    , onTagClick: const mempty
                                    })
@@ -835,7 +841,7 @@ searchPage env { query: { search } } = do
   html <- liftEffect do
             let windowVars =
                   stdVars env Nothing mostReadArticles latestArticles
-                  <> mkArticleFeed (SearchFeed $ fromMaybe "" query) (ArticleList articles)
+                  <> mkArticleFeed (SearchFeed (fromMaybe "" query)) (ArticleList articles)
             appendMosaico mosaicoString htmlTemplate >>=
               appendVars (mkWindowVariables windowVars) >>=
               appendHead (makeTitle "Sök")

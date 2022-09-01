@@ -288,6 +288,7 @@ render imageComponent boxComponent props =
       (Frontpage.render $ Frontpage.List
         { label: mempty
         , content: Just articles
+        , footer: mempty
         , onArticleClick: props.onArticleClick
         , onTagClick: props.onTagClick
         })

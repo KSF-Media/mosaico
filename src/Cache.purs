@@ -2,10 +2,11 @@ module Mosaico.Cache where
 
 import Prelude
 
+import Control.Alternative (guard)
 import Control.Monad.Rec.Class (untilJust)
 import Control.Parallel.Class (parallel, sequential)
 import Control.Plus (class Plus, empty)
-import Data.Array (filter, fromFoldable, mapMaybe)
+import Data.Array (filter, fromFoldable, length, mapMaybe)
 import Data.DateTime (DateTime, adjust, diff)
 import Data.Either (Either(..), hush)
 import Data.Foldable (foldMap)
@@ -42,9 +43,15 @@ data Stamped a = Stamped
   , content :: a
   }
 
-emptyStamp :: forall m a. Plus m => Effect (Stamped (m a))
+-- Always expired
+emptyStamp :: forall m a. Plus m => Stamped (m a)
 emptyStamp =
-  Stamped <<< { validUntil: _, content: empty } <$> nowDateTime
+  Stamped { validUntil: bottom, content: empty }
+
+-- Always valid
+eotStamp :: forall m a. Plus m => Stamped (m a)
+eotStamp =
+  Stamped { validUntil: top, content: empty }
 
 instance functorStamped :: Functor Stamped where
   map f (Stamped s@{ content }) = Stamped $ s { content = f content }
@@ -128,7 +135,7 @@ startUpdates fetch = do
             AVar.put unit updateDone
             -- Leave it empty for the next caller.
             AVar.take updateDone
-            AVar.tryRead var >>= maybe (liftEffect emptyStamp) (map Just >>> pure)
+            maybe emptyStamp (map Just) <$> AVar.tryRead var
       reset = withLock resetLock do
         AVar.put unit updateStop
 
@@ -152,7 +159,7 @@ initClientCache initial = do
   feedList <- initFeed getList
   feedString <- initFeed getHtml
   storedCategoryRender <- Effect.AVar.new Map.empty
-  static <- pure <$> emptyStamp
+  let static = pure emptyStamp
   pure $
     { prerendered: Map.empty
     , mainCategoryFeed: Map.empty
@@ -259,6 +266,35 @@ getByTag cache tag =
   getUsingCache cache.feedList (TagFeed tag) $
   Lettera.getByTag 0 20 tag mosaicoPaper
 
+search :: Cache -> String -> Maybe Int -> Aff (Stamped (Array ArticleStub))
+search cache query limit = do
+  let key = SearchFeed query
+  store <- AVar.read cache.feedList
+  now <- liftEffect nowDateTime
+  let oldContent = do
+        c@(Stamped {validUntil}) <- Map.lookup (SearchFeed query) store
+        guard $ validUntil >= now
+        pure c
+  let start = maybe 0 (\(Stamped {content}) -> length content) oldContent
+      toFetch = fromMaybe 20 limit - start
+  if toFetch <= 0 then pure $ fromMaybe eotStamp oldContent else do
+    LetteraResponse response <- Lettera.search start toFetch mosaicoPaper query
+    let newContent = case (\content validUntil -> Stamped { content, validUntil })
+                          <$> hush response.body
+                          -- Don't discard new data if it's missing max-age
+                          <*> pure (fromMaybe now (toValidUntil now response.maxAge)) of
+                       Just value -> Just $ (\old new -> old <> new)
+                                     <$> fromMaybe eotStamp oldContent
+                                     <*> value
+                       -- TODO error message
+                       _ -> oldContent
+    oldStore <- AVar.take cache.feedList
+    let newStore = case newContent of
+                        Just value -> Map.insert key value oldStore
+                        _ -> Map.delete key oldStore
+    AVar.put newStore cache.feedList
+    pure $ fromMaybe emptyStamp newContent
+
 resetCategory :: Cache -> CategoryLabel -> Aff Unit
 resetCategory cache category = do
   removeFromActive cache.prerendered
@@ -305,8 +341,8 @@ addHeaderAge maxAge (Response response) =
     control = "max-age=" <> show maxAge
 
 -- Only used in client context
-isFresh :: Cache -> Categories -> ArticleFeedType -> Aff Boolean
-isFresh cache catMap feed = do
+isFresh :: Cache -> Categories -> ArticleFeedType -> Maybe Int -> Aff Boolean
+isFresh cache catMap feed limit = do
   now <- liftEffect nowDateTime
   let stampValid :: forall a. Stamped a -> Boolean
       stampValid (Stamped {validUntil}) = validUntil >= now
@@ -317,6 +353,13 @@ isFresh cache catMap feed = do
       | Just cat <- unwrap <$> Map.lookup c catMap
       , Prerendered <- cat.type -> isValid cache.feedString
     BreakingNewsFeed -> isValid cache.feedString
+    -- Return true if search exists to show old results while loading more.
+    SearchFeed _ -> do
+      store <- AVar.read cache.feedList
+      case Map.lookup feed store of
+        Nothing -> pure false
+        Just (Stamped {content}) ->
+          maybe (isValid cache.feedList) (\l -> pure (length content < l)) limit
     _ -> isValid cache.feedList
 
 type CommonLists a =
@@ -354,8 +397,8 @@ parallelLoadFeeds
 parallelLoadFeeds cache f action = do
   parallelWithCommonActions cache f action >>= uncurry f
 
-loadFeed :: Cache -> Categories -> ArticleFeedType -> Maybe (Aff ArticleFeed)
-loadFeed cache catMap feedName =
+loadFeed :: Cache -> Categories -> ArticleFeedType -> Maybe Int -> Maybe (Aff ArticleFeed)
+loadFeed cache catMap feedName limit =
   case feedName of
     TagFeed t -> Just $
       ArticleList <<< getContent <$> getByTag cache t
@@ -371,7 +414,7 @@ loadFeed cache catMap feedName =
           Feed -> Just $ ArticleList <<< getContent <$> getFrontpage cache cat.label
           _ -> Nothing
     CategoryFeed _ -> Nothing
-    SearchFeed q -> Just $ ArticleList <<< join <<< fromFoldable <$> Lettera.search 0 20 mosaicoPaper q
+    SearchFeed q -> Just $ ArticleList <<< getContent <$> search cache q limit
   -- loadFeed isn't called for these values but for completeness' sake
     LatestFeed -> Just $ ArticleList <<< getContent <$> getLatest cache
     MostReadFeed -> Just $ ArticleList <<< getContent <$> getMostRead cache
