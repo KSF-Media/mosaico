@@ -56,6 +56,11 @@
     "destination": "https://www.ksfmedia.fi/akademen"
   },
   {
+    "route": "premium",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/onpremium"
+  },
+  {
     "route": "studierabatt",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/studierabatt"
