@@ -342,6 +342,9 @@ staticPageTitle page =
     "insandare"       -> "Insändare"
     "kontakt"         -> "Kontakta oss"
     "kundservice"     -> "Kundservice"
+    "nyhetsbrev-hbl"  -> "Nyhetsbrev"
+    "nyhetsbrev-on"   -> "Nyhetsbrev"
+    "nyhetsbrev-vn"   -> "Nyhetsbrev"
     "tipsa-oss"       -> "Tipsa oss"
     _                 -> Paper.paperName mosaicoPaper
 
