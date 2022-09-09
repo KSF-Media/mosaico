@@ -161,17 +161,17 @@
     "destination": "https://www.ostnyland.fi/sida/kontakt"
   },
   {
-    "route": "nyhetsbrev-hbl",
+    "route": "nyhetsbrev",
     "paper": "hbl",
     "destination": "https://www.hbl.fi/sida/nyhetsbrev-hbl"
   },
   {
-    "route": "nyhetsbrev-on",
+    "route": "nyhetsbrev",
     "paper": "on",
     "destination": "https://www.ostnyland.fi/sida/nyhetsbrev-on"
   },
   {
-    "route": "nyhetsbrev-vn",
+    "route": "nyhetsbrev",
     "paper": "vn",
     "destination": "https://www.vastranyland.fi/sida/nyhetsbrev-vn"
   },
