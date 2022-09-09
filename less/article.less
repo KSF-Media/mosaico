@@ -389,6 +389,16 @@
         background-color: @brand-neutral !important;
       }
     }
+    figcaption {
+      color: @grey-mediumlight;
+      font: 1.1rem/1 "Duplex Sans", sans-serif;
+      margin-top: 10px;
+      &:before {
+        content: "—";
+        color: inherit;
+        margin-right: 3px;
+      }
+    }
   }
   &__subheadline {
     font: 500 1.07rem/1.5rem "Roboto", sans-serif;
