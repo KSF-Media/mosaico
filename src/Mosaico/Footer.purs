@@ -63,7 +63,7 @@ contactInfo VN = vastranylandContactInfo
 
 contactInfo HBL = hblContactInfo
 
-contactInfo _ = footerLinks
+contactInfo _ = hblFooterLinks
 
 hblContactInfo :: (String -> EventHandler) -> JSX
 hblContactInfo onStaticPageClick =
@@ -77,7 +77,7 @@ hblContactInfo onStaticPageClick =
                 , column thirdColumn
                 ]
             }
-        , footerLinks onStaticPageClick
+        , hblFooterLinks onStaticPageClick
         ]
     }
   where
@@ -134,7 +134,7 @@ vastranylandContactInfo onStaticPageClick =
                 , column thirdColumn
                 ]
             }
-        , footerLinks onStaticPageClick
+        , vastranylandFooterLinks onStaticPageClick
         ]
     }
   where
@@ -191,7 +191,7 @@ ostnylandContactInfo onStaticPageClick =
                 , column thirdColumn
                 ]
             }
-        , footerLinks onStaticPageClick
+        , ostnylandFooterLinks onStaticPageClick
         ]
     }
   where
@@ -238,8 +238,8 @@ ostnylandContactInfo onStaticPageClick =
     , section "" [ DOM.text "Det lokala kommer först." ]
     ]
 
-footerLinks :: (String -> EventHandler) -> JSX
-footerLinks onStaticPageClick =
+hblFooterLinks :: (String -> EventHandler) -> JSX
+hblFooterLinks onStaticPageClick =
   DOM.div
     { className: "flex flex-col justify-center items-center mx-auto mt-9 mb-8 lg:flex-row"
     , children:
@@ -248,6 +248,65 @@ footerLinks onStaticPageClick =
         , footerLink "Kundservice" "kundservice"
         , footerLink "Kontakta oss" "kontakt"
         , footerLink "Tipsa oss" "tipsa-oss"
+        , footerLink "Nyhetsbrev" "nyhetsbrev-hbl"
+        ]
+    }
+  where
+  externalLink caption url =
+    DOM.a
+      { href: url
+      , className: "my-1 mx-auto text-sm text-gray-900 no-underline md:mx-5"
+      , children: [ DOM.text caption ]
+      }
+
+  footerLink caption link =
+    DOM.a
+      { href: "/sida/" <> link
+      , className: "my-1 mx-auto text-sm text-gray-900 no-underline md:mx-5"
+      , children: [ DOM.text caption ]
+      , onClick: onStaticPageClick link
+      }
+
+ostnylandFooterLinks :: (String -> EventHandler) -> JSX
+ostnylandFooterLinks onStaticPageClick =
+  DOM.div
+    { className: "flex flex-col justify-center items-center mx-auto mt-9 mb-8 lg:flex-row"
+    , children:
+        [ externalLink "Dataskyddsbeskrivning" "https://www.ksfmedia.fi/dataskydd"
+        , footerLink "Bruksvillkor" "bruksvillkor"
+        , footerLink "Kundservice" "kundservice"
+        , footerLink "Kontakta oss" "kontakt"
+        , footerLink "Tipsa oss" "tipsa-oss"
+        , footerLink "Nyhetsbrev" "nyhetsbrev-on"
+        ]
+    }
+  where
+  externalLink caption url =
+    DOM.a
+      { href: url
+      , className: "my-1 mx-auto text-sm text-gray-900 no-underline md:mx-5"
+      , children: [ DOM.text caption ]
+      }
+
+  footerLink caption link =
+    DOM.a
+      { href: "/sida/" <> link
+      , className: "my-1 mx-auto text-sm text-gray-900 no-underline md:mx-5"
+      , children: [ DOM.text caption ]
+      , onClick: onStaticPageClick link
+      }
+
+vastranylandFooterLinks :: (String -> EventHandler) -> JSX
+vastranylandFooterLinks onStaticPageClick =
+  DOM.div
+    { className: "flex flex-col justify-center items-center mx-auto mt-9 mb-8 lg:flex-row"
+    , children:
+        [ externalLink "Dataskyddsbeskrivning" "https://www.ksfmedia.fi/dataskydd"
+        , footerLink "Bruksvillkor" "bruksvillkor"
+        , footerLink "Kundservice" "kundservice"
+        , footerLink "Kontakta oss" "kontakt"
+        , footerLink "Tipsa oss" "tipsa-oss"
+        , footerLink "Nyhetsbrev" "nyhetsbrev-vn"
         ]
     }
   where
