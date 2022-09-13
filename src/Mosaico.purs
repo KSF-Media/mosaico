@@ -33,7 +33,6 @@ import Effect.Random (randomInt)
 import Effect.Uncurried (EffectFn1, runEffectFn1)
 import KSF.Auth (enableCookieLogin) as Auth
 import KSF.Paper as Paper
-import KSF.Paper (Paper(..))
 import KSF.Sentry as Sentry
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User, logout, magicLogin)
@@ -65,6 +64,7 @@ import Mosaico.Profile as Profile
 import Mosaico.Routes as Routes
 import Mosaico.Search as Search
 import Mosaico.StaticPage (StaticPageResponse(..), fetchStaticPage, getInitialStaticPageContent, getInitialStaticPageScript)
+import Mosaico.StaticPageMeta (staticPageTitle)
 import Mosaico.Webview as Webview
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
@@ -332,22 +332,6 @@ mosaicoComponent initialValues props = React.do
     pure mempty
 
   pure $ render props setState state initialValues.components initialValues.nav onPaywallEvent
-
-staticPageTitle :: String -> Paper -> String
-staticPageTitle page paper =
-  case page, paper of
-    "anslagstavlan", _   -> "Anslagstavlan"
-    "bruksvillkor", _    -> "Bruksvillkor"
-    "fiskecupen", _      -> "Fiskecupen"
-    "fragor-och-svar", _ -> "Frågor och svar"
-    "insandare", _       -> "Insändare"
-    "kontakt", _         -> "Kontakta oss"
-    "kundservice", _     -> "Kundservice"
-    "nyhetsbrev", HBL    -> "Beställ HBL:s nyhetsbrev!"
-    "nyhetsbrev", ON     -> "Beställ Östnylands nyhetsbrev!"
-    "nyhetsbrev", VN     -> "Beställ Västra Nylands nyhetsbrev!"
-    "tipsa-oss", _       -> "Tipsa oss"
-    _, _                 -> Paper.paperName mosaicoPaper
 
 pickRandomElement :: forall a. Array a -> Effect (Maybe a)
 pickRandomElement [] = pure Nothing

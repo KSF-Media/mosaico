@@ -58,6 +58,7 @@ import Mosaico.Header.Menu as Menu
 import Mosaico.Paper (mosaicoPaper, _mosaicoPaper)
 import Mosaico.Profile as Profile
 import Mosaico.Search as Search
+import Mosaico.StaticPageMeta (staticPageTitle, staticPageDescription)
 import Mosaico.Version (mosaicoVersion)
 import Mosaico.Webview as Webview
 import MosaicoServer (MainContent, MainContentType(..))
@@ -620,12 +621,24 @@ staticPage env { params: { pageName } } = do
               ]
         appendMosaico mosaicoString htmlTemplate
           >>= appendVars (mkWindowVariables windowVars)
-          >>= appendHead (makeTitle pageName)
+          >>= appendHead (makeTitle title)
+          >>= appendHead staticPageMeta
       pure $ htmlContent $ Response.ok $ StringBody $ renderTemplateHtml html
     Nothing ->
       let maybeMostRead = if null mostReadArticles then Nothing else Just mostReadArticles
           maybeLatest = if null latestArticles then Nothing else Just latestArticles
       in notFound env { type: StaticPageContent pageName, content: notFoundWithAside } maybeMostRead maybeLatest
+  where
+    title = staticPageTitle pageName mosaicoPaper
+    description = staticPageDescription pageName mosaicoPaper
+    staticPageMeta = DOM.renderToStaticMarkup $
+      DOM.fragment
+        [ DOM.meta { property: "og:type", content: "website" }
+        , DOM.meta { property: "og:title", content: title }
+        , DOM.meta { property: "og:image", content: fallbackImageShare mosaicoPaper }
+        , foldMap (\content -> DOM.meta { property: "og:description", content }) description
+        , foldMap (\content -> DOM.meta { name: "description", content }) description
+        ]
 
 debugList :: Env -> { params :: { uuid :: String } } -> Aff (Response ResponseBody)
 debugList env { params: { uuid } } = do
