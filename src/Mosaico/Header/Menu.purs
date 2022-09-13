@@ -161,11 +161,16 @@ render props@{ onLogin, onLogout } = DOM.div
                     , addClass: mempty
                     }
                   ] <> paperSpecificLinks mosaicoPaper
+                  <> [ { title: "NYHETSBREV"
+                    , subsections: []
+                    , url: "/sida/nyhetsbrev"
+                    , onClick: capture_ $ props.changeRoute "/sida/nyhetsbrev"
+                    , addClass: Just "mosaico-menu__link-headline"
+                    }
+                  ]
 
     paperSpecificLinks :: Paper -> Array Section
     paperSpecificLinks VN = vastranylandMenuLinks
-    paperSpecificLinks HBL = hblMenuLinks
-    paperSpecificLinks ON = ostnylandMenuLinks
     paperSpecificLinks _ = mempty
 
     vastranylandMenuLinks :: Array Section
@@ -174,32 +179,6 @@ render props@{ onLogin, onLogout } = DOM.div
         , subsections: []
         , url: "/sida/anslagstavlan"
         , onClick: capture_ $ props.changeRoute "/sida/anslagstavlan"
-        , addClass: Just "mosaico-menu__link-headline"
-        },
-        { title: "NYHETSBREV"
-        , subsections: []
-        , url: "/sida/nyhetsbrev-vn"
-        , onClick: capture_ $ props.changeRoute "/sida/nyhetsbrev-vn"
-        , addClass: Just "mosaico-menu__link-headline"
-        }
-      ]
-
-    hblMenuLinks :: Array Section
-    hblMenuLinks =
-      [ { title: "NYHETSBREV"
-        , subsections: []
-        , url: "/sida/nyhetsbrev-hbl"
-        , onClick: capture_ $ props.changeRoute "/sida/nyhetsbrev-hbl"
-        , addClass: Just "mosaico-menu__link-headline"
-        }
-      ]
-
-    ostnylandMenuLinks :: Array Section
-    ostnylandMenuLinks =
-      [ { title: "NYHETSBREV"
-        , subsections: []
-        , url: "/sida/nyhetsbrev-on"
-        , onClick: capture_ $ props.changeRoute "/sida/nyhetsbrev-on"
         , addClass: Just "mosaico-menu__link-headline"
         }
       ]

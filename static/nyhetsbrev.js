@@ -1,4 +1,4 @@
-var ifr = document.getElementById("JotFormIFrame-222483777215360");
+var ifr = document.querySelector(".newsletter__form-container > iframe");
 if (ifr) {
   var src = ifr.src;
   var iframeParams = [];
