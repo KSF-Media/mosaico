@@ -9,7 +9,7 @@ import Effect.Aff (Aff)
 import KSF.Paper (Paper(..))
 import KSF.Puppeteer as Chrome
 import Mosaico.Paper (mosaicoPaper)
-import Mosaico.Test (Test, log, site, sub)
+import Mosaico.Test (Test, log, site, sub, assertNonEmpty)
 import Mosaico.Test.Account as Account
 import Test.Unit.Assert as Assert
 
@@ -28,10 +28,10 @@ relatedExample = case mosaicoPaper of
 
 navigateToNews :: Chrome.Page -> Aff Unit
 navigateToNews page = do
-  let newsTitle = Chrome.Selector ".mosaico-header__block:nth-child(3) .mosaico-header__section:nth-child(3) .mosaico-header__section-title a"
   Chrome.click (Chrome.Selector ".mosaico-header__icon-button--menu") page
-  Chrome.waitFor_ newsTitle page
-  Chrome.click newsTitle page
+  links <- Chrome.findByText "a" "NYHETER" page
+  link <- assertNonEmpty "Did not find link for the NYHETER category" links
+  Chrome.clickElement link
 
 testNewsPage :: Chrome.Page -> Aff PageIds
 testNewsPage page = do

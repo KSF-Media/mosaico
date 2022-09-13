@@ -2,14 +2,12 @@ module Mosaico.Header.Menu where
 
 import Prelude
 
-import Data.Array (catMaybes, foldl, intersperse, snoc)
+import Data.Array (intersperse, foldl, snoc)
 import Effect (Effect)
-import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
 import Data.String as String
 import Data.String (toUpper)
-import Data.String.Common (trim)
 import KSF.Paper (Paper(..), toString)
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
@@ -30,21 +28,12 @@ type Props =
   , onLogout :: EventHandler
   }
 
-data MenuLayoutElement = Section Section
-                       | Loading
-                       | Separator (Maybe String)
-                       -- ^ The String-typed parameter is the BEM modifier to apply to the separator
-
-type MenuBlock = Array MenuLayoutElement
-
-type MenuLayout = Array MenuBlock
-
 type Section =
   { title :: String
   , subsections :: Array Subsection
   , url :: String
   , onClick :: EventHandler
-  , addClass :: Maybe String
+  , className :: Maybe String
   }
 
 type Subsection =
@@ -54,235 +43,189 @@ type Subsection =
 
 render :: Props -> JSX
 render props@{ onLogin, onLogout } = DOM.div
-  { className: menuClass
+  { className: "flex mx-6 lg:mx-0 [grid-area:main] md:[grid-column:1/span_2] lg:[grid-column:2/span_3] mosaico-menu"
   , children: [ menuContent ]
   }
   where
+    menuContent :: JSX
+    menuContent = DOM.div
+      { className: "flex flex-col justify-around mt-5 w-full"
+      , children: [ prenumereraBlock, topButtons, renderSeparator, categories, renderDesktopSeparator, bottomBlock ]
+      }
 
-    menuLayout :: MenuLayout
-    menuLayout = [ upperBlock, separatorBlock, middleBlock, separatorBlock, bottomBlock ]
+    categories :: JSX
+    categories = DOM.div
+      { className: "flex flex-col justify-around mb-4 lg:flex-row lg:flex-nowrap lg:justify-center"
+      , children: (flip snoc) renderMobileSeparator $ intersperse renderMobileSeparator $ foldl mkCategory [] props.categoryStructure
+      }
 
-    upperBlock :: MenuBlock
-    upperBlock = topSections `snoc`
-                 case props.user of
-                   Nothing -> Loading
-                   Just (Just _) -> Section
-                                    { title: "LOGGA UT"
-                                    , subsections: []
-                                    , url: ""
-                                    , onClick: onLogout
-                                    , addClass: Just "mosaico-menu__icon mosaico-menu__icon--logout"
-                                    }
-                   Just Nothing ->  Section
-                                    { title: "LOGGA IN"
-                                    , subsections: []
-                                    , url: ""
-                                    , onClick: onLogin
-                                    , addClass: Just "mosaico-menu__icon mosaico-menu__icon--login"
-                                    }
+    bottomBlock :: JSX
+    bottomBlock =
+      DOM.div
+      { className: "flex flex-col justify-around mb-4 lg:flex-row lg:flex-nowrap lg:justify-center"
+      , children: bottomLinks
+      }
 
-    middleBlock :: MenuBlock
-    middleBlock = (intersperse mobileOnlySeparator) $ foldl mkSection [] props.categoryStructure
+    renderDesktopSeparator :: JSX
+    renderDesktopSeparator = DOM.div { className: "hidden lg:block", children: [renderSeparator] }
 
-    bottomBlock :: MenuBlock
-    bottomBlock = bottomSections
+    renderMobileSeparator :: JSX
+    renderMobileSeparator = DOM.div { className: "block lg:hidden", children: [renderSeparator] }
 
-    separatorBlock :: MenuBlock
-    separatorBlock = [ separator ]
+    renderSeparator :: JSX
+    renderSeparator = DOM.hr { className: "w-full h-0 border-t border-gray-300 border-solid"}
 
-    separator = Separator Nothing
-    mobileOnlySeparator = Separator $ Just mobileOnlySeparatorClass
+    onSearch :: EventHandler
+    onSearch = capture_ $ props.changeRoute "/sök"
 
-    topSections :: MenuBlock
-    topSections = Section <$> catMaybes
-                  [ Just
-                    { title: "PRENUMERERA"
-                    , subsections: []
-                    , url: "https://prenumerera.ksfmedia.fi/#/" <> String.toLower (toString mosaicoPaper)
-                    , onClick: mempty
-                    , addClass: Just "mosaico-menu__subscribe-link"
-                    }
-                  , Just
-                    { title: "SÖK"
-                    , subsections: []
-                    , url: "/sök"
-                    , onClick: capture_ $ props.changeRoute "/sök"
-                    , addClass: Just "mosaico-menu__icon mosaico-menu__icon--search"
-                    }
-                  , Just
-                    { title: "E-TIDNINGEN"
-                    , subsections: []
-                    , url: "/epaper"
-                    , onClick: capture_ $ props.changeRoute "/epaper/"
-                    , addClass: Just "mosaico-menu__icon mosaico-menu__icon--epaper"
-                    }
-                  , Just
-                    { title: "KUNDSERVICE"
-                    , subsections: []
-                    , url: "/sida/kundservice"
-                    , onClick: capture_ $ props.changeRoute "/sida/kundservice"
-                    , addClass: Just "mosaico-menu__icon mosaico-menu__icon--customer-service"
-                    }
-                  ]
+    onEpaper :: EventHandler
+    onEpaper = capture_ $ props.changeRoute "/epaper/"
 
-    mkSection acc category@(Category c) =
+    onKundservice :: EventHandler
+    onKundservice = capture_ $ props.changeRoute "/sida/kundservice/"
+
+    prenumereraBlock :: JSX
+    prenumereraBlock = DOM.div
+          { className: "lg:hidden"
+          , children:
+            [ renderCategoryHeader
+              [ DOM.a
+                { href: ("https://prenumerera.ksfmedia.fi/#/" <> String.toLower (toString mosaicoPaper))
+                , children: [ DOM.text "PRENUMERERA" ]
+                , className: "text-sm"
+                }
+              ]
+              , DOM.div {className: "mt-4 mb-7", children: [ renderSeparator ]}
+            ]
+          }
+
+    topButtons :: JSX
+    topButtons = DOM.div
+      { className: "flex flex-col justify-around mb-4 lg:flex-row lg:flex-nowrap lg:justify-center"
+      , children:
+        [ renderIcon "bg-search" "SÖK" "/sök" onSearch
+        , renderIcon "bg-epaper" "E-TIDNINGEN" "/epaper" onEpaper
+        , renderIcon "bg-kundservice" "KUNDSERVICE" "/sida/kundservice" onKundservice
+        , case props.user of
+            Nothing -> renderLoadingIcon
+            Just (Just _) -> renderIcon "bg-logout" "LOGGA UT" "" onLogout
+            Just Nothing -> renderIcon "bg-login" "LOGGA IN" "" onLogin
+        ]
+      }
+
+    mkCategory acc category@(Category c) =
       let mkSubsection subCategory@(Category { label }) =
             { title: label
             , onClick: props.onCategoryClick subCategory
             }
           section =
-            Section $
+            renderCategory
               { title: toUpper $ unwrap c.label
               , subsections: map mkSubsection c.subCategories
               , url: "/" <> show c.label
               , onClick: props.onCategoryClick category
-              , addClass: Just "mosaico-menu__category-headline"
+              , className: Just "block"
               }
       in acc `snoc` section
 
-    bottomSections :: MenuBlock
-    bottomSections = Section <$>
-                  [ { title: "KONTAKTA OSS"
+    bottomLinks :: Array JSX
+    bottomLinks = [ renderCategory { title: "KONTAKTA OSS"
                     , subsections: []
                     , url: "/sida/kontakt"
                     , onClick: capture_ $ props.changeRoute "/sida/kontakt"
-                    , addClass: mempty
+                    , className: Just "w-40"
                     }
-                  , { title: "ANNONSERA"
+                  , renderCategory { title: "ANNONSERA"
                     , subsections: []
                     , url: "https://www.ksfmedia.fi/"
                     , onClick: mempty
-                    , addClass: mempty
+                    , className: Just "w-40"
                     }
-                  , { title: "JOBBA HOS OSS"
+                  , renderCategory { title: "JOBBA HOS OSS"
                     , subsections: []
                     , url: "https://www.ksfmedia.fi/jobba-hos-oss"
                     , onClick: mempty
-                    , addClass: mempty
+                    , className: Just "w-40"
                     }
                   ] <> paperSpecificLinks mosaicoPaper
-                  <> [ { title: "NYHETSBREV"
+                  <> [ renderCategory { title: "NYHETSBREV"
                     , subsections: []
                     , url: "/sida/nyhetsbrev"
                     , onClick: capture_ $ props.changeRoute "/sida/nyhetsbrev"
-                    , addClass: Just "mosaico-menu__link-headline"
+                    , className: Just "w-40"
                     }
                   ]
 
-    paperSpecificLinks :: Paper -> Array Section
+    paperSpecificLinks :: Paper -> Array JSX
     paperSpecificLinks VN = vastranylandMenuLinks
     paperSpecificLinks _ = mempty
 
-    vastranylandMenuLinks :: Array Section
+    vastranylandMenuLinks :: Array JSX
     vastranylandMenuLinks =
-      [ { title: "ANSLAGSTAVLAN"
+      [ renderCategory { title: "ANSLAGSTAVLAN"
         , subsections: []
         , url: "/sida/anslagstavlan"
         , onClick: capture_ $ props.changeRoute "/sida/anslagstavlan"
-        , addClass: Just "mosaico-menu__link-headline"
+        , className: Just "w-40"
         }
       ]
 
-    menuContent :: JSX
-    menuContent = DOM.div
-      { className: menuContentClass
-      , children: [ renderMenuLayout menuLayout ]
+    renderLoadingIcon :: JSX
+    renderLoadingIcon = DOM.div
+      { className: "mx-4 w-40 text-sm lg:flex"
+      , children: [ loadingSpinner ]
       }
-      where
-        renderMenuLayout :: MenuLayout -> JSX
-        renderMenuLayout layout = foldMap renderMenuBlock layout
 
-        renderMenuBlock :: MenuBlock -> JSX
-        renderMenuBlock block = DOM.div
-          { className: blockClass
-          , children: [ foldMap renderMenuLayoutElement block ]
-          }
+    renderIcon :: String -> String -> String -> EventHandler -> JSX
+    renderIcon icon title href onClick = DOM.a
+      { children: [ DOM.span { className: "block mr-3 w-9 h-9 bg-no-repeat bg-contain" <> " " <> icon}
+                  , DOM.text title
+                  ]
+      , className: "flex items-center mr-4 w-40 text-sm font-semibold lg:justify-center font-roboto"
+      , href
+      , onClick
+      }
 
-        renderMenuLayoutElement :: MenuLayoutElement -> JSX
-        renderMenuLayoutElement Loading = DOM.div
-          { className: unwords [ sectionClass ]
-          , children:
-              [ DOM.div
-                  { className : sectionHeaderClass
-                  , children: [ loadingSpinner ]
-                  }
-              ]
-          }
-        renderMenuLayoutElement (Section section) = renderSection section
-        renderMenuLayoutElement (Separator modifier) = renderSeparator modifier
+    renderCategoryHeader :: Array JSX -> JSX
+    renderCategoryHeader children = DOM.div
+      { className: "justify-center text-sm lg:flex lg:flex-row lg:justify-between"
+      , children:
+          [ DOM.div
+              { className: "py-4 text-sm font-semibold font-roboto"
+              , children
+              }
+          ]
+      }
 
-        renderSection :: Section -> JSX
-        renderSection { subsections, title, url, onClick, addClass } = DOM.div
-          { className: unwords [ sectionClass ]
-          , children: [ DOM.div
-                          { className: sectionHeaderClass
-                          , children:
-                              [ DOM.div
-                                  { className: sectionTitleClass
-                                  , children:
-                                      [ DOM.a
-                                          { href: url
-                                          , children: [ DOM.text title ]
-                                          , onClick
-                                          , className: fromMaybe mempty addClass
-                                          }
-                                      ]
-                                  }
-                              ]
-                          }
-                      , DOM.div
-                          { className: subsectionsClass
-                          , children: renderSubsection <$> subsections
-                          }
+    renderCategory :: Section -> JSX
+    renderCategory { subsections, title, url, onClick, className } = DOM.div
+      { className: "lg:my-8 lg:flex lg:flex-col lg:min-w-[130px]"
+      , children: [ renderCategoryHeader
+                      [ DOM.h2_
+                          [ DOM.a
+                              { href: url
+                              , children: [ DOM.text title ]
+                              , onClick
+                              , className: "block" <> fromMaybe mempty className
+                              }
+                          ]
                       ]
-          }
+                  , DOM.div
+                      { className: "lg:flex lg:flex-col"
+                      , children: renderSubcategory <$> subsections
+                      }
+                  ]
+      }
 
-        renderSubsection :: Subsection -> JSX
-        renderSubsection { title, onClick } = DOM.div
-          { className: subsectionClass
-          , children:
-              [ DOM.a
-                  { href: "/" <> show title
-                  , children: [ DOM.text $ unwrap title ]
-                  , onClick
-                  }
-              ]
-          }
-
-        renderSeparator :: Maybe String -> JSX
-        renderSeparator modifierClass = DOM.hr { className: unwords [ separatorClass, fromMaybe mempty modifierClass ] }
-
-    headerBlock = "mosaico-header"
-
-    menuElement = "__menu"
-    menuClass = headerBlock <> menuElement
-
-    menuContentElement = "__menu-content"
-    menuContentClass = headerBlock <> menuContentElement
-
-    blockElement = "__block"
-    blockClass = headerBlock <> blockElement
-
-    sectionElement = "__section"
-    sectionClass = headerBlock <> sectionElement
-
-    sectionHeaderElement = "__section-header"
-    sectionHeaderClass = headerBlock <> sectionHeaderElement
-
-    sectionTitleElement = "__section-title"
-    sectionTitleClass = headerBlock <> sectionTitleElement
-
-    subsectionsElement = "__subsections"
-    subsectionsClass = headerBlock <> subsectionsElement
-
-    subsectionElement = "__subsection"
-    subsectionClass = headerBlock <> subsectionElement
-
-    separatorElement = "__separator"
-    separatorClass = headerBlock <> separatorElement
-
-    mobileOnlyModifier = "--mobile-only"
-    mobileOnlySeparatorClass = separatorClass <> mobileOnlyModifier
-
-unwords :: Array String -> String
-unwords = trim <<< foldl (\a w -> a <> " " <> w) mempty
+    renderSubcategory :: Subsection -> JSX
+    renderSubcategory { title, onClick } = DOM.div
+      { className: "text-sm font-roboto last:mb-2"
+      , children:
+          [ DOM.a
+              { href: "/" <> show title
+              , className: "block pb-2"
+              , children: [ DOM.text $ unwrap title ]
+              , onClick
+              }
+          ]
+      }

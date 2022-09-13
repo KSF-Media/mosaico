@@ -30,6 +30,17 @@ const monoFonts = [
   "monospace",
 ];
 
+const listOfIcons = {
+  hbl: `url(../images/logo-hbl.svg)`,
+  vn: `url(../images/logo-vn.svg)`,
+  on: `url(../images/logo-on.svg)`,
+  search: `url("../images/icon-mosaico-search.svg")`,
+  epaper: `url("../images/icon-mosaico-epaper.svg")`,
+  kundservice: `url("../images/icon-mosaico-kundservice.svg")`,
+  logout: `url("../images/icon-mosaico-logout.svg")`,
+  login: `url("../images/icon-mosaico-login.svg")`,
+}
+
 const maskImagePlugin = plugin(
   function ({ matchUtilities, theme }) {
     matchUtilities(
@@ -45,12 +56,7 @@ const maskImagePlugin = plugin(
 
   {
     theme: {
-      maskImage: {
-        hbl: `url(../images/logo-hbl.svg)`,
-        vn: `url(../images/logo-vn.svg)`,
-        on: `url(../images/logo-on.svg)`,
-        search: `url("../images/icon-mosaico-search.svg")`,
-      },
+      maskImage: listOfIcons,
     },
   }
 );
@@ -119,6 +125,7 @@ module.exports = {
       md: "760px", // @breakpoint-2col
       lg: "1020px", // @breakpoint-3col
     },
+    backgroundImage: listOfIcons
   },
   plugins: [maskImagePlugin, maskSizePlugin],
 };

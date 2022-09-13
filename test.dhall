@@ -7,6 +7,7 @@ in conf // {
         , "partial"
 	, "enums"
         , "transformers"
-	    , "test-unit"
-	    ]
+        , "test-unit"
+        , "unsafe-coerce"
+    ]
 }

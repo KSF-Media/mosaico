@@ -2,13 +2,16 @@ module Mosaico.Test where
 
 import Prelude
 
-import Data.Array (find, mapMaybe)
+import Data.Array (find, mapMaybe, length)
+import Data.Array.Partial (head)
 import Data.Enum (enumFromTo)
 import Data.Newtype (over)
 import Data.Traversable (traverse)
 import Effect.Aff (Aff)
 import Effect.Class.Console (log) as Console
 import KSF.Puppeteer as Chrome
+import Test.Unit.Assert as Assert
+import Partial.Unsafe (unsafePartial)
 
 type Test = Chrome.Page -> Aff Unit
 
@@ -51,3 +54,8 @@ matchTagList tagged haystack f =
   let matcher { i, content } = (\match -> { i, content, match })
                                <$> find (f content) haystack
   in mapMaybe matcher tagged
+
+assertNonEmpty :: forall a. String -> Array a -> Aff a
+assertNonEmpty msg arr = do
+  Assert.assert msg $ length arr > 0
+  pure $ unsafePartial $ head arr
