@@ -163,17 +163,17 @@
   {
     "route": "nyhetsbrev",
     "paper": "hbl",
-    "destination": "https://www.hbl.fi/sida/nyhetsbrev-hbl"
+    "destination": "https://www.hbl.fi/sida/nyhetsbrev"
   },
   {
     "route": "nyhetsbrev",
     "paper": "on",
-    "destination": "https://www.ostnyland.fi/sida/nyhetsbrev-on"
+    "destination": "https://www.ostnyland.fi/sida/nyhetsbrev"
   },
   {
     "route": "nyhetsbrev",
     "paper": "vn",
-    "destination": "https://www.vastranyland.fi/sida/nyhetsbrev-vn"
+    "destination": "https://www.vastranyland.fi/sida/nyhetsbrev"
   },
   {
     "route": "prenumerera",

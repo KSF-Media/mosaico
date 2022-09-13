@@ -33,6 +33,7 @@ import Effect.Random (randomInt)
 import Effect.Uncurried (EffectFn1, runEffectFn1)
 import KSF.Auth (enableCookieLogin) as Auth
 import KSF.Paper as Paper
+import KSF.Paper (Paper(..))
 import KSF.Sentry as Sentry
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User, logout, magicLogin)
@@ -306,7 +307,7 @@ mosaicoComponent initialValues props = React.do
       Routes.NotFoundPage _ -> setTitle "Oops... 404"
       Routes.CategoryPage (Category c) -> setTitle $ unwrap c.label
       Routes.EpaperPage -> setTitle "E-Tidningen"
-      Routes.StaticPage page -> setTitle (staticPageTitle page)
+      Routes.StaticPage page -> setTitle (staticPageTitle page mosaicoPaper)
       _ -> pure unit
 
 
@@ -332,21 +333,21 @@ mosaicoComponent initialValues props = React.do
 
   pure $ render props setState state initialValues.components initialValues.nav onPaywallEvent
 
-staticPageTitle :: String -> String
-staticPageTitle page =
-  case page of
-    "anslagstavlan"   -> "Anslagstavlan"
-    "bruksvillkor"    -> "Bruksvillkor"
-    "fiskecupen"      -> "Fiskecupen"
-    "fragor-och-svar" -> "Frågor och svar"
-    "insandare"       -> "Insändare"
-    "kontakt"         -> "Kontakta oss"
-    "kundservice"     -> "Kundservice"
-    "nyhetsbrev-hbl"  -> "Beställ HBL:s nyhetsbrev!"
-    "nyhetsbrev-on"   -> "Beställ Östnylands nyhetsbrev!"
-    "nyhetsbrev-vn"   -> "Beställ Västra Nylands nyhetsbrev!"
-    "tipsa-oss"       -> "Tipsa oss"
-    _                 -> Paper.paperName mosaicoPaper
+staticPageTitle :: String -> Paper -> String
+staticPageTitle page paper =
+  case page, paper of
+    "anslagstavlan", _   -> "Anslagstavlan"
+    "bruksvillkor", _    -> "Bruksvillkor"
+    "fiskecupen", _      -> "Fiskecupen"
+    "fragor-och-svar", _ -> "Frågor och svar"
+    "insandare", _       -> "Insändare"
+    "kontakt", _         -> "Kontakta oss"
+    "kundservice", _     -> "Kundservice"
+    "nyhetsbrev", HBL    -> "Beställ HBL:s nyhetsbrev!"
+    "nyhetsbrev", ON     -> "Beställ Östnylands nyhetsbrev!"
+    "nyhetsbrev", VN     -> "Beställ Västra Nylands nyhetsbrev!"
+    "tipsa-oss", _       -> "Tipsa oss"
+    _, _                 -> Paper.paperName mosaicoPaper
 
 pickRandomElement :: forall a. Array a -> Effect (Maybe a)
 pickRandomElement [] = pure Nothing
