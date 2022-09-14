@@ -282,7 +282,7 @@ render imageComponent boxComponent props =
 
     renderMostReadArticles articles =
       DOM.div
-        { className: "mosaico-article__mostread--header"
+        { className: "mt-20 mr-0 mb-8 ml-4 text-lg font-bold uppercase md:mx-0 bold font-roboto text-brand"
         , children: [ DOM.h2_ [DOM.text "ANDRA LÄSER" ]]
         } <>
       (Frontpage.render $ Frontpage.List

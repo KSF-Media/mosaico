@@ -25,6 +25,7 @@ import Mosaico.BreakingNews as BreakingNews
 import Mosaico.FallbackImage (fallbackImage)
 import Mosaico.Frontpage.Models (Hook, toHookRep)
 import Mosaico.Paper (mosaicoPaper)
+import Mosaico.Timestamp (timestamp)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.Events (EventHandler)
@@ -47,6 +48,9 @@ type PrerenderedFrontpageProps =
   , onClick :: EventHandler
   }
 
+premiumBadge :: JSX
+premiumBadge = DOM.div { className: "premium-badge" , children: [ DOM.text "premium" ] }
+
 render :: Frontpage -> JSX
 render (List props) =
     DOM.div
@@ -63,7 +67,7 @@ render (List props) =
           else url <> "&function=hardcrop&width=200&height=200&q=90"
         tagLink a = foldMap (\tag ->
                                 DOM.a
-                                  { className: "relative z-20 mb-1 mosaico-article__tag"
+                                  { className: "relative z-20 mb-1 h-4 mosaico-article__tag"
                                   , onClick: props.onTagClick tag
                                   , href: "/tagg/" <> tagToURIComponent tag
                                   , children: [ DOM.text $ un Tag tag ]
@@ -71,20 +75,19 @@ render (List props) =
                             ) $ head a.tags
 
         articleTitle a = [ DOM.h3
-                             { className: "text-2xl leading-tight text-gray-900 font-duplexserif"
+                             { className: "text-xl leading-tight text-gray-900 font-duplexserif"
                              , children: [ DOM.text $ fromMaybe a.title a.listTitle ]
                              }
-                         , DOM.span
-                             { className: "block mb-1 font-roboto"
-                             , children: [ DOM.text $ foldMap (formatArticleTime <<< unwrap) a.publishingTime ]
-                             }
-                         , guard a.premium $
-                           DOM.div
-                             { className: "mosaico-article__meta"
+                         , DOM.div
+                             { className: "mt-[2px]"
                              , children:
-                                 [ DOM.div
-                                     { className: "premium-badge"
-                                     , children: [ DOM.text "premium" ]
+                                 [ foldMap (\publishingTime ->
+                                       timestamp [ DOM.span_ [ DOM.text $ formatArticleTime $ unwrap publishingTime ] ]
+                                   ) $ a.publishingTime
+                                 , guard a.premium $
+                                   DOM.div
+                                     { className: "mosaico-article__meta"
+                                     , children: [ premiumBadge ]
                                      }
                                  ]
                              }
@@ -97,7 +100,7 @@ render (List props) =
           in  DOM.img
                 { src
                 , alt
-                , className: "w-20 h-full md:w-28"
+                , className: "object-cover mt-6 w-20 h-20 md:w-28 md:h-28"
                 }
 
         renderListArticle :: ArticleStub -> JSX

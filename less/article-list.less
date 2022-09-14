@@ -41,21 +41,6 @@
     transform-origin: left;
   }
 
-  &--header {
-    font: bold 1.125rem "Roboto", sans-serif;
-    text-transform: uppercase;
-    margin: 0 10px;
-    #HBL & {
-      color: @hbl-orange;
-    }
-    #VN & {
-      color: @vn-red;
-    }
-    #ON & {
-      color: @on-blue;
-    }
-  }
-
   &__mostread {
     @counter-size: 30px;
     counter-reset: listcounter;
@@ -102,22 +87,6 @@
             }
           }
         }
-      }
-    }
-  }
-
-  &__latest {
-    border: solid 1px @hairline-color;
-    padding: 10px;
-
-    li {
-      margin: 0 10px;
-      padding: 10px 0;
-      border-bottom: dotted 1px @hairline-color;
-
-      a {
-        cursor: pointer;
-        text-decoration: none;
       }
     }
   }
