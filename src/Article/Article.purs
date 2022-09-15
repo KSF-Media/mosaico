@@ -189,20 +189,23 @@ render imageComponent boxComponent props =
     renderMetabyline :: Article -> JSX
     renderMetabyline article =
       DOM.div
-        { className: "mosaico-article__metabyline"
+        { className: "[grid-area:articlemetabyline] border-solid border-y mb-6 border-gray-100 text-gray-500 font-roboto md:mr-8"
         , children:
             [ DOM.div
-                { className: "mosaico-article__authors-and-timestamps"
+                { className: "py-2 md:py-3"
                 , children:
                     map
                         (\author -> DOM.div
-                          { className: "mosaico-article__author"
+                          { className: "mb-1 text-sm font-medium text-gray-900"
                           , children: [ guard (article.articleType == Opinion) $
                                         renderOpinionType article.articleTypeDetails
-                                      , DOM.span_ [ DOM.text author.byline ]
+                                      , DOM.span
+                                          { className: "inline-block mr-2"
+                                          , children: [ DOM.text author.byline ]
+                                          }
                                       , foldMap
                                         (\authorEmail -> DOM.span
-                                                        { className: "mosaico-article__author-email"
+                                                        { className: "inline-block italic font-light text-gray-500"
                                                         , children: [ DOM.text authorEmail ]
                                                         }
                                         )
@@ -212,7 +215,7 @@ render imageComponent boxComponent props =
                         article.authors
                     <> [foldMap
                         (\publishingTime -> DOM.div
-                          { className: "mosaico-article__timestamps"
+                          { className: "mt-2 text-xs"
                           , children:
                               [ DOM.span_ [ DOM.text publishingTime ]
                               , foldMap
@@ -231,7 +234,7 @@ render imageComponent boxComponent props =
 
     renderOpinionType detail =
       foldMap (\opiniontype -> DOM.span
-                              { className: "mosaico-article__opinion-type"
+                              { className: "inline-block mr-2 text-base font-bold text-gray-900 uppercase font-duplexserif"
                               , children: [ DOM.text opiniontype ]
                               }) $ _.title <$> detail
 
