@@ -176,6 +176,10 @@
     "destination": "https://www.vastranyland.fi/sida/nyhetsbrev"
   },
   {
+    "route": "rattelser",
+    "destination": "r%C3%A4ttelser"
+  },
+  {
     "route": "prenumerera",
     "destination": "https://prenumerera.ksfmedia.fi"
   }
