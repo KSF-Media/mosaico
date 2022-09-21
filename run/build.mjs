@@ -137,22 +137,38 @@ export async function runBuild() {
 
     if (minify) {
       console.log("Transpiling results with Babel");
+
+      const babelOpts = {
+        presets: [
+          [
+            "@babel/preset-env",
+            {
+              modules: false,
+              useBuiltIns: "usage",
+              corejs: "3.25.2",
+            },
+          ],
+          "@babel/preset-react",
+        ],
+      };
+
+
       await Promise.all(
         [...outfiles, ...staticFiles].map((file) =>
           file.endsWith(".js")
             ? babel
-                .transformFileAsync(file, {
-                  presets: [
-                    [
-                      "@babel/preset-env",
-                      {
-                        modules: false,
-                      },
-                    ],
-                    "@babel/preset-react",
-                  ],
+                // Add all required polyfills
+                .transformFileAsync(file, babelOpts)
+                // Transpile the imports
+                .then(async ({ code }) => {
+                  await writeFile(file, code);
+                  const { entryPoints, entryNames, outdir, ...rest } = buildOpts;
+                  const postBuildTransform = { ...rest, entryPoints: [file], outfile: file, allowOverwrite: true };
+                  return esbuild.build(postBuildTransform);
                 })
-                .then(({ code }) => writeFile(file, code))
+                // Transpile all modern JS features possibly imported from the polyfills.
+                // This _should_ be a no-op, but let's be sure.
+                .then(() => babel.transformFileAsync(file, babelOpts))
             : Promise.resolve(undefined)
         )
       );
