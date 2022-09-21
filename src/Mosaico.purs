@@ -159,7 +159,8 @@ mosaicoComponent
   -> Render Unit (UseEffect (Tuple Routes.MosaicoPage (Maybe Cusno)) (UseEffect Unit (UseState State Unit))) JSX
 mosaicoComponent initialValues props = React.do
   let setTitle t = Web.setTitle t =<< Web.document =<< Web.window
-      initialCatMap = categoriesMap $ correctionsCategory `cons` props.categoryStructure
+      initialCatMap = if null props.categoryStructure then Map.empty
+                      else categoriesMap $ correctionsCategory `cons` props.categoryStructure
       initialPath = getPathFromLocationState initialValues.locationState
   state /\ setState <- useState initialValues.state
                          { article = Right <$> props.article
@@ -229,7 +230,7 @@ mosaicoComponent initialValues props = React.do
       cats <- if null props.categoryStructure
               then Lettera.getCategoryStructure mosaicoPaper
               else pure props.categoryStructure
-      let catMap = categoriesMap cats
+      let catMap = categoriesMap $ correctionsCategory `cons` cats
       liftEffect do
         setState _ { categoryStructure = cats
                    , catMap = catMap
