@@ -18,17 +18,16 @@ type Props =
 
 render :: Props -> JSX
 render props =
-  let block =  "mosaico-asidelist"
-  in DOM.div
-       { className: joinWith " " [block, block <> "__mostread"]
-       , children:
-           [ DOM.h2
-               { className: block <> "--header"
-               , children: [ DOM.text "Andra läser" ]
-               }
-           , DOM.ul_ $ map renderMostreadArticle props.mostReadArticles
-           ]
-       }
+  DOM.div
+    { className: "mosaico-asidelist mosaico-asidelist__mostread"
+    , children:
+        [ DOM.h2
+            { className: "text-lg font-bold uppercase font-roboto text-brand mosaico-asidelist--header"
+            , children: [ DOM.text "Andra läser" ]
+            }
+        , DOM.ul_ $ map renderMostreadArticle props.mostReadArticles
+        ]
+    }
   where
     renderMostreadArticle :: ArticleStub -> JSX
     renderMostreadArticle a =
