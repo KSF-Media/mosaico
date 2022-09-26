@@ -58,6 +58,7 @@ import Mosaico.Header as Header
 import Mosaico.Header.Menu as Menu
 import Mosaico.LatestList as LatestList
 import Mosaico.LoginModal as LoginModal
+import Mosaico.MainContent (jumpToMainContent, mainContent)
 import Mosaico.MostReadList as MostReadList
 import Mosaico.Paper (mosaicoPaper, _mosaicoPaper)
 import Mosaico.Profile as Profile
@@ -558,7 +559,7 @@ render props setState state components router onPaywallEvent =
                  | null tagFeed -> mosaicoDefaultLayout Error.notFoundWithAside
                _                -> frontpageNoHeader Nothing maybeFeed
        Routes.MenuPage ->
-         flip (mosaicoLayout "menu-open") false
+         flip (mosaicoLayout true) false
          $ Menu.render
              { changeRoute: Routes.changeRoute router
              , categoryStructure: state.categoryStructure
@@ -626,7 +627,7 @@ render props setState state components router onPaywallEvent =
 
     prerenderedFrontpage :: Maybe JSX -> Array ArticleStub -> Maybe String -> JSX
     prerenderedFrontpage maybeHeader articles content =
-      mosaicoLayout "" inner false
+      mosaicoLayout false inner false
       where
         uuidRegex = hush $ Regex.regex "[^/]+$" mempty
         inner =
@@ -659,54 +660,57 @@ render props setState state components router onPaywallEvent =
             ]
 
     mosaicoDefaultLayout :: JSX -> JSX
-    mosaicoDefaultLayout content = mosaicoLayout "" content true
+    mosaicoDefaultLayout content = mosaicoLayout false content true
 
     mosaicoLayoutNoAside :: JSX -> JSX
-    mosaicoLayoutNoAside content = mosaicoLayout "" content false
+    mosaicoLayoutNoAside content = mosaicoLayout false content false
 
-    mosaicoLayout :: String -> JSX -> Boolean -> JSX
-    mosaicoLayout extraClasses content showAside =
-      let header =
-            [ Header.topLine
-            , components.headerComponent
-                 { changeRoute: Routes.changeRoute router
-                 , categoryStructure: state.categoryStructure
-                 , catMap: state.catMap
-                 , onCategoryClick
-                 , user: state.user
-                 , onLogin
-                 , onProfile
-                 , onStaticPageClick
-                 , onMenuClick:
-                     case state.route of
-                       Routes.MenuPage
-                     -- Confused state, got to go to somewhere but
-                     -- not to menu again
-                         | (fst <$> state.prevRoute) == Just Routes.MenuPage
-                         -> Routes.changeRoute router "/"
-                     -- Using changeRoute would overwrite the stored Y position
-                         | Just _ <- state.prevRoute
-                         -> Web.window >>= Web.history >>= Web.back
-                     -- Don't know what else to do so might as well
-                         | otherwise
-                         -> Routes.changeRoute router "/"
-                       _ -> Routes.changeRoute router "/meny"
-                 , showHeading: case state.route of
-                      Routes.ArticlePage _ -> false
-                      Routes.StaticPage _ -> false
-                      _ -> true
-                 }
-            ]
-      in DOM.div_
-        [ guard showAds Mosaico.ad { contentUnit: "mosaico-ad__top-parade", inBody: false }
-        , DOM.div
-            { className: "mosaico grid " <> extraClasses
-            , id: Paper.toString mosaicoPaper
-            , children:
-                guard (not props.headless) header
-                <>
-                     [ guard showAds Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false }
-                     , content
+    mosaicoLayout :: Boolean -> JSX -> Boolean -> JSX
+    mosaicoLayout menuOpen content showAside =
+      let header = components.headerComponent
+              { changeRoute: Routes.changeRoute router
+              , categoryStructure: state.categoryStructure
+              , catMap: state.catMap
+              , onCategoryClick
+              , user: state.user
+              , onLogin
+              , onProfile
+              , onStaticPageClick
+              , onMenuClick:
+                  case state.route of
+                    Routes.MenuPage
+                  -- Confused state, got to go to somewhere but
+                  -- not to menu again
+                      | (fst <$> state.prevRoute) == Just Routes.MenuPage
+                      -> Routes.changeRoute router "/"
+                  -- Using changeRoute would overwrite the stored Y position
+                      | Just _ <- state.prevRoute
+                      -> Web.window >>= Web.history >>= Web.back
+                  -- Don't know what else to do so might as well
+                      | otherwise
+                      -> Routes.changeRoute router "/"
+                    _ -> Routes.changeRoute router "/meny"
+              , showHeading: case state.route of
+                  Routes.ArticlePage _ -> false
+                  Routes.StaticPage _ -> false
+                  _ -> true
+              }
+          mainContentClassName =
+            if menuOpen
+            then "md:[grid-column:1/span_2] lg:[grid-column:2/span_3]"
+            else mempty
+      in DOM.div
+           { id: Paper.toString mosaicoPaper
+           , children:
+             [ jumpToMainContent
+             , guard showAds Mosaico.ad { contentUnit: "mosaico-ad__top-parade", inBody: false }
+             , DOM.div
+                 { className: "grid mosaico" <> (if menuOpen then " menu-open" else mempty)
+                 , children:
+                     [ guard (not props.headless) Header.topLine
+                     , guard (not props.headless) header
+                     , guard showAds Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false }
+                     , mainContent mainContentClassName [content]
                      , guard (not props.headless) (footer mosaicoPaper onCategoryClick onStaticPageClick) --remember to hide footer if headless
                      , guard showAside $ DOM.aside
                          { className: "mosaico--aside"
@@ -729,8 +733,9 @@ render props setState state components router onPaywallEvent =
                              ]
                          }
                      ]
-            }
-        ]
+                 }
+             ]
+           }
 
     showAds = not props.globalDisableAds && case state.route of
       Routes.Frontpage -> true

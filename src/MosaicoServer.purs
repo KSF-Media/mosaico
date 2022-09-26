@@ -8,6 +8,7 @@ import KSF.Paper as Paper
 import Lettera.Models (ArticleStub, Category, Tag, categoriesMap)
 import Mosaico.Footer (footer)
 import Mosaico.Header as Header
+import Mosaico.MainContent (mainContent)
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.MostReadList as MostReadList
 import Mosaico.LatestList as LatestList
@@ -44,12 +45,12 @@ app = render
 render :: Props -> JSX
 render props = DOM.div_
     [ DOM.div
-        { className: "mosaico grid " <> menuOpen
+        { className: "mosaico grid" <> menuOpen
         , id: Paper.toString mosaicoPaper
         , children:
             guard (not props.headless) header
             <>
-            [ props.mainContent.content ] <>
+            [ mainContent extraClasses [props.mainContent.content] ] <>
             guard (not props.headless)
               [ footer mosaicoPaper mempty mempty
               , case props.mainContent.type of
@@ -84,5 +85,8 @@ render props = DOM.div_
           ]
         }
     menuOpen = case props.mainContent.type of
-      MenuContent -> "menu-open"
+      MenuContent -> " menu-open"
+      _           -> mempty
+    extraClasses = case props.mainContent.type of
+      MenuContent -> "md:[grid-column:1/span_2] lg:[grid-column:2/span_3]"
       _           -> mempty
