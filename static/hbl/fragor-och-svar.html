@@ -1,60 +1,65 @@
 <div class="static-page__faq">
   <div class="faq__background-img"></div>
   <div class="faq__info">
-    <h1 class="static-page__headline faq__headline">Frågor och svar</h1>
-    <div class="static-page__links-container faq__qa-section-links-container">
-      <ul class="static-page__links-list faq__qa-section-links-list">
-        <li class="static-page__links-list-item faq__qa-section-list-item">
-          <a class="static-page__list-link faq__qa-section-link" href="#apparna">Apparna</a>
+    <h1 class="static-page__headline">Frågor och svar</h1>
+    <div class="static-page__links-container">
+      <ul class="static-page__links-list">
+        <li class="static-page__links-list-item">
+          <a class="static-page__list-link" href="#apparna">Apparna</a>
         </li>
-        <li class="static-page__links-list-item faq__qa-section-list-item">
-          <a class="static-page__list-link faq__qa-section-link" href="#premium">Premiuminnehållet</a>
+        <li class="static-page__links-list-item">
+          <a class="static-page__list-link" href="#premium">Premiuminnehållet</a>
         </li>
-        <li class="static-page__links-list-item faq__qa-section-list-item">
-          <a class="static-page__list-link faq__qa-section-link" href="#sajten">Sajten</a>
+        <li class="static-page__links-list-item">
+          <a class="static-page__list-link" href="#sajten">Sajten</a>
         </li>
-        <li class="static-page__links-list-item faq__qa-section-list-item">
-          <a class="static-page__list-link faq__qa-section-link" href="#prenumerationer">Prenumerationer</a>
+        <li class="static-page__links-list-item">
+          <a class="static-page__list-link" href="#prenumerationer">Prenumerationer</a>
         </li>
-        <li class="static-page__links-list-item faq__qa-section-list-item">
-          <a class="static-page__list-link faq__qa-section-link" href="#foretagskunder">Företagskunder</a>
+        <li class="static-page__links-list-item">
+          <a class="static-page__list-link" href="#foretagskunder">Företagskunder</a>
         </li>
-        <li class="static-page__links-list-item faq__qa-section-list-item">
-          <a class="static-page__list-link faq__qa-section-link" href="#studerande">Studerande</a>
+        <li class="static-page__links-list-item">
+          <a class="static-page__list-link" href="#studerande">Studerande</a>
         </li>
-        <li class="static-page__links-list-item faq__qa-section-list-item">
-          <a class="static-page__list-link faq__qa-section-link" href="#kundservice">Kundservice</a>
+        <li class="static-page__links-list-item">
+          <a class="static-page__list-link" href="#kundservice">Kundservice</a>
         </li>
       </ul>
     </div>
   </div>
   <div class="faq__qa-container">
-    <div class="faq__qa-section faq-top">
+    <div class="faq__qa-section">
       <h2 class="static-page__sub-headline faq__section-headline">Vanliga frågor</h2>
-      <div class="faq__qa qa__top">
-        <button class="faq__question">
+      <div class="faq__qa">
+        <input type="checkbox" id="sajten__vad-ar-premium" />
+        <label class="faq__question" for="sajten__vad-ar-premium">
           Vad är Premium? Varför måste jag ha en prenumeration att läsa en del av artiklarna?
-        </button>
-        <p class="faq__answer faq__answer--open">
+        </label>
+        <p class="faq__answer">
           En del av vårt material är endast tillgängligt för våra prenumeranter (som gör det möjligt för oss att
           existera). Vi markerar sådana artiklar med markering PREMIUM. Du kan teckna en prenumeration för att få
           tillgång till Premiummaterialet. Gör din beställning på
           <a class="static-page__link" href="https://prenumerera.ksfmedia.fi/">prenumerera.ksfmedia.fi</a>.
         </p>
       </div>
-      <div class="faq__qa qa__top">
-        <button class="faq__question">
-          Jag är prenumerant, men kommer ändå inte åt Premiuminnehållet. Vad ska jag göra?
-        </button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Jag är prenumerant, men kommer ändå inte åt Premiuminnehållet. Vad ska jag göra?" />
+        <label
+          class="faq__question"
+          for="Jag är prenumerant, men kommer ändå inte åt Premiuminnehållet. Vad ska jag göra?"
+          >Jag är prenumerant, men kommer ändå inte åt Premiuminnehållet. Vad ska jag göra?</label
+        >
+        <p class="faq__answer">
           Logga in med den e-postadress som du har kopplad till prenumerationen och ditt lösenord. Om du är osäker
           vilken e-postadress som är kopplad till din prenumeration vänligen kontakta Kundservice på pren@ksfmedia.fi
           eller tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00. På onsdagar stänger kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__top">
-        <button class="faq__question">Ingen tidning i dag?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Ingen tidning i dag?" />
+        <label class="faq__question" for="Ingen tidning i dag?">Ingen tidning i dag?</label>
+        <p class="faq__answer">
           Nu har det gått på tok! Vi beklagar att du har blivit utan tidning. Enklast reklamerar du en utebliven tidning
           på <a class="static-page__link" href="https://konto.ksfmedia.fi">Mitt konto</a>. Även om din papperstidning
           saknas, kan du som prenumerant läsa e-tidningen. Du hittar
@@ -62,7 +67,7 @@
           <a class="static-page__link" href="https://www.vastranyland.fi/epaper">Västra Nyland som e-tidning här</a> och
           <a class="static-page__link" href="https://www.ostnyland.fi/epaper">Östnyland som e-tidning här</a>.
         </p>
-        <p class="faq__answer faq__answer--open">
+        <p class="faq__answer">
           Kontaktuppgifterna till distributionskontorena finns här:
           <a class="static-page__link" href="https://www.hbl.fi/ingen-tidning">HBL</a>,
           <a class="static-page__link" href="https://www.vastranyland.fi/ingen-tidning/">Västra Nyland</a> och
@@ -70,22 +75,29 @@
           uppgifterna i varje nummer på nästsista sidan.
         </p>
       </div>
-      <div class="faq__qa qa__top">
-        <button class="faq__question">Hur kopplar jag ihop mitt kundnummer med mitt konto?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur kopplar jag ihop mitt kundnummer med mitt konto?" />
+        <label class="faq__question" for="Hur kopplar jag ihop mitt kundnummer med mitt konto?"
+          >Hur kopplar jag ihop mitt kundnummer med mitt konto?</label
+        >
+        <p class="faq__answer">
           Ta kontakt med Kundservice på pren@ksfmedia.fi eller tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00.
           På onsdagar stänger kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__top">
-        <button class="faq__question">Vad är minimitid för tillfällig adressförändring?</button>
-        <p class="faq__answer faq__answer--open">
-          En tillfällig adressändring kan endast göras för sju dagar eller längre tid.
-        </p>
+      <div class="faq__qa">
+        <input type="checkbox" id="Vad är minimitid för tillfällig adressförändring?" />
+        <label class="faq__question" for="Vad är minimitid för tillfällig adressförändring?"
+          >Vad är minimitid för tillfällig adressförändring?</label
+        >
+        <p class="faq__answer">En tillfällig adressändring kan endast göras för sju dagar eller längre tid.</p>
       </div>
-      <div class="faq__qa qa__top">
-        <button class="faq__question">Jag prenumererar på papperstidningen, kan jag läsa e-tidningen utan app?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Jag prenumererar på papperstidningen, kan jag läsa e-tidningen utan app?" />
+        <label class="faq__question" for="Jag prenumererar på papperstidningen, kan jag läsa e-tidningen utan app?"
+          >Jag prenumererar på papperstidningen, kan jag läsa e-tidningen utan app?</label
+        >
+        <p class="faq__answer">
           Ja, som prenumerant kan du läsa e-tidningen även utan app. Du hittar
           <a class="static-page__link" href="https://www.hbl.fi/epaper">HBL som e-tidning här</a>,
           <a class="static-page__link" href="https://www.vastranyland.fi/epaper">Västra Nyland som e-tidning här</a> och
@@ -93,13 +105,14 @@
         </p>
       </div>
     </div>
-    <div class="faq__qa-section faq-apps" id="apparna">
+    <div class="faq__qa-section" id="apparna">
       <h2 class="static-page__sub-headline faq__section-headline">
         Apparna HBL 365, HBL Nyheter, VN Nyheter och ÖN Nyheter
       </h2>
       <div class="faq__qa">
-        <button class="faq__question">Hur installerar jag en av apparna?</button>
-        <p class="faq__answer faq__answer--open">
+        <input type="checkbox" id="Hur installerar jag en av apparna?" />
+        <label class="faq__question" for="Hur installerar jag en av apparna?">Hur installerar jag en av apparna?</label>
+        <p class="faq__answer">
           <span class="faq__answer-subheadline">iOS-enheter:</span> Öppna App Store-applikationen. Sök efter appen "HBL
           365" och/eller appen "HBL Nyheter/VN Nyheter/ÖN Nyheter" och installera. Du hittar nu appen på din hemskärm.
           <span class="faq__answer-subheadline">Så tar du HBL 365 i bruk med iOS:</span>
@@ -132,16 +145,20 @@
         </p>
       </div>
       <div class="faq__qa">
-        <button class="faq__question">Kostar det att ladda ner apparna?</button>
-        <p class="faq__answer faq__answer--open">
+        <input type="checkbox" id="Kostar det att ladda ner apparna?" />
+        <label class="faq__question" for="Kostar det att ladda ner apparna?">Kostar det att ladda ner apparna?</label>
+        <p class="faq__answer">
           Nej, apparna är gratis att ladda ned. I apparna HBL Nyheter, VN Nyheter och ÖN Nyheter är en del av innhållet
           öppet för alla. Premiumartiklar kräver en premiumprenumeration. För att läsa e-tidningarna och nyheterna i
           appen HBL 365, måste du ha en HBL 365-prenumeration eller en prenumeration på papperstidningen.
         </p>
       </div>
       <div class="faq__qa">
-        <button class="faq__question">Vad är det för skillnad på apparna HBL 365 och HBL Nyheter?</button>
-        <p class="faq__answer faq__answer--open">
+        <input type="checkbox" id="Vad är det för skillnad på apparna HBL 365 och HBL Nyheter?" />
+        <label class="faq__question" for="Vad är det för skillnad på apparna HBL 365 och HBL Nyheter?"
+          >Vad är det för skillnad på apparna HBL 365 och HBL Nyheter?</label
+        >
+        <p class="faq__answer">
           Appen HBL 365 är designad speciellt för e-tidningarna. I appen hittar man lätt de senaste numren av
           tidningarna Hufvudstadsbladet, Västra Nyland, Östnyland och HBLJunior. I appen finns också de senaste
           nyheterna från tidningarnas webbsidor. För att läsa alla e-tidningarna i appen HBL 365 måste du ha en HBL
@@ -159,8 +176,11 @@
         </p>
       </div>
       <div class="faq__qa">
-        <button class="faq__question">Måste jag ha en prenumeration för att använda apparna?</button>
-        <p class="faq__answer faq__answer--open">
+        <input type="checkbox" id="Måste jag ha en prenumeration för att använda apparna?" />
+        <label class="faq__question" for="Måste jag ha en prenumeration för att använda apparna?"
+          >Måste jag ha en prenumeration för att använda apparna?</label
+        >
+        <p class="faq__answer">
           För att läsa alla e-tidningarna i appen HBL 365 måste du ha en HBL 365-prenumeration eller en prenumeration på
           tidningen HBL. Om du till exempel har en prenumeration på tidningen Västra Nyland kan du endast läsa Västra
           Nyland som e-tidning i appen. I appen HBL Nyheter finns mycket innehåll som är gratis att läsa utan ett
@@ -170,9 +190,10 @@
           >
         </p>
       </div>
-      <div class="faq__qa qa__apps">
-        <button class="faq__question">Hur loggar jag in på apparna?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur loggar jag in på apparna?" />
+        <label class="faq__question" for="Hur loggar jag in på apparna?">Hur loggar jag in på apparna?</label>
+        <p class="faq__answer">
           På apparna loggar man in med samma användarnamn och lösenord som på HBL:s och KSF Medias andra webbtjänster
           (hbl.fi, vastranyland.fi, ostnyland.fi, konto.ksfmedia.fi och prenumerera.ksfmedia.fi). Om du inte kommer ihåg
           ditt lösenord kan du skapa ett nytt lösenord på
@@ -195,9 +216,12 @@
           </iframe>
         </p>
       </div>
-      <div class="faq__qa qa__apps">
-        <button class="faq__question">Kan apparna laddas på alla telefoner och plattor?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Kan apparna laddas på alla telefoner och plattor?" />
+        <label class="faq__question" for="Kan apparna laddas på alla telefoner och plattor?"
+          >Kan apparna laddas på alla telefoner och plattor?</label
+        >
+        <p class="faq__answer">
           Apparna finns att ladda ner för smarttelefoner och pekplattor för iOS och Android. HBL 365-appen kan laddas
           ner från
           <a class="static-page__link" href="https://apps.apple.com/fi/app/hbl-365/id436106377">App store</a> (iOS) och
@@ -213,9 +237,12 @@
           (Android).
         </p>
       </div>
-      <div class="faq__qa qa__apps">
-        <button class="faq__question">Hur förstorar jag texten i apparna?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur förstorar jag texten i apparna?" />
+        <label class="faq__question" for="Hur förstorar jag texten i apparna?"
+          >Hur förstorar jag texten i apparna?</label
+        >
+        <p class="faq__answer">
           <span class="faq__answer-subheadline">HBL 365:</span> I tidningsvyn kan du zooma genom att snabbt dubbelknacka
           på ett område eller svepa två finger från varandra. I textvyn finns en A-symbol där man kan förstora eller
           förminska texten. <span class="faq__answer-subheadline">HBL Nyheter/VN Nyheter/ÖN Nyheter:</span> I appens
@@ -223,17 +250,23 @@
           och undersidorna blir oförändrade.
         </p>
       </div>
-      <div class="faq__qa qa__apps">
-        <button class="faq__question">Kan jag köpa lösnummer i appen HBL 365?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Kan jag köpa lösnummer i appen HBL 365?" />
+        <label class="faq__question" for="Kan jag köpa lösnummer i appen HBL 365?"
+          >Kan jag köpa lösnummer i appen HBL 365?</label
+        >
+        <p class="faq__answer">
           Ja, i appen HBL 365 kan man köpa lösnummer som ett köp i appen. Köpet går via enhetens appbutik (Apple App
           Store eller Google Play-butik). Observera att att du måste vara inloggad på appbutiken med ett konto som har
           rätt att köpa.
         </p>
       </div>
-      <div class="faq__qa qa__apps">
-        <button class="faq__question">Hur raderar jag en e-tidning i appen HBL 365?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur raderar jag en e-tidning i appen HBL 365?" />
+        <label class="faq__question" for="Hur raderar jag en e-tidning i appen HBL 365?"
+          >Hur raderar jag en e-tidning i appen HBL 365?</label
+        >
+        <p class="faq__answer">
           <span class="faq__answer-subheadline">iOS:</span> Tryck på "Hämtade" i appens nedre kant. I vyn som kommer
           fram finns alla tidningar som laddats ned till enheten. Tryck på "Redigera" uppe till vänster. Du kan välja
           enskilda tidningar eller alla tidningar. För att ta bort de tidningar du valt, tryck på skräpkorgen uppe till
@@ -248,9 +281,12 @@
           radera tidningar.
         </p>
       </div>
-      <div class="faq__qa qa__apps">
-        <button class="faq__question">Appen låser sig eller kraschar. Vad ska jag göra?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Appen låser sig eller kraschar. Vad ska jag göra?" />
+        <label class="faq__question" for="Appen låser sig eller kraschar. Vad ska jag göra?"
+          >Appen låser sig eller kraschar. Vad ska jag göra?</label
+        >
+        <p class="faq__answer">
           Kontrollera först att du har den senaste versionen av appen. Lättast gör du det genom att söka på appen i din
           appbutik. Om det på appens sida i butiken finns en Uppdatera-knapp, har du inte den senaste versionen. Tryck
           då på Uppdatera-knappen. Pröva också att helt stänga appen och öppna den pånytt. Du kan också pröva att logga
@@ -268,9 +304,12 @@
           informationen i din enhets inställningar.
         </p>
       </div>
-      <div class="faq__qa qa__apps">
-        <button class="faq__question">Hur kan jag beställa eller avbeställa pushnotiser i appen?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur kan jag beställa eller avbeställa pushnotiser i appen?" />
+        <label class="faq__question" for="Hur kan jag beställa eller avbeställa pushnotiser i appen?"
+          >Hur kan jag beställa eller avbeställa pushnotiser i appen?</label
+        >
+        <p class="faq__answer">
           <span class="faq__answer-subheadline">HBL Nyheter:</span> I appens inställningar kan du ställa in om du vill
           ha "Nyhetsmeddelanden" (pushnotiser)till din app.
           <span class="faq__answer-subheadline">HBL 365 / Android:</span>
@@ -279,9 +318,12 @@
           Inställningarna hittar du i telefonens egna inställningar. Där kan du välja om du vill ha notiser.
         </p>
       </div>
-      <div class="faq__qa qa__apps">
-        <button class="faq__question">Jag såg en intressant artikel i appen förra veckan. Hur hittar jag den?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Jag såg en intressant artikel i appen förra veckan. Hur hittar jag den?" />
+        <label class="faq__question" for="Jag såg en intressant artikel i appen förra veckan. Hur hittar jag den?"
+          >Jag såg en intressant artikel i appen förra veckan. Hur hittar jag den?</label
+        >
+        <p class="faq__answer">
           <span class="faq__answer-subheadline">HBL Nyheter:</span> I appens nedre kant finns alternativet "Sök" som
           öppnar en sökfunktion.
           <br />
@@ -293,98 +335,128 @@
         </p>
       </div>
     </div>
-    <div class="faq__qa-section faq-premium" id="premium">
+    <div class="faq__qa-section" id="premium">
       <h2 class="static-page__sub-headline faq__section-headline">Premiuminnehållet</h2>
-      <div class="faq__qa qa__premium">
-        <button class="faq__question">Vad ska jag göra för att kunna läsa Premiummaterialet?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Vad ska jag göra för att kunna läsa Premiummaterialet?" />
+        <label class="faq__question" for="Vad ska jag göra för att kunna läsa Premiummaterialet?"
+          >Vad ska jag göra för att kunna läsa Premiummaterialet?</label
+        >
+        <p class="faq__answer">
           För att läsa Premiummaterialet behöver du vara prenumerant. Du kan teckna en prenumeration för att få tillgång
           till Premiummaterialet. Gör din beställning på
           <a class="static-page__link" href="https://prenumerera.ksfmedia.fi/">prenumerera.ksfmedia.fi</a>.
         </p>
       </div>
-      <div class="faq__qa qa__premium">
-        <button class="faq__question">
-          Jag är redan prenumerant, betyder det att jag har tillgång till Premiummaterialet?
-        </button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input
+          type="checkbox"
+          id="Jag är redan prenumerant, betyder det att jag har tillgång till Premiummaterialet?"
+        />
+        <label
+          class="faq__question"
+          for="Jag är redan prenumerant, betyder det att jag har tillgång till Premiummaterialet?"
+          >Jag är redan prenumerant, betyder det att jag har tillgång till Premiummaterialet?</label
+        >
+        <p class="faq__answer">
           Ja, premiuminnehållet är en del av alla prenumerationer. Du behöver vara inloggad för att kunna ta del av
           Premiuminnehållet. Logga in med den e-postadress som du har kopplad till din prenumerationen och ditt
           lösenord.
         </p>
       </div>
-      <div class="faq__qa qa__premium">
-        <button class="faq__question">
-          Jag är prenumerant, men kommer ändå inte åt Premiuminnehållet. Vad ska jag göra?
-        </button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Jag är prenumerant, men kommer ändå inte åt Premiuminnehållet. Vad ska jag göra?" />
+        <label
+          class="faq__question"
+          for="Jag är prenumerant, men kommer ändå inte åt Premiuminnehållet. Vad ska jag göra?"
+          >Jag är prenumerant, men kommer ändå inte åt Premiuminnehållet. Vad ska jag göra?</label
+        >
+        <p class="faq__answer">
           Logga in med den e-postadress som du har kopplad till prenumerationen och ditt lösenord. Om du är osäker
           vilken e-postadress som är kopplad till din prenumeration vänligen kontakta vår kundservice på
           pren@ksfmedia.fi eller tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00. På onsdagar stänger
           kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__premium">
-        <button class="faq__question">Hur betalar jag min Premium-beställning?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur betalar jag min Premium-beställning?" />
+        <label class="faq__question" for="Hur betalar jag min Premium-beställning?"
+          >Hur betalar jag min Premium-beställning?</label
+        >
+        <p class="faq__answer">
           Du kan betala din prenumeration med kreditkort, nätbank eller räkning. Du kan välja mellan 1, 3, 6 eller 12
           månaders faktureringsintervall. Faktureringsintervallen med kreditkort är alltid 1 månad. Beställningen
           förnyas automatiskt om den inte annulleras i tid. De olika prenumerationsalternativena hittar du
           <a class="static-page__link" href="https://prenumerera.ksfmedia.fi/">här på prenumerera.ksfmedia.fi</a>.
         </p>
       </div>
-      <div class="faq__qa qa__premium">
-        <button class="faq__question">Hur gör jag för att säga upp min Premiumprenumeration?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur gör jag för att säga upp min Premiumprenumeration?" />
+        <label class="faq__question" for="Hur gör jag för att säga upp min Premiumprenumeration?"
+          >Hur gör jag för att säga upp min Premiumprenumeration?</label
+        >
+        <p class="faq__answer">
           För att avsluta din prenumeration kan du logga in på
           <a class="static-page__link" href="https://konto.ksfmedia.fi/">Mitt Konto</a>, där du hittar ett formulär att
           fylla i.
         </p>
       </div>
-      <div class="faq__qa qa__premium">
-        <button class="faq__question">Jag har glömt mitt lösenord och kan inte logga in. Vad ska jag göra?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Jag har glömt mitt lösenord och kan inte logga in. Vad ska jag göra?" />
+        <label class="faq__question" for="Jag har glömt mitt lösenord och kan inte logga in. Vad ska jag göra?"
+          >Jag har glömt mitt lösenord och kan inte logga in. Vad ska jag göra?</label
+        >
+        <p class="faq__answer">
           Du kan ändra ditt lösenord <a class="static-page__link" href="https://konto.ksfmedia.fi/#lösenord">här</a>.
         </p>
       </div>
-      <div class="faq__qa qa__premium">
-        <button class="faq__question">Vad är skillnaden på en Premium- och en HBL 365-prenumeration?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Vad är skillnaden på en Premium- och en HBL 365-prenumeration?" />
+        <label class="faq__question" for="Vad är skillnaden på en Premium- och en HBL 365-prenumeration?"
+          >Vad är skillnaden på en Premium- och en HBL 365-prenumeration?</label
+        >
+        <p class="faq__answer">
           Som Premium-prenumerant kan du läsa alla artiklar på sajten hbl.fi. Om du är HBL 365-prenumerant kan du läsa
           alla artiklar på hbl.fi och i HBL 365-appen. Som HBL 365-prenumerant har du dessutom tillgång till
           e-tidningarna på sajten och i appen.
         </p>
       </div>
     </div>
-    <div class="faq__qa-section faq-site" id="sajten">
+    <div class="faq__qa-section" id="sajten">
       <h2 class="static-page__sub-headline faq__section-headline">Sajten</h2>
-      <div class="faq__qa qa__site">
-        <button class="faq__question">Vilka uppgifter samlas in? Hur används mina uppgifter?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Vilka uppgifter samlas in? Hur används mina uppgifter?" />
+        <label class="faq__question" for="Vilka uppgifter samlas in? Hur används mina uppgifter?"
+          >Vilka uppgifter samlas in? Hur används mina uppgifter?</label
+        >
+        <p class="faq__answer">
           Vi samlar den sedvanliga informationen om trafiken på våra digitala tjänster, för att kunna mäta användningen
           av tjänsten och problemsöka när tekniska problem uppstår. Dessutom används informationen för att rikta
           innehåll och annonser till användaren. Vi överlåter inte personlig information till tredje parter. För att
           komma åt materialet på webbtjänsten behöver användaren till en början endast uppge namn och e-postadress.
         </p>
       </div>
-      <div class="faq__qa qa__site">
-        <button class="faq__question">Var hanterar jag Mitt konto?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Var hanterar jag Mitt konto?" />
+        <label class="faq__question" for="Var hanterar jag Mitt konto?">Var hanterar jag Mitt konto?</label>
+        <p class="faq__answer">
           Logga in på <a class="static-page__link" href="https://konto.ksfmedia.fi/">Mitt Konto</a>. Där kan du bl.a
           göra adressändringar och uppehåll, byta lösenord och e-postadress, reklamera utebliven tidning, uppdatera ditt
           kredit- eller bankkort och se dina fakturor.
         </p>
       </div>
-      <div class="faq__qa qa__site">
-        <button class="faq__question">Hur raderar jag mitt konto?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur raderar jag mitt konto?" />
+        <label class="faq__question" for="Hur raderar jag mitt konto?">Hur raderar jag mitt konto?</label>
+        <p class="faq__answer">
           Ta kontakt med kundservice på pren@ksfmedia.fi eller tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00.
           På onsdagar stänger kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__site">
-        <button class="faq__question">Hur läser jag e-tidningen?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur läser jag e-tidningen?" />
+        <label class="faq__question" for="Hur läser jag e-tidningen?">Hur läser jag e-tidningen?</label>
+        <p class="faq__answer">
           Du hittar <a class="static-page__link" href="https://www.hbl.fi/epaper">HBL som e-tidning här</a>,
           <a class="static-page__link" href="https://www.vastranyland.fi/epaper">Västra Nyland som e-tidning här</a> och
           <a class="static-page__link" href="https://www.ostnyland.fi/epaper">Östnyland som e-tidning här</a>. Logga in
@@ -392,9 +464,10 @@
           Du behöver en prenumeration för att läsa e-tidningen. E-tidningarna går också att läsa i appen HBL 365.
         </p>
       </div>
-      <div class="faq__qa qa__site">
-        <button class="faq__question">Hur printar jag ut korsordet?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur printar jag ut korsordet?" />
+        <label class="faq__question" for="Hur printar jag ut korsordet?">Hur printar jag ut korsordet?</label>
+        <p class="faq__answer">
           Logga in på sajten (uppe i högra hörnet) och klicka sedan på "E-tidningen" uppe i menybalken, öppna därefter
           den e-tidning som innehåller korsordet du vill printa ut. Bläddra till sidan med korsordet och tryck sedan på
           knappen med de tre vita linjerna. I menyn som öppnas upp finns det längst ner på sidan en knapp som säger
@@ -402,11 +475,14 @@
         </p>
       </div>
     </div>
-    <div class="faq__qa-section faq-subscriptions" id="prenumerationer">
+    <div class="faq__qa-section" id="prenumerationer">
       <h2 class="static-page__sub-headline faq__section-headline">Prenumerationer</h2>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Vad ingår i en prenumeration för den tryckta tidningen?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Vad ingår i en prenumeration för den tryckta tidningen?" />
+        <label class="faq__question" for="Vad ingår i en prenumeration för den tryckta tidningen?"
+          >Vad ingår i en prenumeration för den tryckta tidningen?</label
+        >
+        <p class="faq__answer">
           I en prenumeration för den tryckta tidningen ingår den tryckta tidningen, e-tidningarna för HBL, Västra
           Nyland, Östnyland och HBL Junior, låsta Premium artiklar på hbl.fi, vastranyland.fi och ostnyland.fi och
           dessutom nyhetsappen HBL 365. Du kan beställa
@@ -415,9 +491,12 @@
           stänger kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Kan jag köpa en prenumeration som gåva åt någon?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Kan jag köpa en prenumeration som gåva åt någon?" />
+        <label class="faq__question" for="Kan jag köpa en prenumeration som gåva åt någon?"
+          >Kan jag köpa en prenumeration som gåva åt någon?</label
+        >
+        <p class="faq__answer">
           Det går bra att ge en prenumeration som gåva, en tidning är en nyttig present. Om du vill ge tidningen som
           gåva, kontakta kundservice tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00. På onsdagar stänger
           kundservice kl. 15.00) eller pren@ksfmedia.fi. Tidningen skickas till mottagaren och fakturan till
@@ -427,24 +506,36 @@
           som gåva även om du själv inte är prenumerant på tidningen.
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Jag är prenumerant, kan jag läsa e-tidningen utan app?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Jag är prenumerant, kan jag läsa e-tidningen utan app?" />
+        <label class="faq__question" for="Jag är prenumerant, kan jag läsa e-tidningen utan app?"
+          >Jag är prenumerant, kan jag läsa e-tidningen utan app?</label
+        >
+        <p class="faq__answer">
           Ja, som prenumerant kan du läsa e-tidningen
           <a class="static-page__link" href="https://www.hbl.fi/epaper/">på hbl.fi här</a>,
           <a class="static-page__link" href="https://www.vastranyland.fi/epaper/">på vastranyland.fi här</a> och
           <a class="static-page__link" href="https://www.ostnyland.fi/epaper/">på ostnyland.fi här</a>.
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">
-          Ska jag ha två olika konton för att komma åt innehållet: ett för appen och ett för sajten?
-        </button>
-        <p class="faq__answer faq__answer--open">Nej, samma konto fungerar för både appen och sajten.</p>
+      <div class="faq__qa">
+        <input
+          type="checkbox"
+          id="Ska jag ha två olika konton för att komma åt innehållet: ett för appen och ett för sajten?"
+        />
+        <label
+          class="faq__question"
+          for="Ska jag ha två olika konton för att komma åt innehållet: ett för appen och ett för sajten?"
+          >Ska jag ha två olika konton för att komma åt innehållet: ett för appen och ett för sajten?</label
+        >
+        <p class="faq__answer">Nej, samma konto fungerar för både appen och sajten.</p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Kan man teckna en veckoslutsprenumeration på HBL?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Kan man teckna en veckoslutsprenumeration på HBL?" />
+        <label class="faq__question" for="Kan man teckna en veckoslutsprenumeration på HBL?"
+          >Kan man teckna en veckoslutsprenumeration på HBL?</label
+        >
+        <p class="faq__answer">
           Ja, det går bra. HBL Hufvudstadsbladet finns i tre olika veckoslutspaket med den tryckta tidningen, fre-sö,
           lö-sö och sö. E-tidningen kan läsas varje dag. Du kan beställa
           <a class="static-page__link" href="https://prenumerera.ksfmedia.fi">här på prenumerera.ksfmedia.fi</a> eller
@@ -452,42 +543,55 @@
           13.00-16.00. På onsdagar stänger kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Kan man prenumerera på endast vardagstidningarna?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Kan man prenumerera på endast vardagstidningarna?" />
+        <label class="faq__question" for="Kan man prenumerera på endast vardagstidningarna?"
+          >Kan man prenumerera på endast vardagstidningarna?</label
+        >
+        <p class="faq__answer">
           Ja, det är möjligt. Då levereras tidningarna med dagsposten. Du kan ta kontakt med vår kundservice på
           pren@ksfmedia.fi eller tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00. På onsdagar stänger
           kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">
-          Kan min tryckta tidning levereras till olika adresser på vardagar och veckoslut?
-        </button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Kan min tryckta tidning levereras till olika adresser på vardagar och veckoslut?" />
+        <label
+          class="faq__question"
+          for="Kan min tryckta tidning levereras till olika adresser på vardagar och veckoslut?"
+          >Kan min tryckta tidning levereras till olika adresser på vardagar och veckoslut?</label
+        >
+        <p class="faq__answer">
           Ja det kan den. En flexprenumeration levereras till två olika adresser; må-fre till en adress och lö-sö till
           en annan adress. Flexprenumerationer är alltid fortlöpande prenumerationer. För mer information, kontakta vår
           kundservice på pren@ksfmedia.fi eller tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00. På onsdagar
           stänger kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Hur prenumererar jag?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur prenumererar jag?" />
+        <label class="faq__question" for="Hur prenumererar jag?">Hur prenumererar jag?</label>
+        <p class="faq__answer">
           På <a class="static-page__link" href="https://prenumerera.ksfmedia.fi/">prenumerera.ksfmedia.fi</a> kan du
           teckna en prenumeration och där hittar du även HBL:s, VN:s och ÖN:s olika prenumerationspaket och mera
           instruktioner.
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Kan man prenumerera enbart på den tryckta tidningen?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Kan man prenumerera enbart på den tryckta tidningen?" />
+        <label class="faq__question" for="Kan man prenumerera enbart på den tryckta tidningen?"
+          >Kan man prenumerera enbart på den tryckta tidningen?</label
+        >
+        <p class="faq__answer">
           Nej, tidningens digitala utbud ingår alltid automatiskt i en prenumeration på den tryckta tidningen.
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Hur avbeställer jag min prenumeration?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur avbeställer jag min prenumeration?" />
+        <label class="faq__question" for="Hur avbeställer jag min prenumeration?"
+          >Hur avbeställer jag min prenumeration?</label
+        >
+        <p class="faq__answer">
           Ifall du vill säga upp din fortlöpande prenumeration helt och hållet gör du det på
           <a class="static-page__link" href="https://konto.ksfmedia.fi/">Mitt konto</a> eller genom att kontakta vår
           kundservice på pren@ksfmedia.fi eller tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00. På onsdagar
@@ -497,9 +601,12 @@
           läst den digitala tidningen. Om faktureringsperioden inletts får du en slutfaktura för en månad.
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Hur sätter jag min tidning på uppehåll?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur sätter jag min tidning på uppehåll?" />
+        <label class="faq__question" for="Hur sätter jag min tidning på uppehåll?"
+          >Hur sätter jag min tidning på uppehåll?</label
+        >
+        <p class="faq__answer">
           Uppehåll görs smidigast på <a class="static-page__link" href="https://konto.ksfmedia.fi">Mitt konto</a>. Om du
           t.ex. ska åka på resa behöver du inte avbeställa din tidning helt utan du kan göra ett uppehåll i din
           prenumeration. Uppehållet måste vara minst en vecka och högst 3 månader långt. Under uppehållstiden har kunden
@@ -510,9 +617,12 @@
           kompenseras ej för uppehållstiden.
         </p>
       </div>
-      <div class="faq__qa qa__subscriptions">
-        <button class="faq__question">Kan jag bli prenumerant även om jag bor utomlands?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Kan jag bli prenumerant även om jag bor utomlands?" />
+        <label class="faq__question" for="Kan jag bli prenumerant även om jag bor utomlands?"
+          >Kan jag bli prenumerant även om jag bor utomlands?</label
+        >
+        <p class="faq__answer">
           Ja, du kan prenumerera på digitala HBL/VN/ÖN Premium via webben om du bor i Sverige, Norge eller Danmark. På
           <a class="static-page__link" href="https://prenumerera.ksfmedia.fi/">prenumerera.ksfmedia.fi</a> kan du teckna
           en prenumeration. För prenumerationer på papperstidningen kontakta vår kundservice på pren@ksfmedia.fi eller
@@ -521,30 +631,38 @@
         </p>
       </div>
     </div>
-    <div class="faq__qa-section faq-corporate" id="foretagskunder">
+    <div class="faq__qa-section" id="foretagskunder">
       <h2 class="static-page__sub-headline faq__section-headline">Företagskunder</h2>
-      <div class="faq__qa qa__corporate">
-        <button class="faq__question">Hur prenumererar företagskunder?</button>
-        <p class="faq__answer faq__answer--open">
-          Genom att kontakta vår kundservice på pren@ksfmedia.fi eller tfn 09 1253 500 .
-        </p>
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur prenumererar företagskunder?" />
+        <label class="faq__question" for="Hur prenumererar företagskunder?">Hur prenumererar företagskunder?</label>
+        <p class="faq__answer">Genom att kontakta vår kundservice på pren@ksfmedia.fi eller tfn 09 1253 500 .</p>
       </div>
-      <div class="faq__qa qa__corporate">
-        <button class="faq__question">
-          Hur gör företagskundsprenumeranter för att få tillgång till det digitala utbudet?
-        </button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur gör företagskundsprenumeranter för att få tillgång till det digitala utbudet?" />
+        <label
+          class="faq__question"
+          for="Hur gör företagskundsprenumeranter för att få tillgång till det digitala utbudet?"
+          >Hur gör företagskundsprenumeranter för att få tillgång till det digitala utbudet?</label
+        >
+        <p class="faq__answer">
           Gå in till HBL.fi, vastranyland.fi, ostnyland.fi, applikationen HBL Nyheter eller applikationen HBL365 och
           logga in med er gemensamma e-postadress och ett lösenord. Om du inte vet e-postadressen eller lösenordet
           vänligen kontakta din kontaktperson på ert företag. Observera, att tillgången till HBL:s e-tidning gäller för
           max 5 personer. Tillgång för fler än 5 personer i företag, skolor eller dylikt förutsätter ett separat avtal.
         </p>
       </div>
-      <div class="faq__qa qa__corporate">
-        <button class="faq__question">
-          Kan företag, myndigheter, kommuner och organisationer prenumerera och läsa tidningen digitalt?
-        </button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input
+          type="checkbox"
+          id="Kan företag, myndigheter, kommuner och organisationer prenumerera och läsa tidningen digitalt?"
+        />
+        <label
+          class="faq__question"
+          for="Kan företag, myndigheter, kommuner och organisationer prenumerera och läsa tidningen digitalt?"
+          >Kan företag, myndigheter, kommuner och organisationer prenumerera och läsa tidningen digitalt?</label
+        >
+        <p class="faq__answer">
           Ja. Priset fastställs utifrån hur många som använder den digitala prenumerationen inom företaget. Betalning
           görs via faktura. För att kunna lägga upp tjänsten behöver vi företagets namn, företagets faktureringsadress,
           företagets IP-nummer, antalet personer inom företaget som kommer att använda tjänsten och den tidpunkt då man
@@ -554,19 +672,23 @@
         </p>
       </div>
     </div>
-    <div class="faq__qa-section faq-students" id="studerande">
+    <div class="faq__qa-section" id="studerande">
       <h2 class="static-page__sub-headline faq__section-headline">Studerande</h2>
-      <div class="faq__qa qa__students">
-        <button class="faq__question">Vem får studierabatt?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Vem får studierabatt?" />
+        <label class="faq__question" for="Vem får studierabatt?">Vem får studierabatt?</label>
+        <p class="faq__answer">
           Alla studerande beviljas 50% studierabatt på papperstidningen och vårt digitala utbud. Du gör enkelt en
           prenumeration på
           <a class="static-page__link" href="https://www.ksfmedia.fi/studierabatt">ksfmedia.fi/studierabatt</a>.
         </p>
       </div>
-      <div class="faq__qa qa__students">
-        <button class="faq__question">Hur bevisar jag att jag är studerande?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur bevisar jag att jag är studerande?" />
+        <label class="faq__question" for="Hur bevisar jag att jag är studerande?"
+          >Hur bevisar jag att jag är studerande?</label
+        >
+        <p class="faq__answer">
           Då du tecknar en prenumeration på
           <a class="static-page__link" href="https://www.ksfmedia.fi/studierabatt">ksfmedia.fi/studierabatt</a> laddar
           du upp ett studieintyg innan du bekräftar beställningen. Fr.o.m. andra studieåret måste du i början av den nya
@@ -574,57 +696,74 @@
         </p>
       </div>
     </div>
-    <div class="faq__qa-section faq-customer-service" id="kundservice">
+    <div class="faq__qa-section" id="kundservice">
       <h2 class="static-page__sub-headline faq__section-headline">Kundservice</h2>
-      <div class="faq__qa qa__customer-service">
-        <button class="faq__question">Hur ändrar jag mina uppgifter?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur ändrar jag mina uppgifter?" />
+        <label class="faq__question" for="Hur ändrar jag mina uppgifter?">Hur ändrar jag mina uppgifter?</label>
+        <p class="faq__answer">
           På <a class="static-page__link" href="https://konto.ksfmedia.fi/">Mitt Konto</a> kan du enkelt och snabbt
           uppdatera dina uppgifter.
         </p>
       </div>
-      <div class="faq__qa qa__customer-service">
-        <button class="faq__question">Hur gör jag en tillfällig adressändring?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur gör jag en tillfällig adressändring?" />
+        <label class="faq__question" for="Hur gör jag en tillfällig adressändring?"
+          >Hur gör jag en tillfällig adressändring?</label
+        >
+        <p class="faq__answer">
           På <a class="static-page__link" href="https://konto.ksfmedia.fi/">Mitt Konto</a> hittar du dina
           prenumerationer och länken "Gör tillfällig adressändring".
         </p>
       </div>
-      <div class="faq__qa qa__customer-service">
-        <button class="faq__question">Hur gör jag en permanent adressändring?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur gör jag en permanent adressändring?" />
+        <label class="faq__question" for="Hur gör jag en permanent adressändring?"
+          >Hur gör jag en permanent adressändring?</label
+        >
+        <p class="faq__answer">
           På <a class="static-page__link" href="https://konto.ksfmedia.fi/">Mitt Konto</a> hittar du dina
           prenumerationer och under "Mina uppgifter" kan du ändra din permanenta adress.
         </p>
       </div>
-      <div class="faq__qa qa__customer-service">
-        <button class="faq__question">Hur sätter jag tidningen på uppehåll?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur sätter jag tidningen på uppehåll?" />
+        <label class="faq__question" for="Hur sätter jag tidningen på uppehåll?"
+          >Hur sätter jag tidningen på uppehåll?</label
+        >
+        <p class="faq__answer">
           På <a class="static-page__link" href="https://konto.ksfmedia.fi/">Mitt Konto</a> hittar du dina
           prenumerationer och länken "Gör uppehåll".
         </p>
       </div>
-      <div class="faq__qa qa__customer-service">
-        <button class="faq__question">Hur snabbt träder ändringar som jag gjort på min prenumeration i kraft?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Hur snabbt träder ändringar som jag gjort på min prenumeration i kraft?" />
+        <label class="faq__question" for="Hur snabbt träder ändringar som jag gjort på min prenumeration i kraft?"
+          >Hur snabbt träder ändringar som jag gjort på min prenumeration i kraft?</label
+        >
+        <p class="faq__answer">
           Alla ändringar du gör på <a class="static-page__link" href="https://konto.ksfmedia.fi/">Mitt Konto</a> sparas
           omedelbart. Du kontakta även kontakta vår kundservice på pren@ksfmedia.fi eller tfn 09 1253 500 (mån-fre kl.
           8.00-12.00 och 13.00-16.00. På onsdagar stänger kundservice kl. 15.00). Alla förändringar behandlas så fort
           som möjligt, dock senast inom tre vardagar..
         </p>
       </div>
-      <div class="faq__qa qa__customer-service">
-        <button class="faq__question">Var hittar jag mitt kundnummer?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Var hittar jag mitt kundnummer?" />
+        <label class="faq__question" for="Var hittar jag mitt kundnummer?">Var hittar jag mitt kundnummer?</label>
+        <p class="faq__answer">
           Du hittar du ditt kundnummer <a class="static-page__link" href="https://konto.ksfmedia.fi/">på Mitt Konto</a>.
           Kundnumret finns också på varje faktura. Om du inte hittar detta, kan du kontakta vår kundservice på
           pren@ksfmedia.fi eller tfn 09 1253 500 (mån-fre kl. 8.00-12.00 och 13.00-16.00. På onsdagar stänger
           kundservice kl. 15.00).
         </p>
       </div>
-      <div class="faq__qa qa__customer-service">
-        <button class="faq__question">Varför fick jag ingen papperstidning i dag?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Varför fick jag ingen papperstidning i dag?" />
+        <label class="faq__question" for="Varför fick jag ingen papperstidning i dag?"
+          >Varför fick jag ingen papperstidning i dag?</label
+        >
+        <p class="faq__answer">
           Nu har det gått på tok! Vi beklagar att du har blivit utan tidning. Enklast reklamerar du en utebliven tidning
           på <a class="static-page__link" href="https://konto.ksfmedia.fi">Mitt konto</a>. Även om din papperstidning
           saknas, kan du som prenumerant läsa e-tidningen. Du hittar
@@ -638,9 +777,12 @@
           finns uppgifterna i varje nummer på nästsista sidan.
         </p>
       </div>
-      <div class="faq__qa qa__customer-service">
-        <button class="faq__question">Vad används mina kunduppgifter till?</button>
-        <p class="faq__answer faq__answer--open">
+      <div class="faq__qa">
+        <input type="checkbox" id="Vad används mina kunduppgifter till?" />
+        <label class="faq__question" for="Vad används mina kunduppgifter till?"
+          >Vad används mina kunduppgifter till?</label
+        >
+        <p class="faq__answer">
           Korrekta adressuppgifter är viktiga för att tidningen och annan post når fram. De som inte är prenumeranter
           kan ibland få nyttiga erbjudanden av oss. Om du inte vill ha erbjudanden kan du kontakta vår kundservice. Som
           kund har du rätt att kontrollera vilka uppgifter vi har om dig i vårt kundregister. KSF Media ger inte ut
@@ -649,6 +791,6 @@
         </p>
       </div>
     </div>
-    <button class="static-page__back-to-top" aria-label="button-back-to-top"></button>
   </div>
+  <a href="#top" class="static-page__back-to-top" aria-label="Tillbaka till början"></a>
 </div>

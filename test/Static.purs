@@ -6,6 +6,7 @@ import Data.Array.Partial (head)
 import Partial.Unsafe (unsafePartial)
 import Mosaico.Test (Test, log, site)
 import KSF.Puppeteer as Chrome
+import Toppokki (waitForSelector) as Chrome
 import Test.Unit.Assert as Assert
 
 testNavigateToStatic :: Test
@@ -36,11 +37,10 @@ testStaticEmbeds page = do
     testQuestion = do
       log "Questions start as unopened"
       Chrome.waitFor_ (Chrome.Selector ".faq__question") page
-      firstQText <- Chrome.getContent (Chrome.Selector ".faq__question") page
-      Assert.assert "First Q text is non-empty" $ firstQText /= ""
-      Chrome.assertNotFound (Chrome.Selector ".faq__question--active") page
+      void $ Chrome.waitForSelector (Chrome.Selector ".faq__answer") {visible: false, timeout: 30000} page
       log "Open first question"
       Chrome.click (Chrome.Selector ".faq__question") page
-      Chrome.waitFor_ (Chrome.Selector ".faq__question--active") page
-      activeQText <- Chrome.getContent (Chrome.Selector ".faq__question--active") page
-      Assert.assert "First Q text matches with active Q text" $ firstQText == activeQText
+      Chrome.waitFor_ (Chrome.Selector ".faq__answer") page
+      log "Clicking a question again will close it"
+      Chrome.click (Chrome.Selector ".faq__question") page
+      void $ Chrome.waitForSelector (Chrome.Selector ".faq__answer") {visible: false, timeout: 30000} page

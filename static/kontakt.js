@@ -104,14 +104,6 @@ document.addEventListener("scroll", () => {
   }
 });
 
-const goToTop = () => {
-  document.body.scrollIntoView({
-    behavior: "smooth",
-  });
-};
-
-addHandler(backToTopButton, goToTop);
-
 const links = document.querySelectorAll(".static-page__list-link");
 
 for (const link of links) {

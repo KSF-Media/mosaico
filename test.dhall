@@ -8,6 +8,7 @@ in conf // {
 	, "enums"
         , "transformers"
         , "test-unit"
+        , "toppokki"
         , "unsafe-coerce"
     ]
 }

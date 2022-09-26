@@ -9,6 +9,39 @@
     flex-wrap: wrap;
   }
 
+  .faq__answer {
+    display: none;
+    margin: 15px 0 5px;
+    max-width: 100%;
+    padding-bottom: 30px;
+    border-bottom: 1px solid @hairline-color;
+  }
+
+  // move checkbox offscreen
+  input[type="checkbox"] {
+    position: absolute;
+    left: -10000px;
+  }
+
+  input[type="checkbox"]:focus + label {
+    outline: 1px dotted black;
+  }
+
+  // Can't use ::before for input, so match on the label instead
+  input[type="checkbox"]+label::before {
+    display: inline-block;
+    content: url("../../images/chevron.svg");
+    margin-right: 5px;
+  }
+
+  input[type="checkbox"]:checked+label::before {
+    transform: rotate(-180deg);
+  }
+
+  input[type="checkbox"]:checked~.faq__answer {
+    display: block;
+  }
+
   .faq__background-img {
     background-image: url("../../images/illu-qa.svg");
     background-size: contain;
@@ -74,32 +107,8 @@
     border: none;
     padding: 0;
     text-align: start;
-    outline: none;
     font-weight: 500;
     line-height: 1.2;
-  }
-
-  .faq__question::before {
-    content: url("../../images/chevron.svg");
-    margin-right: 5px;
-  }
-
-  .faq__question--active::before {
-    display: inline-block;
-    content: url("../../images/chevron.svg");
-    transform: rotate(-180deg);
-    margin-right: 5px;
-  }
-
-  .faq__answer {
-    display: none;
-  }
-
-  .faq__answer--open {
-    margin: 15px 0 5px;
-    max-width: 100%;
-    padding-bottom: 30px;
-    border-bottom: 1px solid @hairline-color;
   }
 
   .faq__answer-subheadline {
