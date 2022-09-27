@@ -40,7 +40,7 @@ let additions =
           , "typelevel-prelude"
           ]
         , repo = "https://github.com/KSF-Media/purescript-payload.git"
-        , version = "dd6132b2243dd89bd04eb149d7ee2c403d4753e0"
+        , version = "616b214f13f931bd7cd11652a3b47e2b196d1adf"
         }
       , react-basic-classic =
         { repo = "https://github.com/lumihq/purescript-react-basic-classic"

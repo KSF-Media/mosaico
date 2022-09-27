@@ -71,6 +71,7 @@ import Payload.ContentType as ContentType
 import Payload.Headers as Headers
 import Payload.ResponseTypes (Failure(..), Response(..), ResponseBody(..))
 import Payload.Server as Payload
+import Payload.Server.Guards as Guards
 import Payload.Server.Handlers (File)
 import Payload.Server.Handlers as Handlers
 import Payload.Server.Response as Response
@@ -137,6 +138,11 @@ spec ::
          , googleSiteVerification ::
               GET "/google8c22fe93f3684c84.html"
                 { response :: File }
+         , setTriggerbeeCookies ::
+              GET "/api/triggerbee-cookies"
+                { response :: ResponseBody
+                , guards :: Guards ("triggerbee" : Nil)
+                }
          , frontpageUpdated ::
               GET "/api/reset/<category>"
                 { params :: { category :: String }
@@ -224,6 +230,7 @@ spec ::
          { category :: Category
          , clientip :: Maybe String
          , epaper :: Unit
+         , triggerbee :: Maybe TriggerbeeCookies
          }
     }
 spec = Spec
@@ -291,6 +298,7 @@ main = do
         handlers =
           { getHealthz
           , googleSiteVerification
+          , setTriggerbeeCookies
           , frontpageUpdated: frontpageUpdated env
           , getDraftArticle: getDraftArticle env
           , getArticle: getArticle env
@@ -312,6 +320,7 @@ main = do
           { category: parseCategory env
           , clientip: getClientIP
           , epaper: epaperGuard
+          , triggerbee
           }
     void $ Payload.startGuarded (Payload.defaultOpts { port = 8080 }) spec { handlers, guards }
     pure unit
@@ -469,6 +478,30 @@ adsTxt = Handlers.file "dist/assets/ads.txt"
 
 googleSiteVerification :: forall r. { | r} -> Aff File
 googleSiteVerification = Handlers.file "dist/assets/google8c22fe93f3684c84.html"
+
+type TriggerbeeCookies =
+  { mtruid :: String
+  , smtruid :: String
+  }
+
+triggerbee :: HTTP.Request -> Aff (Maybe TriggerbeeCookies)
+triggerbee req = do
+  cookies <- Guards.cookies req
+  pure do
+    mtruid <- Map.lookup "_mtruid" cookies
+    smtruid <- Map.lookup "_smtruid" cookies
+    pure { mtruid, smtruid }
+
+setTriggerbeeCookies :: { guards :: { triggerbee :: Maybe TriggerbeeCookies } } -> Aff (Response ResponseBody)
+setTriggerbeeCookies { guards: { triggerbee: Nothing } } = pure $ Response.ok EmptyBody
+setTriggerbeeCookies { guards: { triggerbee: Just cookies } } = do
+  let domain = fromMaybe "" $ head $ String.split (String.Pattern "/") $ String.drop 12 $ Paper.homepage mosaicoPaper
+      cookieAttribs = "; secure; samesite=strict; max-age: 1314000; domain=." <> domain
+      setMtruid = Headers.setCookie "_mtruid" $ cookies.mtruid <> cookieAttribs
+      setSmtruid = Headers.setCookie "_smtruid" $ cookies.smtruid <> cookieAttribs
+      setCookies (Response response) =
+        Response $ response { headers = setMtruid $ setSmtruid $ response.headers }
+  pure $ setCookies $ Response.ok EmptyBody
 
 frontpage :: Env -> {} -> Aff (Response ResponseBody)
 frontpage env {} = do
