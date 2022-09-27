@@ -8,7 +8,7 @@ import KSF.Paper as Paper
 import Lettera.Models (ArticleStub, Category, Tag, categoriesMap)
 import Mosaico.Footer (footer)
 import Mosaico.Header as Header
-import Mosaico.MainContent (mainContent)
+import Mosaico.MainContent (mainContent, jumpToMainContent)
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.MostReadList as MostReadList
 import Mosaico.LatestList as LatestList
@@ -43,23 +43,27 @@ app :: Props -> JSX
 app = render
 
 render :: Props -> JSX
-render props = DOM.div_
-    [ DOM.div
-        { className: "mosaico grid" <> menuOpen
-        , id: Paper.toString mosaicoPaper
-        , children:
-            guard (not props.headless) header
-            <>
-            [ mainContent extraClasses [props.mainContent.content] ] <>
-            guard (not props.headless)
-              [ footer mosaicoPaper mempty mempty
-              , case props.mainContent.type of
-                  FrontpageContent -> aside
-                  TagListContent _ -> aside
-                  _ -> mempty
-              ]
-        }
-    ]
+render props =
+  DOM.div
+    { id: Paper.toString mosaicoPaper
+    , children:
+        [ jumpToMainContent
+        , DOM.div
+          { className: "grid mosaico" <> menuOpen
+          , children:
+              guard (not props.headless) header
+              <>
+              [ mainContent extraClasses [props.mainContent.content] ] <>
+              guard (not props.headless)
+                [ footer mosaicoPaper mempty mempty
+                , case props.mainContent.type of
+                    FrontpageContent -> aside
+                    TagListContent _ -> aside
+                    _ -> mempty
+                ]
+          }
+        ]
+    }
   where
     header =
       [ Header.topLine
@@ -73,7 +77,10 @@ render props = DOM.div_
           , onProfile: mempty
           , onStaticPageClick: mempty
           , onMenuClick: mempty
-          , showHeading: false
+          , showHeading: case props.mainContent.type of
+              ArticleContent -> false
+              StaticPageContent _ -> false
+              _ -> true
           }
       ]
     aside =
