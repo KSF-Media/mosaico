@@ -23,8 +23,8 @@ import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
 import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), FullArticle, Image, MosaicoArticleType(..), Tag(..), tagToURIComponent)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Article.Box as Box
-import Mosaico.BreakingNews as BreakingNews
 import Mosaico.Article.Image as Image
+import Mosaico.BreakingNews as BreakingNews
 import Mosaico.Eval (ScriptTag(..), evalExternalScripts)
 import Mosaico.FallbackImage (fallbackImage)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
@@ -33,8 +33,8 @@ import Mosaico.Share as Share
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.Events (EventHandler)
-import React.Basic.Hooks as React
 import React.Basic.Hooks (Component)
+import React.Basic.Hooks as React
 
 isPremium :: Either ArticleStub FullArticle -> Boolean
 isPremium = either _.premium _.article.premium
@@ -260,11 +260,7 @@ render imageComponent boxComponent props =
             VN -> [ vnPremium ]
             _ -> []
         , unexpectedError: mempty
-        , headline: Just
-          $ DOM.div_
-              [ DOM.text $ "Läs " <> paperName <> " digitalt för "
-              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "endast 1€" ] }
-              ]
+        , headline: Just paperHeadline
         , paper: Just props.paper
         , paymentMethods: []
         , customNewPurchase: Nothing
@@ -282,6 +278,16 @@ render imageComponent boxComponent props =
     paperName = case props.paper of
       HBL -> "HBL"
       p -> Paper.paperName p
+
+    paperHeadline = case props.paper of
+      HBL -> DOM.div_
+              [ DOM.text $ "Läs HBL digitalt "
+              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "nu 0€" ] }
+              ]
+      _   -> DOM.div_
+              [ DOM.text $ "Läs " <> paperName <> " digitalt för "
+              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "endast 1€" ] }
+              ]
 
     renderMostReadArticles articles =
       DOM.div
