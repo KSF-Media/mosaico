@@ -281,12 +281,12 @@ render imageComponent boxComponent props =
 
     paperHeadline = case props.paper of
       HBL -> DOM.div_
-              [ DOM.text $ "Läs HBL digitalt "
-              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "nu 0€" ] }
+              [ DOM.text $ "HBL digitalt "
+              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "nu 0 €" ] }
               ]
       _   -> DOM.div_
               [ DOM.text $ "Läs " <> paperName <> " digitalt för "
-              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "endast 1€" ] }
+              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "endast 1 €" ] }
               ]
 
     renderMostReadArticles articles =
