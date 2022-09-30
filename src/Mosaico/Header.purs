@@ -72,85 +72,92 @@ component = do
 
 render :: Int -> Props -> JSX
 render scrollPosition props =
+  -- We have an extra level of wrapping here to prevent 'wobbliness'
+  -- when jumping to page elements (eg. /sida/fragor-och-svar).
   DOM.header
-    { className: "header-container" <> (if scrollPosition == 0 then "" else " static-header")
+    { className: "header-container-container"
     , children:
         [ DOM.div
-            { className: block
+            { className: "header-container" <> (if scrollPosition == 0 then "" else " static-header")
             , children:
-                [ srHeading
-                , DOM.div
-                    { className: block <> "__left-links"
+                [ DOM.div
+                    { className: "mosaico-header"
                     , children:
-                        [ DOM.a
-                            { href: "/sida/kontakt"
-                            , onClick: props.onStaticPageClick "kontakt"
-                            , children: [ DOM.text "KONTAKTA OSS" ]
-                            }
-                        , DOM.text "|"
-                        , DOM.a
-                            { children: [ DOM.text "E-TIDNINGEN" ]
-                            , href: "/epaper"
-                            , onClick: capture_ $ props.changeRoute "/epaper/"
-                            }
-                        ]
-                    }
-                , DOM.div
-                    { className: block <> "__right-links"
-                    , children:
-                        [ DOM.ul_
-                            [ DOM.li_
+                        [ srHeading
+                        , DOM.div
+                            { className: "mosaico-header__left-links"
+                            , children:
                                 [ DOM.a
-                                    { className: block <> "__kundservice-link"
-                                    , children: [ DOM.text "KUNDSERVICE" ]
-                                    , href: "/sida/kundservice"
-                                    , onClick: props.onStaticPageClick "kundservice"
+                                    { href: "/sida/kontakt"
+                                    , onClick: props.onStaticPageClick "kontakt"
+                                    , children: [ DOM.text "KONTAKTA OSS" ]
+                                    }
+                                , DOM.text "|"
+                                , DOM.a
+                                    { children: [ DOM.text "E-TIDNINGEN" ]
+                                    , href: "/epaper"
+                                    , onClick: capture_ $ props.changeRoute "/epaper/"
                                     }
                                 ]
-                            , DOM.li_
-                                [ DOM.a
-                                    { className: block <> "__prenumerera-link"
-                                    , children: [ DOM.text "PRENUMERERA" ]
-                                    , href: "https://prenumerera.ksfmedia.fi/#/" <> String.toLower (toString mosaicoPaper)
-                                    , target: "_blank"
-                                    }
-                                ]
-                            ]
-                        ]
-                    }
-                , DOM.a
-                    { className: block <> "__logo"
-                    , href: "/"
-                    , onClick: foldMap props.onCategoryClick frontpageCategory
-                    , children: [ DOM.span
-                                    { className: "sr-only"
-                                    , children: [DOM.text (paperName mosaicoPaper)]
-                                    }]
-                    }
-                , renderLoginLink props.user
-                , DOM.nav
-                    { className: block <> "__center-links"
-                    , children: map mkCategory headerCategories
-                    }
-                , DOM.div
-                    { className: block <> "__right-buttons"
-                    , children:
-                        [ searchButton
-                        , DOM.button
-                            { className: iconButtonClass <> " " <> menuButtonClass
-                            , children: [ DOM.span { className: iconClass <> " " <> menuIconClass }
-                                        , DOM.span
-                                            { className: "menu-label"
-                                            , children: [ DOM.text "MENY" ]
+                            }
+                        , DOM.div
+                            { className: "mosaico-header__right-links"
+                            , children:
+                                [ DOM.ul_
+                                    [ DOM.li_
+                                        [ DOM.a
+                                            { className: "mosaico-header__kundservice-link"
+                                            , children: [ DOM.text "KUNDSERVICE" ]
+                                            , href: "/sida/kundservice"
+                                            , onClick: props.onStaticPageClick "kundservice"
                                             }
                                         ]
-                            , onClick: handler_ props.onMenuClick
+                                    , DOM.li_
+                                        [ DOM.a
+                                            { className: "mosaico-header__prenumerera-link"
+                                            , children: [ DOM.text "PRENUMERERA" ]
+                                            , href: "https://prenumerera.ksfmedia.fi/#/" <> String.toLower (toString mosaicoPaper)
+                                            , target: "_blank"
+                                            }
+                                        ]
+                                    ]
+                                ]
+                            }
+                        , DOM.a
+                            { className: "mosaico-header__logo"
+                            , href: "/"
+                            , onClick: foldMap props.onCategoryClick frontpageCategory
+                            , children: [ DOM.span
+                                            { className: "sr-only"
+                                            , children: [DOM.text (paperName mosaicoPaper)]
+                                            }]
+                            }
+                        , renderLoginLink props.user
+                        , DOM.nav
+                            { className: "mosaico-header__center-links"
+                            , children: map mkCategory headerCategories
+                            }
+                        , DOM.div
+                            { className: "mosaico-header__right-buttons"
+                            , children:
+                                [ searchButton
+                                , DOM.button
+                                    { className: "mosaico-header__icon-button mosaico-header__icon-button--menu"
+                                    , children: [ DOM.span { className: "mosaico-header__icon mosaico-header__icon--menu"}
+                                                , DOM.span
+                                                    { className: "menu-label"
+                                                    , children: [ DOM.text "MENY" ]
+                                                    }
+                                                ]
+                                    , onClick: handler_ props.onMenuClick
+                                    }
+                                ]
                             }
                         ]
                     }
+                , mainSeparator
                 ]
-            }
-        , mainSeparator
+              }
         ]
     }
   where
@@ -177,10 +184,10 @@ render scrollPosition props =
 
     searchButton :: JSX
     searchButton = DOM.a
-                    { className: iconButtonClass <> " " <> searchButtonClass
+                    { className: "mosaico-header__icon-button mosaico-header__icon-button--search"
                     , children: [ DOM.span
                                     { _aria: singleton "hidden" "true"
-                                    , className: iconClass <> " " <> searchIconClass
+                                    , className: "mosaico-header__icon mosaico-header__icon--search"
                                     }
                                 , DOM.span
                                     { className: "menu-label"
@@ -191,31 +198,13 @@ render scrollPosition props =
                     , onClick: capture_ $ props.changeRoute "/sök"
                     }
 
-    block = "mosaico-header"
-
-    accountElement = "__account"
-    accountClass = block <> accountElement
-
-    searchModifier = "--search"
-    menuModifier = "--menu"
-
-    iconButtonElement = "__icon-button"
-    iconButtonClass = block <> iconButtonElement
-    searchButtonClass = iconButtonClass <> searchModifier
-    menuButtonClass = iconButtonClass <> menuModifier
-
-    iconElement = "__icon"
-    iconClass = block <> iconElement
-    searchIconClass = iconClass <> searchModifier
-    menuIconClass = iconClass <> menuModifier
-
     renderLoginLink Nothing =
       loadingSpinner
     renderLoginLink (Just Nothing) =
       DOM.button
          { children:
              [ DOM.span
-                 { className: accountClass <> "-icon"
+                 { className: "mosaico-header__account-icon"
                  , children: [ DOM.span_ [] ]
                  }
              , DOM.span
@@ -224,18 +213,18 @@ render scrollPosition props =
                  }
              ]
          , onClick: props.onLogin
-         , className: accountClass <> " " <> accountClass <> "--active"
+         , className: "mosaico-header__account mosaico-header__account--active"
          , _data: Object.fromFoldable [Tuple "login" "1"]
          }
     renderLoginLink (Just (Just user)) =
       let name = fromMaybe "INLOGGAD" $ toMaybe user.firstName
       in DOM.a
-           { className: accountClass
+           { className: "mosaico-header__account"
            , onClick: props.onProfile
            , href: "/konto"
            , children:
                [ DOM.span
-                   { className: accountClass <> "-icon"
+                   { className: "mosaico-header__account-icon"
                    , children: [ DOM.span_ [] ]
                    }
                , DOM.span

@@ -1,8 +1,19 @@
 @import (reference) "../affresco/less/ksf-colors.less";
 
-.header-container {
+.header-container-container {
+  position: sticky;
+  grid-row: 2;
+  grid-column: 1 / span 5;
+  height: 115px;
+  top: 10px;
   z-index: 100;
 
+      @media (max-width: @breakpoint-2col) {
+        height: 78px;
+      }
+}
+
+.header-container {
   display: grid;
   grid-row-gap: @mosaico-grid-row-gap;
   grid-template-rows: auto auto;
@@ -13,8 +24,6 @@
     grid-template-columns: @mosaico-grid-columns;
   }
 
-  grid-row: 2;
-  grid-column: 1 / span 5;
   background-color: white;
   padding-top: 8px;
 
@@ -26,9 +35,6 @@
 }
 
 .header-container.static-header {
-  position: sticky;
-  top: 10px;
-
   .mosaico-header {
     &__logo {
       background-size: 30px;
