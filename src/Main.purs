@@ -48,6 +48,7 @@ import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
 import Mosaico.Cache (Stamped, parallelWithCommonLists)
 import Mosaico.Cache as Cache
+import Mosaico.Cache.Pubsub as Pubsub
 import Mosaico.Epaper as Epaper
 import Mosaico.Error (notFoundWithAside)
 import Mosaico.FallbackImage (fallbackImageShare)
@@ -146,11 +147,6 @@ spec ::
               GET "/api/triggerbee-cookies"
                 { response :: ResponseBody
                 , guards :: Guards ("triggerbee" : Nil)
-                }
-         , frontpageUpdated ::
-              GET "/api/reset/<category>"
-                { params :: { category :: String }
-                , response :: String
                 }
          , getDraftArticle ::
               GET "/artikel/draft/<aptomaId>/?dp-time=<time>&publicationId=<publication>&user=<user>&hash=<hash>"
@@ -274,6 +270,7 @@ main = do
   Aff.launchAff_ do
     categoryStructure <- Lettera.getCategoryStructure mosaicoPaper
     cache <- liftEffect $ Cache.initServerCache $ correctionsCategory `cons` categoryStructure
+    liftEffect $ Pubsub.startListen cache
     -- This is used for matching a category label from a route, such as "/nyheter" or "/norden-och-världen"
     categoryRegex <- case Regex.regex "^\\/([\\w|ä|ö|å|-]+)\\b" Regex.ignoreCase of
       Right r -> pure r
@@ -303,7 +300,6 @@ main = do
           { getHealthz
           , googleSiteVerification
           , setTriggerbeeCookies
-          , frontpageUpdated: frontpageUpdated env
           , getDraftArticle: getDraftArticle env
           , getArticle: getArticle env
           , assets
@@ -469,11 +465,6 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
           maybeLatest = if null latestArticles then Nothing else Just latestArticles
       in notFound env notFoundArticleContent maybeMostRead maybeLatest
 
-frontpageUpdated :: Env -> { params :: { category :: String }} -> Aff (Response String)
-frontpageUpdated env { params: { category } } = do
-  Cache.resetCategory env.cache (CategoryLabel category)
-  pure $ Response.ok ""
-
 assets :: { params :: { path :: List String } } -> Aff (Either Failure File)
 assets { params: { path } } = Handlers.directory "dist/assets" path
 
@@ -509,14 +500,9 @@ setTriggerbeeCookies { guards: { triggerbee: Just cookies } } = do
 
 frontpage :: Env -> {} -> Aff (Response ResponseBody)
 frontpage env {} = do
-  prerendered <- Cache.readCategoryRender env.cache frontpageCategoryLabel
-  case prerendered of
-    Just content -> do
-      now <- liftEffect nowDateTime
-      pure $ Cache.addHeader now content $ htmlContent $ Response.ok $ StringBody $ Cache.getContent content
-    _ -> case head env.categoryStructure of
-      Just frontpageCategory -> renderCategoryPage env frontpageCategory
-      _ -> pure $ Response.internalError $ StringBody "no categorystructure defined"
+  case head env.categoryStructure of
+    Just frontpageCategory ->   renderCategoryPage env frontpageCategory
+    _ -> pure $ Response.internalError $ StringBody "no categorystructure defined"
 
 menu :: Env -> {} -> Aff (Response ResponseBody)
 menu env _ = do
@@ -723,13 +709,8 @@ debugList env { params: { uuid } } = do
           }
 
 categoryPage :: Env -> { params :: { categoryName :: String }, guards :: { category :: Category} } -> Aff (Response ResponseBody)
-categoryPage env { guards: { category: category@(Category{label})}} = do
-  prerendered <- Cache.readCategoryRender env.cache label
-  case prerendered of
-    Just content -> do
-      now <- liftEffect nowDateTime
-      pure $ Cache.addHeader now content $ htmlContent $ Response.ok $ StringBody $ Cache.getContent content
-    _ -> renderCategoryPage env category
+categoryPage env { guards: { category }} = do
+  renderCategoryPage env category
 
 renderCategoryPage :: Env -> Category -> Aff (Response ResponseBody)
 renderCategoryPage env (Category category@{ label, type: categoryType, url}) = do

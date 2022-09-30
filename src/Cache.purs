@@ -16,10 +16,11 @@ import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (un, unwrap)
+import Data.Profunctor (class Profunctor, rmap)
 import Data.String (null)
 import Data.Time.Duration (Seconds(..))
 import Data.Traversable (traverse)
-import Data.Tuple (Tuple(..), fst, snd, uncurry)
+import Data.Tuple (Tuple(..), uncurry)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as Aff
@@ -69,15 +70,27 @@ toValidUntil now maxAge =
   -- Sanity check, allow at most 1 minute
   flip adjust now <<< Seconds <<< toNumber =<< max 60 <$> maxAge
 
+data Controls a b = Controls
+  { reset :: Aff Unit
+  , set :: LetteraResponse a -> Effect Unit
+  , content :: Aff (Stamped b)
+  }
+
+instance profunctorControls :: Profunctor Controls where
+  dimap f g (Controls c@{ content}) = Controls $ c
+    { content = (map <<< map) g content
+    , set = \x -> c.set $ f <$> x
+    }
+
 -- Reset handle and a value that's being kept updated
-type UpdateWatch a = Tuple (Aff Unit) (Aff (Stamped a))
+type UpdateWatch a = Controls a a
 
 data CacheMode = Client | Server
 
 -- prerendered, mainCategoryFeed and mostRead are updated eagerly from
 -- Lettera.  byTag and subCategoryFeed is only updated on request.
 type Cache =
-  { prerendered :: Map CategoryLabel (UpdateWatch (Maybe String))
+  { prerendered :: Map CategoryLabel (Controls String (Maybe String))
   , mainCategoryFeed :: Map CategoryLabel (UpdateWatch (Array ArticleStub))
   , mostRead :: Aff (Stamped (Array ArticleStub))
   , latest :: Aff (Stamped (Array ArticleStub))
@@ -89,7 +102,7 @@ type Cache =
   , corsProxyCache :: AVar (Map String (Stamped String))
   }
 
-startUpdates :: forall a. (Maybe String -> Aff (LetteraResponse a)) -> Effect (UpdateWatch (Maybe a))
+startUpdates :: forall a. (Maybe String -> Aff (LetteraResponse a)) -> Effect (Controls a (Maybe a))
 startUpdates fetch = do
   -- Var is empty only if the update thread is not running.
   var <- Effect.AVar.empty
@@ -97,11 +110,14 @@ startUpdates fetch = do
   updateLock <- Effect.AVar.new unit
   updateDone <- Effect.AVar.empty
   updateStop <- Effect.AVar.empty
+  offbandUpdate <- Effect.AVar.empty
   let withLock :: forall b. AVar Unit -> Aff b -> Aff b
       withLock lock = Aff.bracket (AVar.take lock) (flip AVar.put lock) <<< const
       update = untilJust do
-        LetteraResponse response <- fetch =<< hush <<< formatDateTime "YYYYMMDDHHmmss"
-                                    <$> liftEffect nowDateTime
+        offband <- AVar.tryTake offbandUpdate
+        LetteraResponse response <-
+          maybe (fetch =<< hush <<< formatDateTime "YYYYMMDDHHmmss"
+                 <$> liftEffect nowDateTime) pure offband
         _ <- AVar.tryTake var
         now <- liftEffect nowDateTime
         let validUntil = fromMaybe now $ toValidUntil now response.maxAge
@@ -140,9 +156,12 @@ startUpdates fetch = do
             maybe emptyStamp (map Just) <$> AVar.tryRead var
       reset = withLock resetLock do
         AVar.put unit updateStop
+      set offband = Aff.launchAff_ $ withLock resetLock do
+        AVar.put offband offbandUpdate
+        AVar.put unit updateStop
 
   Aff.launchAff_ $ void start
-  pure $ Tuple reset start
+  pure $ Controls { reset, set, content: start }
 
 withCat :: forall a m. Monad m => (String -> m a) -> Category -> m (Tuple CategoryLabel a)
 withCat f (Category cat) =
@@ -180,19 +199,19 @@ initServerCache categoryStructure = do
   cache <- initClientCache []
   let prerenderedCategories = filter (\(Category c) -> c.type == Prerendered) categoryStructure
   mainCategoryFeed <-
+    (map <<< map <<< rmap) (join <<< fromFoldable)
     Map.fromFoldable
-    <$> traverse ((map <<< map <<< map <<< map <<< map <<< map) (join <<< fromFoldable) $
-                  withCat $ startUpdates <<< Lettera.getFrontpage mosaicoPaper <<< Just) categoryStructure
+    <$> traverse (withCat $ startUpdates <<< Lettera.getFrontpage mosaicoPaper <<< Just) categoryStructure
   prerendered <- Map.fromFoldable <$> traverse
                  (withCat $ startUpdates <<< Lettera.getFrontpageHtml mosaicoPaper) prerenderedCategories
   mostRead <- (map <<< map <<< map) (join <<< fromFoldable) $
               -- Ditch reset handle for mostRead
-              map snd $
+              map (\(Controls x) -> x.content) $
               -- const to ditch cache stamp from the Lettera call
               startUpdates $ const $ Lettera.getMostRead 0 10 Nothing mosaicoPaper false
 
   latest <- (map <<< map <<< map) (join <<< fromFoldable) $
-              map snd $
+              map (\(Controls x) -> x.content) $
               startUpdates $ const $ Lettera.getLatest 0 10 mosaicoPaper
 
   pure $ cache
@@ -234,7 +253,7 @@ getUsingCache var key action = do
 -- will be fetched on demand.
 getFrontpageHtml :: Cache -> CategoryLabel -> Aff (Stamped (Maybe String))
 getFrontpageHtml cache category =
-  maybe useFeed snd $ Map.lookup category cache.prerendered
+  maybe useFeed (\(Controls c) -> c.content) $ Map.lookup category cache.prerendered
   where
     useFeed =
       (map <<< map) (\h -> if null h then Nothing else Just h) $
@@ -249,7 +268,7 @@ getBreakingNewsHtml cache =
 getFrontpage :: Cache -> CategoryLabel -> Aff (Stamped (Array ArticleStub))
 getFrontpage cache category = do
   case Map.lookup category cache.mainCategoryFeed of
-    Just c -> snd c
+    Just c -> (\(Controls x) -> x.content) c
     Nothing -> getUsingCache cache.feedList (CategoryFeed category) $
                Lettera.getFrontpage mosaicoPaper (Just $ show category) Nothing
 
@@ -306,8 +325,8 @@ resetCategory cache category = do
   removeFromPassive cache.feedString
   removeFromPassive cache.feedList
   where
-    removeFromActive :: forall a. Map CategoryLabel (UpdateWatch a) -> Aff Unit
-    removeFromActive = Map.lookup category >>> maybe (pure unit) fst
+    removeFromActive :: forall a b. Map CategoryLabel (Controls a b) -> Aff Unit
+    removeFromActive = Map.lookup category >>> maybe (pure unit) (\(Controls c) -> c.reset)
     removeFromPassive :: forall a. (AVar (Map ArticleFeedType a)) -> Aff Unit
     removeFromPassive c =
       flip AVar.put c =<< Map.delete (CategoryFeed category) <$> AVar.take c
