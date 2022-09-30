@@ -2,10 +2,12 @@ module MosaicoServer where
 
 import Prelude
 
+import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(Nothing))
 import Data.Monoid (guard)
 import KSF.Paper as Paper
-import Lettera.Models (ArticleStub, Category, Tag, categoriesMap)
+import Lettera.Models (Article, ArticleStub, Category, Tag, categoriesMap)
+import Mosaico.Article.Advertorial.Basic (advertorialTopBanner)
 import Mosaico.Footer (footer)
 import Mosaico.Header as Header
 import Mosaico.MainContent (mainContent, jumpToMainContent)
@@ -21,6 +23,7 @@ type Props =
   , latestArticles :: Array ArticleStub
   , categoryStructure :: Array Category
   , headless :: Boolean
+  , article :: Maybe Article
   }
 
 type MainContent =
@@ -51,38 +54,36 @@ render props =
         , DOM.div
           { className: "grid mosaico" <> menuOpen
           , children:
-              guard (not props.headless) header
-              <>
-              [ mainContent extraClasses [props.mainContent.content] ] <>
-              guard (not props.headless)
-                [ footer mosaicoPaper mempty mempty
-                , case props.mainContent.type of
-                    FrontpageContent -> aside
-                    TagListContent _ -> aside
-                    _ -> mempty
-                ]
+              [ guard (not props.headless) Header.topLine
+              , guard (not props.headless) header
+              , advertorialBanner props.article
+              , mainContent extraClasses [props.mainContent.content]
+              , guard (not props.headless) ( footer mosaicoPaper mempty mempty )
+              , case props.mainContent.type of
+                  FrontpageContent -> aside
+                  TagListContent _ -> aside
+                  _ -> mempty
+              ]
           }
         ]
     }
   where
     header =
-      [ Header.topLine
-      , Header.render 0
-          { changeRoute: const mempty
-          , categoryStructure: props.categoryStructure
-          , catMap: categoriesMap props.categoryStructure
-          , onCategoryClick: const mempty
-          , user: Nothing
-          , onLogin: mempty
-          , onProfile: mempty
-          , onStaticPageClick: mempty
-          , onMenuClick: mempty
-          , showHeading: case props.mainContent.type of
-              ArticleContent -> false
-              StaticPageContent _ -> false
-              _ -> true
-          }
-      ]
+      Header.render 0
+        { changeRoute: const mempty
+        , categoryStructure: props.categoryStructure
+        , catMap: categoriesMap props.categoryStructure
+        , onCategoryClick: const mempty
+        , user: Nothing
+        , onLogin: mempty
+        , onProfile: mempty
+        , onStaticPageClick: mempty
+        , onMenuClick: mempty
+        , showHeading: case props.mainContent.type of
+            ArticleContent -> false
+            StaticPageContent _ -> false
+            _ -> true
+        }
     aside =
       DOM.aside
         { className: "mosaico--aside"
@@ -97,3 +98,4 @@ render props =
     extraClasses = case props.mainContent.type of
       MenuContent -> "md:[grid-column:1/span_2] lg:[grid-column:2/span_3]"
       _           -> mempty
+    advertorialBanner = foldMap advertorialTopBanner

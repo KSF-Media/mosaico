@@ -28,23 +28,26 @@ component = do
   React.component "Basic" $ \props -> React.do
     pure $ render imageComponent boxComponent props
 
-render :: (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
-render imageComponent boxComponent { article, imageProps, advertorialClassName } =
+advertorialTopBanner :: Article ->  JSX
+advertorialTopBanner article =
   let companyName details
         | "companyName" <- details.title = fold details.description
         | otherwise = mempty
-  in fragment
-       [ DOM.div
-           { className: "advertorial-top-banner"
-           , children:
-               [ DOM.span
-                   { className: "advertorial-top-banner__company"
-                   , children: [ DOM.text $ "ANNONS: " <> foldMap (String.toUpper <<< companyName) article.articleTypeDetails ]
-                   }
-               , Share.articleShareButtons article.title article.shareUrl
-               ]
-           }
-       , DOM.article
+  in DOM.div
+       { className: "advertorial-top-banner"
+       , children:
+           [ DOM.span
+               { className: "advertorial-top-banner__company"
+               , children: [ DOM.text $ "ANNONS: " <> foldMap (String.toUpper <<< companyName) article.articleTypeDetails ]
+               }
+           , Share.articleShareButtons article.title article.shareUrl
+           ]
+       }
+
+render :: (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
+render imageComponent boxComponent { article, imageProps, advertorialClassName } =
+  fragment
+       [ DOM.article
            { id: "BRAND-NEUTRAL"
            , className: "mosaico-article " <> fold advertorialClassName
            , children:

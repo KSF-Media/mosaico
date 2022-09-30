@@ -8,15 +8,18 @@
   grid-row-start: 3;
   grid-column: 1;
   min-height: 60px;
-  margin-top: @separator-height;
+  margin-top: -20px;
+  justify-content: space-between;
+  padding-right: 8px;
   @media (min-width: @breakpoint-3col) {
+    padding-right: 0;
     display: grid;
     background: #fff4e6;
     grid-row-start: 4;
     grid-column-start: 1;
     grid-column-end: 6;
-    margin-top: -(@mosaico-grid-row-gap + @separator-margin);
     grid-template-columns: @mosaico-grid-columns;
+    margin-top: -8px;
   }
 }
 

@@ -405,6 +405,7 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
                             , latestArticles
                             , categoryStructure: env.categoryStructure
                             , headless
+                            , article: Just article
                             }
 
       html <- liftEffect do
@@ -496,6 +497,7 @@ menu env _ = do
             , latestArticles: mempty
             , categoryStructure: env.categoryStructure
             , headless: false
+            , article: Nothing
           }
   html <- liftEffect do
             let windowVars =
@@ -548,6 +550,7 @@ tagList env { params: { tag } } = do
       , headless: false
       , mostReadArticles
       , latestArticles
+      , article: Nothing
       }
 
 epaperGuard :: HTTP.Request -> Aff (Either Failure Unit)
@@ -581,6 +584,7 @@ epaperPage env {} = do
           , mostReadArticles
           , latestArticles
           , headless: false
+          , article: Nothing
           }
 
 
@@ -613,6 +617,7 @@ staticPage env { params: { pageName } } = do
               , latestArticles
               , categoryStructure: env.categoryStructure
               , headless: false
+              , article: Nothing
               }
       html <- liftEffect do
         let windowVars =
@@ -671,6 +676,7 @@ debugList env { params: { uuid } } = do
           , latestArticles
           , categoryStructure: env.categoryStructure
           , headless: false
+          , article: Nothing
           }
 
 categoryPage :: Env -> { params :: { categoryName :: String }, guards :: { category :: Category} } -> Aff (Response ResponseBody)
@@ -804,6 +810,7 @@ renderCategoryPage env (Category category@{ label, type: categoryType, url}) = d
           , latestArticles
           , categoryStructure: env.categoryStructure
           , headless: false
+          , article: Nothing
           }
     title = if label == frontpageCategoryLabel then Paper.paperName mosaicoPaper else unwrap label
     startpageDescription = Paper.paperDescription mosaicoPaper
@@ -850,6 +857,7 @@ searchPage env { query: { search, limit } } = do
                           , latestArticles: Cache.getContent latestArticles
                           , categoryStructure: env.categoryStructure
                           , headless: false
+                          , article: Nothing
                           }
   html <- liftEffect do
             let windowVars =
@@ -880,6 +888,7 @@ profilePage env {} = do
                           , latestArticles: Cache.getContent latestArticles
                           , categoryStructure: env.categoryStructure
                           , headless: false
+                          , article: Nothing
                           }
   html <- liftEffect do
     let windowVars =
@@ -938,6 +947,7 @@ notFound env mainContent maybeMostReadArticles maybeLatestArticles = do
                         , latestArticles: fromMaybe [] maybeLatestArticles
                         , categoryStructure: env.categoryStructure
                         , headless: false
+                        , article: Nothing
                         }
   html <- liftEffect $ do
     let windowVars =

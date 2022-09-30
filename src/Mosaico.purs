@@ -703,6 +703,13 @@ render props setState state components router onPaywallEvent =
             if menuOpen
             then "md:[grid-column:1/span_2] lg:[grid-column:2/span_3]"
             else mempty
+          advertorialBanner = case state.route of
+            Routes.ArticlePage articleId
+              | Just (Right fullArticle@{ article }) <- state.article ->
+                  case article.articleType of
+                    Advertorial -> Advertorial.Basic.advertorialTopBanner article
+                    _ -> mempty
+            _ -> mempty
       in DOM.div
            { id: Paper.toString mosaicoPaper
            , children:
@@ -714,6 +721,7 @@ render props setState state components router onPaywallEvent =
                      [ guard (not props.headless) Header.topLine
                      , guard (not props.headless) header
                      , guard showAds Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false }
+                     , advertorialBanner
                      , mainContent mainContentClassName [content]
                      , guard (not props.headless) (footer mosaicoPaper onCategoryClick onStaticPageClick) --remember to hide footer if headless
                      , guard showAside $ DOM.aside
