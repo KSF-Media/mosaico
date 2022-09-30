@@ -18,3 +18,9 @@ export function sentryDsn_() {
 export function setManualScrollRestoration() {
   history.scrollRestoration = 'manual';
 }
+
+export function sendTriggerbeeEvent(email) {
+  var mtr_custom = mtr_custom || {goal: () => {}};
+  mtr_custom.session = { email: email };
+  mtr_custom.goal("Logged in");
+}

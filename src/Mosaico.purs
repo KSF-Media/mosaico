@@ -2,6 +2,7 @@ module Mosaico where
 
 import Prelude
 
+import Affjax.Web (driver)
 import Control.Alt ((<|>))
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core (toArray, toBoolean, toString) as JSON
@@ -12,15 +13,15 @@ import Data.Either (Either(..), hush)
 import Data.Foldable (foldMap, elem)
 import Data.HashMap (HashMap)
 import Data.HashMap as HashMap
+import Data.Int (ceil)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing, maybe)
 import Data.Monoid (guard)
 import Data.Newtype (unwrap)
-import Data.String.Regex (match, regex) as Regex
-import Data.Int (ceil)
 import Data.Nullable (Nullable, toMaybe)
+import Data.String.Regex (match, regex) as Regex
 import Data.Time.Duration (Milliseconds(..))
-import Data.Tuple (Tuple (..), fst)
+import Data.Tuple (Tuple(..), fst)
 import Data.UUID as UUID
 import Effect (Effect)
 import Effect.AVar as AVar
@@ -32,6 +33,7 @@ import Effect.Exception as Exception
 import Effect.Random (randomInt)
 import Effect.Uncurried (EffectFn1, runEffectFn1)
 import KSF.Auth (enableCookieLogin) as Auth
+import KSF.Driver (setDriver)
 import KSF.Paper as Paper
 import KSF.Sentry as Sentry
 import KSF.Spinner (loadingSpinner)
@@ -48,8 +50,8 @@ import Mosaico.Cache as Cache
 import Mosaico.Epaper as Epaper
 import Mosaico.Error as Error
 import Mosaico.Eval (ScriptTag(..), evalExternalScripts)
-import Mosaico.Feed as Feed
 import Mosaico.Feed (ArticleFeed(..), ArticleFeedType(..), JSInitialFeed, parseFeed)
+import Mosaico.Feed as Feed
 import Mosaico.Footer (footer)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
 import Mosaico.Frontpage.Events (onFrontpageClick)
@@ -76,15 +78,15 @@ import Routing (match)
 import Routing.PushState (LocationState, PushStateInterface, locations, makeInterface)
 import Simple.JSON (read) as JSON
 import Web.HTML (window) as Web
-import Web.HTML.History (back) as Web
 import Web.HTML.HTMLDocument (setTitle) as Web
+import Web.HTML.History (back) as Web
 import Web.HTML.Window (document, history, scroll) as Web
-import KSF.Driver (setDriver)
-import Affjax.Web (driver)
 
 foreign import refreshAdsImpl :: EffectFn1 (Array String) Unit
 foreign import sentryDsn_ :: Effect String
 foreign import setManualScrollRestoration :: Effect Unit
+
+foreign import sendTriggerbeeEvent :: EffectFn1 String Unit
 
 data ModalView = LoginModal
 
@@ -242,9 +244,10 @@ mosaicoComponent initialValues props = React.do
       -- magicLogin doesn't actually call the callback if it fails
       magicLogin Nothing $ hush >>> \u -> Aff.launchAff_ $ withLoginLock do
         giveUpLogin
-        liftEffect $ do
+        liftEffect do
           setState _ { user = Just u }
           state.logger.setUser u
+          foldMap (\user -> runEffectFn1 sendTriggerbeeEvent user.email) u
         alreadySent <- Aff.AVar.take alreadySentInitialAnalytics
         when (not alreadySent) $ liftEffect $ initialSendAnalytics u
       advertorials <- Lettera.responseBody <$> Lettera.getAdvertorials mosaicoPaper
@@ -488,6 +491,7 @@ render props setState state components router onPaywallEvent =
                setState _ { modalView = Nothing, user = Just $ Just u }
                state.logger.setUser $ Just u
                onPaywallEvent
+               runEffectFn1 sendTriggerbeeEvent u.email
              Left _err -> do
                onPaywallEvent
                -- TODO: Handle properly
