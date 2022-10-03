@@ -13,7 +13,12 @@ function _checkEncodedConsentCookie(consents, id) {
 function _setDecodedConsentCookie(consents, encodedCookie) {
     try {
         const decodedTCString = TCString.decode(JSON.parse(encodedCookie)[3][0]);
-        decodedTCString.purposeConsents.has(1) ? consents["store_cookies"] = "granted" : consents["store_cookies"] = "denied"
+        if (decodedTCString.purposeConsents.has(1)) {
+          window.consentToEmbeddedScripts(true);
+          consents["store_cookies"] = "granted";
+        } else {
+          consents["store_cookies"] = "denied";
+        }
     } catch (err) {
         console.error("error when setting consent cookie", err)
     } finally {
