@@ -3,10 +3,10 @@ module MosaicoServer where
 import Prelude
 
 import Data.Foldable (foldMap)
-import Data.Maybe (Maybe(Nothing))
+import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import KSF.Paper as Paper
-import Lettera.Models (Article, ArticleStub, Category, Tag, categoriesMap)
+import Lettera.Models (Article, ArticleStub, Category, Tag, ArticleType(Advertorial), categoriesMap)
 import Mosaico.Article.Advertorial.Basic (advertorialTopBanner)
 import Mosaico.Footer (footer)
 import Mosaico.Header as Header
@@ -56,7 +56,7 @@ render props =
           , children:
               [ guard (not props.headless) Header.topLine
               , guard (not props.headless) header
-              , advertorialBanner props.article
+              , guard (Just Advertorial == (_.articleType <$> props.article)) advertorialBanner props.article
               , mainContent extraClasses [props.mainContent.content]
               , guard (not props.headless) ( footer mosaicoPaper mempty mempty )
               , case props.mainContent.type of
