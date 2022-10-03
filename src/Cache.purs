@@ -33,6 +33,7 @@ import Effect.Now (nowDateTime)
 import Lettera (LetteraResponse(..))
 import Lettera as Lettera
 import Lettera.Models (ArticleStub, Category(..), CategoryLabel, CategoryType(..), Categories, Tag)
+import Mosaico.Cors as Cors
 import Mosaico.Feed (ArticleFeedType(..), ArticleFeed(..))
 import Mosaico.Paper (mosaicoPaper)
 import Payload.Headers as Headers
@@ -85,6 +86,7 @@ type Cache =
   , mode :: CacheMode
   -- Not using UpdateWatch for this, this is controlled by Main.
   , storedCategoryRender :: AVar (Map CategoryLabel (Stamped String))
+  , corsProxyCache :: AVar (Map String (Stamped String))
   }
 
 startUpdates :: forall a. (Maybe String -> Aff (LetteraResponse a)) -> Effect (UpdateWatch (Maybe a))
@@ -159,6 +161,7 @@ initClientCache initial = do
   feedList <- initFeed getList
   feedString <- initFeed getHtml
   storedCategoryRender <- Effect.AVar.new Map.empty
+  corsProxyCache <- Effect.AVar.new Map.empty
   let static = pure emptyStamp
   pure $
     { prerendered: Map.empty
@@ -169,6 +172,7 @@ initClientCache initial = do
     , feedString
     , mode: Client
     , storedCategoryRender
+    , corsProxyCache
     }
 
 initServerCache :: Array Category -> Effect Cache
@@ -326,6 +330,38 @@ readCategoryRender cache category = do
         flip AVar.put store =<< Map.delete category <$> AVar.take store
         pure Nothing
         else pure $ Just value
+
+saveCorsResult :: Cache -> String -> Stamped String -> Aff (Stamped String)
+saveCorsResult cache url content = do
+  let store = cache.corsProxyCache
+  flip AVar.put store =<< Map.insert url content <$> AVar.take store
+  pure content
+
+readCorsResult :: Cache -> String -> Aff (Either String (Stamped String))
+readCorsResult cache url = do
+  let store = cache.corsProxyCache
+  cached <- Map.lookup url <$> AVar.read store
+  now <- liftEffect nowDateTime
+  let maxAge = fromMaybe now $ adjust (Seconds $ toNumber 300) now
+  case cached of
+    Nothing -> do
+      result <- Cors.fetchUrl url
+      case result of
+        Left err -> pure $ Left err
+        Right content -> do
+          stamped <- saveCorsResult cache url $ Stamped { validUntil: maxAge, content }
+          pure $ Right stamped
+    Just value@(Stamped {validUntil}) -> do
+      if now > validUntil
+      then do
+        flip AVar.put store =<< Map.delete url <$> AVar.take store
+        result <- Cors.fetchUrl url
+        case result of
+          Left err -> pure $ Left err
+          Right content -> do
+            stamped <- saveCorsResult cache url $ Stamped { validUntil: maxAge, content }
+            pure $ Right stamped
+      else pure $ Right value
 
 addHeader :: forall a b. DateTime -> Stamped b -> Response a -> Response a
 addHeader now (Stamped { validUntil }) =

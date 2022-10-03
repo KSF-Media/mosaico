@@ -214,6 +214,11 @@ spec ::
                 { response :: ResponseBody
                 , params :: { path :: List String}
                 }
+         , corsProxy ::
+              GET "/corsProxy?url=<url>"
+                { response :: ResponseBody
+                , query :: { url :: String }
+                }
          }
     , guards ::
          { category :: Category
@@ -301,6 +306,7 @@ main = do
           , profilePage: profilePage env
           , menu: menu env
           , adsTxt
+          , corsProxy: corsProxyPage env
           }
         guards =
           { category: parseCategory env
@@ -967,6 +973,16 @@ notFound env mainContent maybeMostReadArticles maybeLatestArticles = do
       appendHead (makeTitle "Oops... 404")
   pure $ htmlContent $ Response.notFound $ StringBody $ renderTemplateHtml html
 
+corsProxyPage
+  :: Env
+  -> { query :: { url :: String } }
+  -> Aff (Response ResponseBody)
+corsProxyPage env { query: { url } } = do
+  result <- Cache.readCorsResult env.cache url
+  case result of
+    Left err -> pure $ jsContent $ Response.unauthorized $ StringBody $ err
+    Right content -> pure $ jsContent $ Response.ok $ StringBody $ Cache.getContent content
+
 parseCategory :: Env -> HTTP.Request -> Aff (Either Failure Category)
 parseCategory { categoryRegex, categoryStructure } req = do
   let url = HTTP.requestURL req
@@ -982,6 +998,10 @@ parseCategory { categoryRegex, categoryStructure } req = do
 htmlContent :: forall a. Response a -> Response a
 htmlContent (Response response) =
   Response $ response { headers = Headers.set "content-type" ContentType.html response.headers }
+
+jsContent :: forall a. Response a -> Response a
+jsContent (Response response) =
+  Response $ response { headers = Headers.set "content-type" ContentType.javaScript response.headers }
 
 stdVars :: Env -> Maybe (Stamped String) -> Stamped (Array ArticleStub) -> Stamped (Array ArticleStub) -> Array (Tuple String Json)
 stdVars env initialBreakingNews mostReadArticles latestArticles =

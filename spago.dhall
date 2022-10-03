@@ -5,6 +5,7 @@ You can edit this file as you like.
 { name = "mosaico"
 , dependencies =
   [ "aff"
+  , "aff-promise"
   , "affjax"
   , "affjax-web"
   , "affresco-components"
@@ -36,6 +37,7 @@ You can edit this file as you like.
   , "nullable"
   , "ordered-collections"
   , "parallel"
+  , "partial"
   , "payload"
   , "prelude"
   , "random"
