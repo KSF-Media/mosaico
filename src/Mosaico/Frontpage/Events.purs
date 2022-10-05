@@ -29,4 +29,5 @@ onFrontpageClick setRoute = handler nativeEvent $ \event -> do
     Just href | String.take 1 href == "/" -> do
       Event.preventDefault event
       Event.stopPropagation event
+      setRoute href
     _ -> pure unit
