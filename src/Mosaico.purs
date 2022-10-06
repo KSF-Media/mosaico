@@ -710,38 +710,38 @@ render props setState state components router onPaywallEvent =
                     Advertorial -> Advertorial.Basic.advertorialTopBanner article
                     _ -> mempty
             _ -> mempty
+          hideAds = not showAds
       in DOM.div
            { id: Paper.toString mosaicoPaper
            , children:
              [ jumpToMainContent
-             , guard showAds Mosaico.ad { contentUnit: "mosaico-ad__top-parade", inBody: false }
+             , Mosaico.ad { contentUnit: "mosaico-ad__top-parade", inBody: false, hideAds }
              , DOM.div
                  { className: "grid mosaico" <> (if menuOpen then " menu-open" else mempty)
                  , children:
                      [ guard (not props.headless) Header.topLine
                      , guard (not props.headless) header
-                     , guard showAds Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false }
+                     , Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false, hideAds }
                      , advertorialBanner
                      , mainContent mainContentClassName [content]
                      , guard (not props.headless) (footer mosaicoPaper onCategoryClick onStaticPageClick) --remember to hide footer if headless
                      , guard showAside $ DOM.aside
                          { className: "mosaico--aside"
                          , children:
-                             [ guard showAds Mosaico.ad { contentUnit: "mosaico-ad__box", inBody: false }
+                             [ Mosaico.ad { contentUnit: "mosaico-ad__box", inBody: false, hideAds }
                              , MostReadList.render
                                  { mostReadArticles
                                  , onClickHandler
                                  }
-                             , guard showAds Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false }
+                             , Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
                              , LatestList.render
                                  { latestArticles
                                  , onClickHandler
                                  }
-                             ] <> guard showAds
-                             [ Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false }
-                             , Mosaico.ad { contentUnit: "mosaico-ad__box3", inBody: false }
-                             , Mosaico.ad { contentUnit: "mosaico-ad__box4", inBody: false }
-                             , Mosaico.ad { contentUnit: "mosaico-ad__box5", inBody: false }
+                             , Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false, hideAds }
+                             , Mosaico.ad { contentUnit: "mosaico-ad__box3", inBody: false, hideAds }
+                             , Mosaico.ad { contentUnit: "mosaico-ad__box4", inBody: false, hideAds }
+                             , Mosaico.ad { contentUnit: "mosaico-ad__box5", inBody: false, hideAds }
                              ]
                          }
                      ]

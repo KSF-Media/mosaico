@@ -108,7 +108,11 @@ adHook { placeholderText, targetId } = HtmlRenderer.replacingHook
                               , text      == placeholderText -> true
                             _                                   -> false
                        )
-  , processNode: (\_ _ _ -> pure $ Mosaico.ad { contentUnit: targetId, inBody: false }
+  , processNode: (\_ _ _ -> pure $ Mosaico.ad
+                                       { contentUnit: targetId
+                                       , inBody: false
+                                       , hideAds: false -- we shouldn't ever have to hide ads in the frontpage
+                                       }
                  )
   }
 

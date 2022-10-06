@@ -79,7 +79,7 @@ render imageComponent boxComponent { article, imageProps, advertorialClassName }
                            , children:
                                [ DOM.section
                                    { className: "article-content"
-                                   , children: map (Article.renderElement imageComponent boxComponent Nothing) article.body
+                                   , children: map (Article.renderElement true imageComponent boxComponent Nothing) article.body
                                    }
                                ]
                            }

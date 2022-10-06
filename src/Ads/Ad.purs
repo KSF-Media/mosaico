@@ -34,6 +34,7 @@ type Self =
 type Props =
   { contentUnit :: String
   , inBody :: Boolean
+  , hideAds :: Boolean
   }
 
 type State =
@@ -41,8 +42,10 @@ type State =
   , isLazy :: Maybe Boolean
   }
 
+-- TODO: convert to hooks
 ad :: Props -> JSX
-ad = make component
+ad { hideAds: true } = mempty
+ad props = make component
   { initialState: { gamId: Nothing, isLazy: Nothing }
   , didMount: \self -> do
       runEffectFn1 fetchAdImpl self.props.contentUnit
@@ -50,7 +53,7 @@ ad = make component
       isLazy <- runEffectFn1 getIsLazy self.props.contentUnit
       self.setState _ { gamId = toMaybe gamId, isLazy = toMaybe isLazy }
   , render: render
-  }
+  } props
     where
       blockClass = "mosaico-ad"
       networkCode = "21664538223"

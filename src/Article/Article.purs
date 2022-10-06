@@ -90,15 +90,16 @@ render imageComponent boxComponent props =
         tags = getTags props.article
         mainImage = getMainImage props.article
         body = getBody props.article
-        bodyWithoutAd = map (renderElement imageComponent boxComponent (Just props.onArticleClick)) body
+        hideAds = getRemoveAds props.article
+        bodyWithoutAd = map (renderElement hideAds imageComponent boxComponent (Just props.onArticleClick)) body
         bodyWithAd = 
           [ DOM.section
             { className: "article-content"
-            , children: map (renderElement imageComponent boxComponent (Just props.onArticleClick))
+            , children: map (renderElement hideAds imageComponent boxComponent (Just props.onArticleClick))
                 <<< insertAdsIntoBodyText "mosaico-ad__bigbox1" "mosaico-ad__bigbox2" $ body
             }
           ]
-        advertorial = foldMap renderAdvertorialTeaser props.advertorial
+        advertorial = if hideAds then mempty else foldMap renderAdvertorialTeaser props.advertorial
         mostRead = foldMap renderMostReadArticles $
           if null props.mostReadArticles then Nothing else Just $ take 5 props.mostReadArticles
         shareUrl = getShareUrl props.article
@@ -169,16 +170,16 @@ render imageComponent boxComponent props =
                     , DOM.div
                         { className: "mosaico-article__aside"
                         , children:
-                          [ Mosaico.ad { contentUnit: "mosaico-ad__box", inBody: false }
+                          [ Mosaico.ad { contentUnit: "mosaico-ad__box", inBody: false, hideAds }
                           , LatestList.render
                                      { latestArticles: props.latestArticles
                                      , onClickHandler: props.onArticleClick
                                      }
-                          , Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false }
-                          , Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false }
-                          , Mosaico.ad { contentUnit: "mosaico-ad__box3", inBody: false }
-                          , Mosaico.ad { contentUnit: "mosaico-ad__box4", inBody: false }
-                          , Mosaico.ad { contentUnit: "mosaico-ad__box5", inBody: false }
+                          , Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
+                          , Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false, hideAds }
+                          , Mosaico.ad { contentUnit: "mosaico-ad__box3", inBody: false, hideAds }
+                          , Mosaico.ad { contentUnit: "mosaico-ad__box4", inBody: false, hideAds }
+                          , Mosaico.ad { contentUnit: "mosaico-ad__box5", inBody: false, hideAds }
                           ]
                         }
                     ]
@@ -367,8 +368,8 @@ render imageComponent boxComponent props =
 
 -- TODO: maybe we don't want to deal at all with the error cases
 -- and we want to throw them away?
-renderElement :: (Image.Props -> JSX) -> (Box.Props -> JSX) -> Maybe (ArticleStub -> EventHandler) -> BodyElement -> JSX
-renderElement imageComponent boxComponent onArticleClick el =  case el of
+renderElement :: Boolean -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Maybe (ArticleStub -> EventHandler) -> BodyElement -> JSX
+renderElement hideAds imageComponent boxComponent onArticleClick el =  case el of
   -- Can't place div's or blockquotes under p's, so place them under div.
   -- This is usually case with embeds
   Html content -> DOM.div
@@ -423,11 +424,7 @@ renderElement imageComponent boxComponent onArticleClick el =  case el of
           [ DOM.ul_ $ map renderRelatedArticle related
           ]
       }
-  Ad { contentUnit, inBody} ->
-      Mosaico.ad {
-        contentUnit,
-        inBody
-      }
+  Ad { contentUnit, inBody} -> Mosaico.ad { contentUnit, inBody, hideAds }
   where
     block = "article-element"
     renderRelatedArticle article =
