@@ -177,7 +177,7 @@
   },
   {
     "route": "rattelser",
-    "destination": "r%C3%A4ttelser"
+    "destination": "/r%C3%A4ttelser"
   },
   {
     "route": "prenumerera",
