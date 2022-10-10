@@ -20,7 +20,8 @@ export function setManualScrollRestoration() {
 }
 
 export function sendTriggerbeeEvent(email) {
-  var mtr_custom = mtr_custom || {goal: () => {}};
+  var mtr_custom = window.mtr_custom || {};
+  var mtr = window.mtr || { goal: () => {} };
   mtr_custom.session = { email: email };
-  mtr_custom.goal("Logged in");
+  mtr.goal("Logged in");
 }
