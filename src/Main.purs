@@ -99,7 +99,11 @@ foreign import appendHeadImpl :: EffectFn2 String Template Template
 appendHead :: String -> Template -> Effect Template
 appendHead content htmlTemplate =
   runEffectFn2 appendHeadImpl
-  ("<link rel='icon' href='https://cdn.ksfmedia.fi/mosaico/favicon/" <> Paper.cssName mosaicoPaper <> "/favicon.svg'/>" <> content)
+  ("<link rel='icon' type='image/png' href='https://cdn.ksfmedia.fi/mosaico/favicon/" <> Paper.cssName mosaicoPaper <> "/favicon-48.png'/>"
+  <> "<link rel='icon' type='image/svg+xml' href='https://cdn.ksfmedia.fi/mosaico/favicon/" <> Paper.cssName mosaicoPaper <> "/favicon-svg.svg'/>"
+  <> "<link rel='apple-touch-icon' href='https://cdn.ksfmedia.fi/mosaico/favicon/" <> Paper.cssName mosaicoPaper <> "/favicon-180.png'/>"
+  <> "<link rel='manifest' href='/assets/" <> Paper.cssName mosaicoPaper <> "-manifest.json'/>"
+  <> content)
   htmlTemplate
 
 foreign import appendVarsImpl :: EffectFn2 String Template Template

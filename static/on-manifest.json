@@ -1,0 +1,47 @@
+{
+  "name": "Östnyland - ostnyland.fi",
+  "short_name": "Östnyland.fi",
+  "description": "Nyheter från östra Nylands största svenskspråkiga tidning.",
+  "icons": [
+    {
+      "src": "https://cdn.ksfmedia.fi/mosaico/favicon/on/favicon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn.ksfmedia.fi/mosaico/favicon/on/favicon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+        "src": "https://cdn.ksfmedia.fi/mosaico/favicon/on/favicon-192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+    },
+    {
+        "src": "https://cdn.ksfmedia.fi/mosaico/favicon/on/favicon-512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+    },
+    {
+      "src": "https://cdn.ksfmedia.fi/mosaico/favicon/on/favicon-svg.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+],
+  "start_url": "../",
+  "background_color": "#518196",
+  "display": "browser",
+  "prefer_related_applications": true,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=fi.ksfmedia.ostnyland",
+      "id": "fi.ksfmedia.ostnyland"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/fi/app/%C3%B6n-nyheter/id1508293423"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "name": "Västra Nyland - vastranyland.fi",
+  "short_name": "Vastranyland.fi",
+  "description": "Nyheter från Västnylands största svenskspråkiga tidning.",
+  "icons": [
+    {
+      "src": "https://cdn.ksfmedia.fi/mosaico/favicon/vn/favicon-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn.ksfmedia.fi/mosaico/favicon/vn/favicon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+        "src": "https://cdn.ksfmedia.fi/mosaico/favicon/vn/favicon-192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+    },
+    {
+        "src": "https://cdn.ksfmedia.fi/mosaico/favicon/vn/favicon-512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+    },
+    {
+      "src": "https://cdn.ksfmedia.fi/mosaico/favicon/vn/favicon-svg.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+],
+  "start_url": "../",
+  "background_color": "#c90c0f",
+  "display": "browser",
+  "prefer_related_applications": true,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=fi.ksfmedia.vastranyland",
+      "id": "fi.ksfmedia.vastranyland"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/fi/app/vn-nyheter/id1508293600"
+    }
+  ]
+}
