@@ -89,14 +89,14 @@ render imageComponent boxComponent props =
     let title = getTitle props.article
         tags = getTags props.article
         mainImage = getMainImage props.article
+        renderElem = renderElement hideAds imageComponent boxComponent (Just props.onArticleClick)
         body = getBody props.article
         hideAds = getRemoveAds props.article
-        bodyWithoutAd = map (renderElement hideAds imageComponent boxComponent (Just props.onArticleClick)) body
-        bodyWithAd = 
+        bodyWithoutAd = map renderElem body
+        bodyWithAd =
           [ DOM.section
             { className: "article-content"
-            , children: map (renderElement hideAds imageComponent boxComponent (Just props.onArticleClick))
-                <<< insertAdsIntoBodyText "mosaico-ad__bigbox1" "mosaico-ad__bigbox2" $ body
+            , children: map renderElem $ insertAdsIntoBodyText "mosaico-ad__bigbox1" "mosaico-ad__bigbox2" body
             }
           ]
         advertorial = if hideAds then mempty else foldMap renderAdvertorialTeaser props.advertorial
@@ -153,9 +153,10 @@ render imageComponent boxComponent props =
                         { className: "mosaico-article__body"
                         , children: case _.articleType <$> props.article of
                           Right PreviewArticle ->
-                            bodyWithAd
+                            bodyWithoutAd
                             `snoc` paywallFade
                             `snoc` (if isNothing props.user then loadingSpinner else vetrina)
+                            `snoc` renderElem (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false })
                             `snoc` advertorial
                             `snoc` mostRead
                           Right DraftArticle ->
