@@ -21,6 +21,8 @@ isWhitelisted :: String -> Maybe String
 isWhitelisted url = case urlWithoutProtocol of
     "www.riddle.com/embed/files/js/embed.js" -> Just urlAsHttps
     "platform.instagram.com/en_US/embeds.js" -> Just urlAsHttps
+    "www.instagram.com/embed.js" -> Just urlAsHttps
+    "platform.twitter.com/widgets.js" -> Just urlAsHttps
     "embed.tt.se/v10/tt-widget.js" -> Just urlAsHttps
     _ -> Nothing
   where urlWithoutProtocol = replace protocolRegex "" url
