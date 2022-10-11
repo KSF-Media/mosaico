@@ -1017,7 +1017,13 @@ corsProxyPage
 corsProxyPage env { query: { url } } = do
   result <- Cache.readCorsResult env.cache url
   case result of
-    Left err -> pure $ jsContent $ Response.unauthorized $ StringBody $ err
+    Left err ->
+      -- Whatever we get as an error, wrap that into console.warn
+      -- so we can get some hint on why that embed failed.
+      -- This is executed on the client side code.
+      let errorMsg = JSON.stringify $ JSON.fromString err
+          errorLog = "console.warn(" <> errorMsg <> ")"
+      in  pure $ jsContent $ Response.unauthorized $ StringBody errorLog
     Right content -> pure $ jsContent $ Response.ok $ StringBody $ Cache.getContent content
 
 parseCategory :: Env -> HTTP.Request -> Aff (Either Failure Category)
