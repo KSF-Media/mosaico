@@ -2,7 +2,7 @@ import { applyCredentials } from '../Mosaico.Cache.Pubsub.Init/index.js';
 
 // Side effect: May alter process.env.GOOGLE_APPLICATION_CREDENTIALS
 const projectId = applyCredentials();
-const paper = process.env.PAPER || "hbl"
+const paper = (process.env.PAPER === 'ön' ? 'on' : process.env.PAPER) || "hbl"
 const topic = 'aptoma-frontpage-'+paper;
 
 import { PubSub } from '@google-cloud/pubsub';
