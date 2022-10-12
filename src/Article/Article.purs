@@ -341,7 +341,7 @@ render imageComponent boxComponent props =
                   , alt
                   }
               , DOM.h2
-                  { className: "mt-3 text-3xl font-semibold font-robotoslab"
+                  { className: "mt-3 text-3xl font-semibold break-words font-robotoslab"
                   , children: [ DOM.text $ fromMaybe article.title article.listTitle ]
                   }
               ]
