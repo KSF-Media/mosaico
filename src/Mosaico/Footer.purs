@@ -21,6 +21,7 @@ footer mosaicoPaper onCategoryClick onStaticPageClick =
     { className: "flex flex-col items-center py-12 px-0 m-0 bg-gray-50 lg:px-2 font-roboto [grid-area:foot]"
     , children:
         [ contactInfo mosaicoPaper commonFooter
+        , appLinks mosaicoPaper
         , DOM.hr { className: "w-4/5 md:w-56 lg:w-96 mt-0 mx-auto mb-5 bg-gray-300 border-0 h-[1px]" }
         , DOM.div
             { className: "mt-6 mb-4 text-sm font-black text-gray-400"
@@ -274,6 +275,54 @@ footerLinks onCategoryClick onStaticPageClick =
         , className: "my-1 mx-auto text-sm text-gray-900 no-underline md:mx-5"
         , children: [ DOM.text $ unwrap label ]
         , onClick: onCategoryClick cat
+        }
+
+appLinks :: Paper -> JSX
+appLinks mosaicoPaper =
+  let appStoreUrl =
+        case mosaicoPaper of
+          HBL -> "https://apps.apple.com/app/apple-store/id1473028619?pt=562401&ct=site-footer&mt=8"
+          ON -> "https://apps.apple.com/app/apple-store/id1508293423?pt=562401&ct=site-footer&mt=8"
+          VN -> "https://apps.apple.com/app/apple-store/id1508293600?pt=562401&ct=site-footer&mt=8"
+          _ -> "https://apps.apple.com/app/apple-store/id1473028619?pt=562401&ct=site-footer&mt=8"
+      googlePlayUrl =
+        case mosaicoPaper of
+          HBL -> "https://play.google.com/store/apps/details?id=fi.ksfmedia.hbl&utm_source=site&utm_campaign=site-footer"
+          ON -> "https://play.google.com/store/apps/details?id=fi.ksfmedia.ostnyland&utm_source=site&utm_campaign=site-footer"
+          VN -> "https://play.google.com/store/apps/details?id=fi.ksfmedia.vastranyland&utm_source=site&utm_campaign=site-footer"
+          _ -> "https://play.google.com/store/apps/details?id=fi.ksfmedia.hbl&utm_source=site&utm_campaign=site-footer"
+      appStoreBadgeUrl = "https://cdn.ksfmedia.fi/mosaico/app-download-icons/app-store-badge.svg"
+      googlePlayBadgeUrl = "https://cdn.ksfmedia.fi/mosaico/app-download-icons/google-play-badge.svg"
+  in DOM.div
+    { className: "flex flex-col justify-center items-center mx-auto mt-0 mb-8 px-2.5"
+    , children:
+      [ DOM.div
+          { className: "text-base text-gray-900 text-center mb-2 max-w-xs md:max-w-xl"
+          , children:
+              [ DOM.text "Ladda ned vår nyhetsapp – det smidigaste sättet att läsa våra nyheter." ]
+          }
+      , DOM.div
+          { className: "flex flex-row justify-center items-center py-2.5"
+          , children:
+              [ storeLink "Hämta vår nyhetsapp från App Store" appStoreUrl appStoreBadgeUrl
+              , storeLink "Ladda ned vår nyhetsapp från Google Play" googlePlayUrl googlePlayBadgeUrl
+              ]
+          }
+      ]
+    }
+  where
+    storeLink altText url badgeUrl =
+      DOM.a
+        { href: url
+        , className: "px-1.5"
+        , children:
+          [ DOM.img {
+              src: badgeUrl
+            , loading: "lazy"
+            , className: "h-[35px] md:h-[40px]"
+            , alt: altText
+            }
+          ]
         }
 
 column :: Array JSX -> JSX
