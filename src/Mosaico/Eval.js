@@ -23,6 +23,10 @@ export function allowExternalScriptsImpl() {
 
 export const consentedToEmbeddedScripts = (typeof window !== "undefined") && new Promise(resolve => {
   window.consentToEmbeddedScripts = resolve;
+  if(document && document.location.pathname.startsWith("/artikel/draft/")) {
+    // We're in Aptoma's preview window, load embeds
+    window.consentToEmbeddedScripts(true);
+  }
 });
 
 export async function evalExternalScriptsImpl(scripts) {
