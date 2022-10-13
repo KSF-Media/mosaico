@@ -22,6 +22,7 @@ type StringArticleMetadata =
   , category :: String
   , section :: String
   , articleUuid :: String
+  , articleLength :: Int
   , tags :: String
   , userCusno :: String
   , userSubs :: String
@@ -45,6 +46,7 @@ sendArticleAnalytics article user = do
           , category: fromMaybe "" article.analyticsCategory
           , section: fromMaybe "" article.analyticsSection
           , listTitle: fromMaybe "" article.listTitle
+          , articleLength: article.charLength
           , articleUuid: (article.uuid :: String)
           , tags: intercalate ", " $ show <$> article.tags
           , userCusno: case user of

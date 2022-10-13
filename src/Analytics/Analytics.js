@@ -13,6 +13,7 @@ export function _pushToDataLayer(metadata) {
     push_data.articleUuid = metadata.articleUuid
     push_data.userCusno = metadata.userCusno
     push_data.userSubs = metadata.userSubs
+    push_data.articleLength = metadata.articleLength
     push_data.tags = metadata.tags.split("\, ").map(x => x.replaceAll('"', ''))
     dataLayer.push(push_data)
 }
