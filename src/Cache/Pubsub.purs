@@ -8,6 +8,9 @@ import Control.Promise (Promise, toAffE)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as Aff
+import Effect.Class (liftEffect)
+import Data.DateTime (DateTime)
+import Data.JSDate (JSDate, toDateTime)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
 import Data.Nullable (Nullable, toMaybe)
@@ -25,12 +28,16 @@ foreign import enabled :: Boolean
 foreign import categoryImpl :: Message -> Nullable String
 foreign import maxAge :: Message -> Int
 foreign import content :: Message -> Buffer
+foreign import stampImpl :: Message -> Nullable JSDate
 
 subscribe :: (Message -> Effect Unit) -> Aff Unit
 subscribe = subscribeImpl >>> toAffE
 
 messageCategory :: Message -> Maybe CategoryLabel
 messageCategory = categoryImpl >>> toMaybe >>> map CategoryLabel
+
+stamp :: Message -> Maybe DateTime
+stamp = stampImpl >>> toMaybe >=> toDateTime
 
 toLetteraResponse :: Message -> Effect (LetteraResponse String)
 toLetteraResponse msg = do
@@ -46,6 +53,11 @@ startListen cache = do
     let category = messageCategory msg
     case flip Map.lookup cache.prerendered =<< category of
       Just (Cache.Controls c) -> do
-        c.set =<< toLetteraResponse msg
-        maybe (pure unit) (Aff.launchAff_ <<< Purge.purgeCategory) category
+        let maybeStamp = stamp msg
+        case maybeStamp of
+          Nothing -> pure unit
+          Just s -> Aff.launchAff_ do
+            updated <- c.set s =<< liftEffect (toLetteraResponse msg)
+            when updated $
+              maybe (pure unit) Purge.purgeCategory category
       _ -> pure unit

@@ -42,25 +42,27 @@ import Payload.ResponseTypes (Response(..))
 
 data Stamped a = Stamped
   { validUntil :: DateTime
+    -- | Checked in off band cache set to guard against stale content
+  , age :: DateTime
   , content :: a
   }
 
 -- Always expired
 emptyStamp :: forall m a. Plus m => Stamped (m a)
 emptyStamp =
-  Stamped { validUntil: bottom, content: empty }
+  Stamped { validUntil: bottom, age: bottom, content: empty }
 
 -- Always valid
 eotStamp :: forall m a. Plus m => Stamped (m a)
 eotStamp =
-  Stamped { validUntil: top, content: empty }
+  Stamped { validUntil: top, age: bottom, content: empty }
 
 instance functorStamped :: Functor Stamped where
   map f (Stamped s@{ content }) = Stamped $ s { content = f content }
 
 instance applyStamped :: Apply Stamped where
-  apply (Stamped { validUntil: t1, content: f}) (Stamped { validUntil: t2, content: x}) =
-    Stamped { validUntil: min t1 t2, content: f x }
+  apply (Stamped { validUntil: t1, age: a1, content: f}) (Stamped { validUntil: t2, age: a2, content: x}) =
+    Stamped { validUntil: min t1 t2, age: max a1 a2, content: f x }
 
 getContent :: forall a. Stamped a -> a
 getContent (Stamped { content }) = content
@@ -72,14 +74,14 @@ toValidUntil now maxAge =
 
 data Controls a b = Controls
   { reset :: Aff Unit
-  , set :: LetteraResponse a -> Effect Unit
+  , set :: DateTime -> LetteraResponse a -> Aff Boolean
   , content :: Aff (Stamped b)
   }
 
 instance profunctorControls :: Profunctor Controls where
   dimap f g (Controls c@{ content}) = Controls $ c
     { content = (map <<< map) g content
-    , set = \x -> c.set $ f <$> x
+    , set = \a x -> c.set a $ f <$> x
     }
 
 -- Reset handle and a value that's being kept updated
@@ -117,13 +119,13 @@ startUpdates fetch = do
         offband <- AVar.tryTake offbandUpdate
         LetteraResponse response <-
           maybe (fetch =<< hush <<< formatDateTime "YYYYMMDDHHmmss"
-                 <$> liftEffect nowDateTime) pure offband
+                 <$> liftEffect nowDateTime) (pure <<< _.offband) offband
         _ <- AVar.tryTake var
-        now <- liftEffect nowDateTime
-        let validUntil = fromMaybe now $ toValidUntil now response.maxAge
+        age <- maybe (liftEffect nowDateTime) (pure <<< _.age) offband
+        let validUntil = fromMaybe age $ toValidUntil age response.maxAge
         case response.body of
           Right content -> do
-            AVar.put (Stamped { validUntil, content }) var
+            AVar.put (Stamped { validUntil, age, content }) var
           Left err -> do
             Console.warn $ show err
         -- Tell the possible caller to continue, we either have a
@@ -156,9 +158,12 @@ startUpdates fetch = do
             maybe emptyStamp (map Just) <$> AVar.tryRead var
       reset = withLock resetLock do
         AVar.put unit updateStop
-      set offband = Aff.launchAff_ $ withLock resetLock do
-        AVar.put offband offbandUpdate
-        AVar.put unit updateStop
+      set newAge offband = withLock resetLock do
+        Stamped {age} <- AVar.read var
+        if age >= newAge then pure false else do
+          AVar.put {offband, age: newAge} offbandUpdate
+          AVar.put unit updateStop
+          pure true
 
   Aff.launchAff_ $ void start
   pure $ Controls { reset, set, content: start }
@@ -171,9 +176,9 @@ initClientCache :: Array (Tuple ArticleFeedType ArticleFeed) -> Effect Cache
 initClientCache initial = do
   now <- nowDateTime
   let validUntil = fromMaybe now $ toValidUntil now (Just 60)
-      getList (ArticleList content) = Just $ Stamped { validUntil: validUntil, content }
+      getList (ArticleList content) = Just $ Stamped { validUntil, age: now, content }
       getList _ = Nothing
-      getHtml (Html _ content) = Just $ Stamped {validUntil: validUntil, content }
+      getHtml (Html _ content) = Just $ Stamped {validUntil, age: now, content }
       getHtml _ = Nothing
       initFeed :: forall a. (ArticleFeed -> Maybe a) -> Effect (AVar (Map ArticleFeedType a))
       initFeed f = Effect.AVar.new $ Map.fromFoldable $ mapMaybe (traverse f) initial
@@ -228,13 +233,13 @@ getUsingCache var key action = do
   let fetch = do
         LetteraResponse response <- action
         now <- liftEffect nowDateTime
-        pure $ case (\content validUntil -> Stamped { content, validUntil })
+        pure $ case (\content validUntil -> Stamped { content, age: now, validUntil })
                     <$> hush response.body
                     <*> toValidUntil now response.maxAge of
           Just value ->
             { value, newStore: Just $ Map.insert key value }
           _ ->
-            { value: Stamped { validUntil: now, content: mempty }, newStore: Just $ Map.delete key }
+            { value: Stamped { validUntil: now, age: now, content: mempty }, newStore: Just $ Map.delete key }
   { value, newStore } <-
     case Map.lookup key store of
       Just value@(Stamped { validUntil }) -> do
@@ -302,7 +307,7 @@ search cache query limit = do
       toFetch = fromMaybe 20 limit - start
   if toFetch <= 0 then pure $ fromMaybe eotStamp oldContent else do
     LetteraResponse response <- Lettera.search start toFetch mosaicoPaper query
-    let newContent = case (\content validUntil -> Stamped { content, validUntil })
+    let newContent = case (\content validUntil -> Stamped { content, age: now, validUntil })
                           <$> hush response.body
                           -- Don't discard new data if it's missing max-age
                           <*> pure (fromMaybe now (toValidUntil now response.maxAge)) of
@@ -368,7 +373,7 @@ readCorsResult cache url = do
       case result of
         Left err -> pure $ Left err
         Right content -> do
-          stamped <- saveCorsResult cache url $ Stamped { validUntil: maxAge, content }
+          stamped <- saveCorsResult cache url $ Stamped { validUntil: maxAge, age: now, content }
           pure $ Right stamped
     Just value@(Stamped {validUntil}) -> do
       if now > validUntil
@@ -378,7 +383,7 @@ readCorsResult cache url = do
         case result of
           Left err -> pure $ Left err
           Right content -> do
-            stamped <- saveCorsResult cache url $ Stamped { validUntil: maxAge, content }
+            stamped <- saveCorsResult cache url $ Stamped { validUntil: maxAge, age: now, content }
             pure $ Right stamped
       else pure $ Right value
 

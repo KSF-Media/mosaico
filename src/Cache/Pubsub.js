@@ -18,9 +18,9 @@ export function subscribeImpl(callback) {
 				  "-"+(Math.random().toString().substring(2)),
 				  {expirationPolicy: { ttl: {seconds: 7*86400 }}});
 	subscription.on('message', message => {
-	    /* A fix will follow.
 	    callback(message)();
-            */
+	    // Pubsub may do redeliveries despite this so we need to
+	    // check stamps as well.
 	    message.ack();
 	})
     };
@@ -39,4 +39,13 @@ export function content(message) {
 
 export function maxAge(message) {
     return message.attributes.maxAge;
+}
+
+export function stampImpl(message) {
+    // Messages from previous version of Lettera had no stamp field.
+    if (message.attributes.stamp === undefined) {
+	return null;
+    } else {
+	return new Date(message.attributes.stamp);
+    }
 }
