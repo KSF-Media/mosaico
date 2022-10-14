@@ -18,7 +18,10 @@ export function subscribeImpl(callback) {
 				  "-"+(Math.random().toString().substring(2)),
 				  {expirationPolicy: { ttl: {seconds: 7*86400 }}});
 	subscription.on('message', message => {
+	    /* A fix will follow.
 	    callback(message)();
+            */
+	    message.ack();
 	})
     };
 };
