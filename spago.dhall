@@ -28,6 +28,7 @@ You can edit this file as you like.
   , "formatters"
   , "http-methods"
   , "integers"
+  , "js-date"
   , "js-uri"
   , "lists"
   , "maybe"

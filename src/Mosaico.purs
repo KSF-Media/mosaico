@@ -7,13 +7,14 @@ import Control.Alt ((<|>))
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core (toArray, toBoolean, toString) as JSON
 import Data.Argonaut.Decode (decodeJson)
-import Data.Array (cons, catMaybes, find, index, length, mapMaybe, null)
+import Data.Array (any, catMaybes, cons, find, index, length, mapMaybe, null)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..), hush)
 import Data.Foldable (foldMap, elem)
 import Data.HashMap (HashMap)
 import Data.HashMap as HashMap
 import Data.Int (ceil)
+import Data.JSDate as JSDate
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isJust, isNothing, maybe)
 import Data.Monoid (guard)
@@ -37,7 +38,7 @@ import KSF.Driver (setDriver)
 import KSF.Paper as Paper
 import KSF.Sentry as Sentry
 import KSF.Spinner (loadingSpinner)
-import KSF.User (User, logout, magicLogin)
+import KSF.User (User, Subscription, logout, magicLogin)
 import KSF.User.Cusno (Cusno)
 import Lettera as Lettera
 import Lettera.Models (ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, readArticleType, tagToURIComponent)
@@ -68,6 +69,7 @@ import Mosaico.Routes as Routes
 import Mosaico.Search as Search
 import Mosaico.StaticPage (StaticPageResponse(..), fetchStaticPage, getInitialStaticPageContent, getInitialStaticPageScript)
 import Mosaico.StaticPageMeta (staticPageTitle)
+import Mosaico.Triggerbee (addToTriggerbeeObj, sendTriggerbeeEvent)
 import Mosaico.Webview as Webview
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
@@ -85,8 +87,6 @@ import Web.HTML.Window (document, history, scroll) as Web
 foreign import refreshAdsImpl :: EffectFn1 (Array String) Unit
 foreign import sentryDsn_ :: Effect String
 foreign import setManualScrollRestoration :: Effect Unit
-
-foreign import sendTriggerbeeEvent :: EffectFn1 String Unit
 
 data ModalView = LoginModal
 
@@ -248,6 +248,17 @@ mosaicoComponent initialValues props = React.do
           setState _ { user = Just u }
           state.logger.setUser u
           foldMap (\user -> runEffectFn1 sendTriggerbeeEvent user.email) u
+          triggerbeeUser <- case u of
+                Just user -> do
+                  now <- JSDate.now
+                  let isSubscriber = any (isActive) user.subs
+                      isActive :: Subscription -> Boolean
+                      isActive subscription = case toMaybe subscription.dates.end of
+                        Just end -> now <= end
+                        Nothing  -> true
+                  pure { isLoggedIn: true, isSubscriber }
+                Nothing -> pure { isLoggedIn: false, isSubscriber: false }
+          runEffectFn1 addToTriggerbeeObj triggerbeeUser
         alreadySent <- Aff.AVar.take alreadySentInitialAnalytics
         when (not alreadySent) $ liftEffect $ initialSendAnalytics u
       advertorials <- Lettera.responseBody <$> Lettera.getAdvertorials mosaicoPaper
@@ -492,6 +503,7 @@ render props setState state components router onPaywallEvent =
                state.logger.setUser $ Just u
                onPaywallEvent
                runEffectFn1 sendTriggerbeeEvent u.email
+               runEffectFn1 addToTriggerbeeObj { isLoggedIn: true, isSubscriber: false }
              Left _err -> do
                onPaywallEvent
                -- TODO: Handle properly
@@ -704,7 +716,7 @@ render props setState state components router onPaywallEvent =
             then "md:[grid-column:1/span_2] lg:[grid-column:2/span_3]"
             else mempty
           advertorialBanner = case state.route of
-            Routes.ArticlePage articleId
+            Routes.ArticlePage _articleId
               | Just (Right fullArticle@{ article }) <- state.article ->
                   case article.articleType of
                     Advertorial -> Advertorial.Basic.advertorialTopBanner article
