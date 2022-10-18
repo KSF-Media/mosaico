@@ -398,7 +398,7 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
                 | elem "Standard" article.categories -> renderWithComponents Advertorial.Standard.render { article }
                 | otherwise -> renderWithComponents Advertorial.Standard.render { article }
               _ ->
-                renderWithComponents Article.render
+                renderWithComponents (Article.render Nothing)
                   { paper: mosaicoPaper
                   , article: Right a
                   , onLogin: mempty
@@ -941,7 +941,7 @@ notFoundPage env { params: { path } } = do
 notFoundArticleContent :: MainContent
 notFoundArticleContent =
   { type: ArticleContent
-  , content: Article.render (Image.render mempty) (Box.render mempty)
+  , content: Article.render Nothing (Image.render mempty) (Box.render mempty)
     { paper: mosaicoPaper
     , article: Right notFoundArticle
     , onLogin: mempty

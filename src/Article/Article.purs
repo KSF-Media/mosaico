@@ -13,6 +13,8 @@ import Data.Newtype (un, unwrap)
 import Data.Set as Set
 import Data.String (toUpper)
 import Effect (Effect)
+import Effect.Aff as Aff
+import Effect.Class (liftEffect)
 import KSF.Helpers (formatArticleTime)
 import KSF.Paper (Paper(..))
 import KSF.Paper as Paper
@@ -20,12 +22,12 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import KSF.Vetrina as Vetrina
 import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
-import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), FullArticle, Image, MosaicoArticleType(..), Tag(..), tagToURIComponent)
+import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), FullArticle, Image, MosaicoArticleType(..), Tag(..), tagToURIComponent, ExternalScript)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
 import Mosaico.BreakingNews as BreakingNews
-import Mosaico.Eval (ScriptTag(..), evalExternalScripts)
+import Mosaico.Eval (ScriptTag(..), evalExternalScripts, externalScriptsAllowed)
 import Mosaico.FallbackImage (fallbackImage)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
 import Mosaico.LatestList as LatestList
@@ -33,7 +35,7 @@ import Mosaico.Share as Share
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.Events (EventHandler)
-import React.Basic.Hooks (Component)
+import React.Basic.Hooks (Component, useEffect, useState', (/\))
 import React.Basic.Hooks as React
 
 isPremium :: Either ArticleStub FullArticle -> Boolean
@@ -60,6 +62,9 @@ getRemoveAds = either _.removeAds _.article.removeAds
 getShareUrl :: Either ArticleStub FullArticle -> Maybe String
 getShareUrl = either _.shareUrl _.article.shareUrl
 
+getExternalScripts :: Either ArticleStub FullArticle -> Array ExternalScript
+getExternalScripts props = fromMaybe [] $ either (const mempty) _.article.externalScripts props
+
 type Props =
   { paper :: Paper
   , article :: Either ArticleStub FullArticle
@@ -82,10 +87,16 @@ component = do
   imageComponent <- Image.component
   boxComponent <- Box.component
   React.component "Article" $ \props -> React.do
-    pure $ render imageComponent boxComponent props
+    embedsAllowed /\ setEmbedsAllowed <- useState' Nothing
+    useEffect unit do
+      Aff.launchAff_ do
+        permission <- externalScriptsAllowed
+        liftEffect $ setEmbedsAllowed (Just permission)
+      pure $ pure unit
+    pure $ render embedsAllowed imageComponent boxComponent props
 
-render :: (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
-render imageComponent boxComponent props =
+render :: Maybe Boolean -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
+render embedsAllowed imageComponent boxComponent props =
     let title = getTitle props.article
         tags = getTags props.article
         mainImage = getMainImage props.article
@@ -103,6 +114,7 @@ render imageComponent boxComponent props =
         mostRead = foldMap renderMostReadArticles $
           if null props.mostReadArticles then Nothing else Just $ take 5 props.mostReadArticles
         shareUrl = getShareUrl props.article
+        embedScripts = getExternalScripts props.article
 
     in DOM.article
       { className: "mosaico-article"
@@ -151,22 +163,25 @@ render imageComponent boxComponent props =
                     [ foldMap (renderMetabyline <<< _.article) $ hush props.article
                     , DOM.div
                         { className: "mosaico-article__body"
-                        , children: case _.articleType <$> props.article of
-                          Right PreviewArticle ->
-                            bodyWithoutAd
-                            `snoc` paywallFade
-                            `snoc` (if isNothing props.user then loadingSpinner else vetrina)
-                            `snoc` renderElem (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false })
-                            `snoc` advertorial
-                            `snoc` mostRead
-                          Right DraftArticle ->
-                            bodyWithoutAd
-                          Right FullArticle ->
-                            bodyWithAd
-                            `snoc` advertorial
-                            `snoc` mostRead
-                          Left _ -> [ loadingSpinner ]
-                          _ -> mempty
+                        , children:
+                          [ embedNagBar embedScripts ]
+                          <>
+                          case _.articleType <$> props.article of
+                            Right PreviewArticle ->
+                              bodyWithoutAd
+                              `snoc` paywallFade
+                              `snoc` (if isNothing props.user then loadingSpinner else vetrina)
+                              `snoc` renderElem (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false })
+                              `snoc` advertorial
+                              `snoc` mostRead
+                            Right DraftArticle ->
+                              bodyWithoutAd
+                            Right FullArticle ->
+                              bodyWithAd
+                              `snoc` advertorial
+                              `snoc` mostRead
+                            Left _ -> [ loadingSpinner ]
+                            _ -> mempty
                         }
                     , DOM.div
                         { className: "mosaico-article__aside"
@@ -239,6 +254,14 @@ render imageComponent boxComponent props =
                               { className: "inline-block mr-2 text-base font-bold text-gray-900 uppercase font-duplexserif"
                               , children: [ DOM.text opiniontype ]
                               }) $ _.title <$> detail
+
+    embedNagBar scripts =
+      if (not $ null scripts) && (embedsAllowed == Just false)
+      then DOM.div
+             { className: "p-3 mb-2 w-full font-bold text-white rounded-md border-2 bg-brand border-brand"
+             , children: [ DOM.text "Den här artikeln innehåller inbäddat innehåll som kanske inte visas korrekt om vi inte har ditt samtycke att lagra information på din enhet. Du kan ändra ditt val under rubriken Dataskydd längst ned på sidan." ]
+             }
+      else mempty
 
     renderTag tag =
       DOM.a
