@@ -124,7 +124,7 @@ render props@{ onLogin, onLogout } = DOM.div
               , subsections: map mkSubsection c.subCategories
               , url: "/" <> show c.label
               , onClick: props.onCategoryClick category
-              , className: Just "block"
+              , className: Nothing
               }
       in acc `snoc` section
 
@@ -206,7 +206,7 @@ render props@{ onLogin, onLogout } = DOM.div
                               { href: url
                               , children: [ DOM.text title ]
                               , onClick
-                              , className: "block" <> fromMaybe mempty className
+                              , className: "block " <> fromMaybe mempty className
                               }
                           ]
                       ]

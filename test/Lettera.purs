@@ -3,19 +3,18 @@ module Mosaico.Test.Lettera where
 
 import Prelude hiding (sub)
 
-import Data.Array (head, length, zip, (..))
+import Data.Array (head)
 import Data.Either (Either(..))
 import Data.Foldable (any, traverse_)
 import Data.Maybe (Maybe(..), fromJust, fromMaybe)
 import Data.String (Pattern(..), stripPrefix, toUpper)
-import Data.Tuple (Tuple(..))
 import Data.UUID (UUID)
 import Data.UUID as UUID
 import KSF.Paper (Paper(..))
 import Lettera as Lettera
-import Lettera.Models (Category(..), CategoryLabel(..), CategoryType(..))
+import Lettera.Models (Category(..), CategoryType(..))
 import Lettera.Models as Models
-import Mosaico.Test (Test, listArticle, log, matchTagList, site, sub, tagListWithSelector)
+import Mosaico.Test (Test, listArticle, log, matchTagList, site, sub, tagListWithSelector, assertNonEmpty)
 import Partial.Unsafe (unsafePartial)
 import KSF.Puppeteer as Chrome
 import Test.Unit as Unit
@@ -68,18 +67,17 @@ testCategoryLists :: Test
 testCategoryLists page = do
   Chrome.goto (Chrome.URL $ site <> "meny") page
   categories <- Lettera.getCategoryStructure HBL
-  traverse_ testCategory $ zip (1..length categories) categories
+  traverse_ testCategory categories
   where
-    testCategory (Tuple idx (Category c))
+    testCategory (Category c)
       | c.type == Feed = do
         log $ "test feed category " <> show c.label
         letteraArticles <- fromMaybe [] <<< Lettera.responseBody <$>
                            Lettera.getFrontpage HBL (Just $ show c.label) Nothing
-        let catElement = Chrome.Selector $ ".mosaico-header__block:nth-child(3) .mosaico-header__section:nth-of-type(" <> show idx <> ") a"
-            (CategoryLabel catLabel) = c.label
-        Chrome.waitFor_ catElement page
-        Chrome.assertContent catElement (toUpper catLabel) page
-        Chrome.click catElement page
+        catElements <- Chrome.findByText "a" (toUpper $ show c.label) page
+        catElement <- assertNonEmpty "Did not find link for the category" catElements
+
+        Chrome.clickElement catElement
         Chrome.waitFor_ listArticle page
         uuids <- tagListWithSelector 10 $ \i ->
           fromMaybe "" <<< stripPrefix (Pattern "/artikel/")

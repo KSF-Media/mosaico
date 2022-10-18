@@ -61,17 +61,16 @@ main = launchAff_ do
   log "Test free article"
   withBrowserPage $ Article.testFreeArticle (fromMaybe defaultArticleId articleId)
 
-  log "Skipping 'Test paywall holds' tests as the paywall is broken"
-  --if testUser == "" || testPassword == ""
-  --  then log "skip unentitled paywall test, user or password not set"
-  --  else do
-  --  case premiumArticleId of
-  --    Just uuid -> do
-  --      withBrowserPage $
-  --        Article.testPaywallLogin false uuid testUser testPassword Article.testPaywallHolds
-  --    _ -> log "Skip paywall hold test via navigation"
-  --  log "Test paywall holds, direct"
-  --  withBrowserPage $ Article.testPaywallLogin true premiumUuid testUser testPassword Article.testPaywallHolds
+  if testUser == "" || testPassword == ""
+    then log "skip unentitled paywall test, user or password not set"
+    else do
+    case premiumArticleId of
+      Just uuid -> do
+        withBrowserPage $
+          Article.testPaywallLogin false uuid testUser testPassword Article.testPaywallHolds
+      _ -> log "Skip paywall hold test via navigation"
+    log "Test paywall holds, direct"
+    withBrowserPage $ Article.testPaywallLogin true premiumUuid testUser testPassword Article.testPaywallHolds
 
   if entitledUser == "" || entitledPassword == ""
     then log "skip entitled paywall test, user or password not set"
@@ -93,11 +92,12 @@ main = launchAff_ do
   log "Test front page embedded HTML"
   withBrowserPage Frontpage.testHtmlEmbed
   withBrowserPage Frontpage.testHtmlEmbedNavigation
-  -- Very flaky, especially in the times of day when there's only a few articles available
-  {-
-  log "Test most read list"
-  withDesktopBrowserPage $ Frontpage.testMostRead
-   -}
+  -- We are sharing the same GA endpoint for staging and production,
+  -- and the read amounts from prod trump over staging. This means that
+  -- usually we get something between 0 and 2 articles in the most read
+  -- list in staging, which would fail this test.
+  --log "Test most read list"
+  --withDesktopBrowserPage $ Frontpage.testMostRead
   log "Test embed render via navigation"
   withBrowserPage Embeds.testEmbedNavigation
   log "Test embed render, direct"
@@ -116,11 +116,8 @@ main = launchAff_ do
   log "Test listTitle field"
   withBrowserPage Lettera.testListTitle
   withBrowserPage Lettera.testDefaultListTitle
-  -- This test is flaky, disable for now
-{-
   log "Test categories"
   withBrowserPage Lettera.testCategoryLists
--}
   where
     withBrowser :: forall a. Aff Chrome.Browser -> (Chrome.Browser -> Aff a) -> Aff a
     withBrowser = flip bracket Chrome.close
