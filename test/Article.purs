@@ -130,7 +130,7 @@ testPaywallLogin loadDirect uuid user password f page = do
 testPaywallOpen :: Chrome.Selector -> Int -> Test
 testPaywallOpen article originalBlocks page = do
   log "Check article has more content after login"
-  Chrome.waitFor_ (sub (" .mosaico-article__body .article-element:nth-of-type("<> show (originalBlocks+1) <>")") article) page
+  Chrome.waitFor_ (sub (" .mosaico-article__body *:nth-of-type("<> show (originalBlocks+1) <>")") article) page
   log "Check that Vetrina is gone"
   Chrome.assertNotFound (sub " .mosaico-article__main .mosaico-article__body .vetrina--container" article) page
   log "Test that opening premium article with the same session via a list shows content"
