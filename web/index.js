@@ -66,126 +66,120 @@ window.googletag = window.googletag || { cmd: [] };
 // Those would be Maxparad, parad and box_0 on desktop and mobparad_0
 // on mobile I think. Rest can be set as lazy.
 
+
+// Temporary function to keep hbl using the old GAM units, while ÖN uses the new.
+function getGamId(name) {
+  let paper = process.env.PAPER;
+  if (paper === "on") {
+    return paper + "/" +  paper + "_" + name
+  }
+  return name.toUpperCase();
+}
+
+// When targetId's are changed, remember to change them accordingly in
+// Mosaico.purs hooks, Article.purs, classnames in ads.less
 window.adSlots = {
   mobile: [
     {
-      gamId: "MOBPARAD",
+      gamId: getGamId("mobparad"),
       sizes: [ [300,100], [300,250], [300,300], [300,431], [300,600] ],
       targetId: "mosaico-ad__top-parade",
       isLazy: false
     },
     {
-      gamId: "MOBMITT",
+      gamId: getGamId("mobmitt"),
       sizes: [ [300,100], [300,250], [300,300], [300,431], [300,600] ],
       targetId: "mosaico-ad__bigbox2",
       isLazy: true
     },
     {
-      gamId: "MOBNER",
-      sizes: [ [300,100], [300,250], [300,300], [300,431], [300,600] ],
-      targetId: "mosaico-ad__box",
-      isLazy: true
-    },
-    {
-      gamId: "MOBBOX1",
+      gamId: getGamId("mobbox1"),
       sizes: [ [300,100], [300,250], [300,300], [300,431], [300,600] ],
       targetId: "mosaico-ad__box1",
       isLazy: true
     },
     {
-      gamId: "MOBBOX2",
+      gamId: getGamId("mobbox2"),
       sizes: [ [300,100], [300,250], [300,300], [300,431], [300,600] ],
       targetId: "mosaico-ad__box2",
       isLazy: true
     },
     {
-      gamId: "MOBBOX3",
+      gamId: getGamId("mobbox3"),
       sizes: [ [300,100], [300,250], [300,300], [300,431], [300,600] ],
       targetId: "mosaico-ad__box3",
       isLazy: true
     },
     {
-      gamId: "MOBBOX4",
+      gamId: getGamId("mobbox4"),
       sizes: [ [300,100], [300,250], [300,300], [300,431], [300,600] ],
       targetId: "mosaico-ad__box4",
       isLazy: true
     },
     {
-      gamId: "MOBBOX5",
+      gamId: getGamId("mobbox5"),
       sizes: [ [300,100], [300,250], [300,300], [300,431], [300,600] ],
       targetId: "mosaico-ad__box5",
       isLazy: true
     },
     {
-      gamId: "DIGIHELMOB",
+      gamId: getGamId("digihelmob"),
       sizes: [300,431],
       targetId: "mosaico-ad__bigbox1",
       isLazy: true
     },
-    // {
-    //   gamId: "INTERMOB",
-    //   sizes: [300,500],
-    //   targetId: "mosaico-ad__box",
-    //   isLazy: true
-    // },
   ],
   desktop: [
     {
-      gamId: "DIGIHEL",
+      gamId: getGamId("digihel"),
       sizes: [ [620,891], [620,991] ],
       targetId: "mosaico-ad__bigbox1",
       isLazy: true
     },
     {
-      gamId: "JATTEBOX",
+      gamId: getGamId("jattebox"),
       sizes: [468,400],
       targetId: "mosaico-ad__bigbox2",
       isLazy: true
     },
     {
-      gamId: "PARAD",
+      gamId: getGamId("parad"),
       sizes: [ [980, 120], [980,400], [980,552] ],
       targetId: "mosaico-ad__parade",
       isLazy: false
     },
     {
-      gamId: "MAXPARAD",
+      gamId: getGamId("maxparad"),
       sizes: [ [980, 120], [980,400], [980,480], [980,552], [1920,1080] ],
       targetId: "mosaico-ad__top-parade",
       isLazy: false
     },
     {
-      gamId: "BOX",
-      sizes: [ [300,250], [300,300], [300, 431], [300,600] ],
-      targetId: "mosaico-ad__box",
-      isLazy: false
-    },
-    {
-      gamId: "BOX1",
+      gamId: getGamId("box1"),
       sizes: [ [300, 250], [300, 300], [300, 431], [300,600] ],
       targetId: "mosaico-ad__box1",
       isLazy: true
     },
     {
-      gamId: "BOX2",
+      gamId: getGamId("box2"),
       sizes: [ [300, 250], [300, 300], [300, 431], [300,600] ],
       targetId: "mosaico-ad__box2",
       isLazy: true
     },
     {
-      gamId: "BOX3",
+      gamId: getGamId("box3"),
       sizes: [ [300, 250], [300, 300], [300, 431], [300,600] ],
       targetId: "mosaico-ad__box3",
       isLazy: true
     },
     {
-      gamId: "BOX4",
+      gamId: getGamId("box4"),
       sizes: [ [300, 250], [300, 300], [300, 431], [300,600] ],
       targetId: "mosaico-ad__box4",
       isLazy: true
     },
     {
-      gamId: "BOX5",
+      gamId: getGamId("box5"),
       sizes: [ [300, 250], [300, 300], [300, 431], [300,600] ],
       targetId: "mosaico-ad__box5",
       isLazy: true

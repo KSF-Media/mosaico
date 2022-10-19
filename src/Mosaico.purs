@@ -667,10 +667,11 @@ render props setState state components router onPaywallEvent =
             , Frontpage.Latest (foldMap Feed.toList $ HashMap.lookup LatestFeed state.feeds) onClickHandler
             , Frontpage.ArticleUrltoRelative
             , Frontpage.EpaperBanner
-            , Frontpage.Ad "Box Ad 1 DESKTOP" "mosaico-ad__box"
-            , Frontpage.Ad "Box Ad 2 DESKTOP" "mosaico-ad__box1"
-            , Frontpage.Ad "Box Ad 3 DESKTOP" "mosaico-ad__box2"
-            , Frontpage.Ad "Box Ad 4 DESKTOP" "mosaico-ad__box3"
+            , Frontpage.Ad "Box Ad 1 DESKTOP" "mosaico-ad__box1"
+            , Frontpage.Ad "Box Ad 2 DESKTOP" "mosaico-ad__box2"
+            , Frontpage.Ad "Box Ad 3 DESKTOP" "mosaico-ad__box3"
+            , Frontpage.Ad "Box Ad 4 DESKTOP" "mosaico-ad__box4"
+            , Frontpage.Ad "Box Ad 5 DESKTOP" "mosaico-ad__box5"
             , Frontpage.Ad "Ad 1"             "mosaico-ad__bigbox1"
             , Frontpage.Ad "Ad 2"             "mosaico-ad__bigbox2"
             ]
@@ -740,17 +741,16 @@ render props setState state components router onPaywallEvent =
                      , guard showAside $ DOM.aside
                          { className: "mosaico--aside"
                          , children:
-                             [ Mosaico.ad { contentUnit: "mosaico-ad__box", inBody: false, hideAds }
+                             [ Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
                              , MostReadList.render
                                  { mostReadArticles
                                  , onClickHandler
                                  }
-                             , Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
+                             , Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false, hideAds }
                              , LatestList.render
                                  { latestArticles
                                  , onClickHandler
                                  }
-                             , Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false, hideAds }
                              , Mosaico.ad { contentUnit: "mosaico-ad__box3", inBody: false, hideAds }
                              , Mosaico.ad { contentUnit: "mosaico-ad__box4", inBody: false, hideAds }
                              , Mosaico.ad { contentUnit: "mosaico-ad__box5", inBody: false, hideAds }

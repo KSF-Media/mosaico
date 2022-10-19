@@ -186,12 +186,11 @@ render embedsAllowed imageComponent boxComponent props =
                     , DOM.div
                         { className: "mosaico-article__aside"
                         , children:
-                          [ Mosaico.ad { contentUnit: "mosaico-ad__box", inBody: false, hideAds }
+                          [ Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
                           , LatestList.render
                                      { latestArticles: props.latestArticles
                                      , onClickHandler: props.onArticleClick
                                      }
-                          , Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
                           , Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false, hideAds }
                           , Mosaico.ad { contentUnit: "mosaico-ad__box3", inBody: false, hideAds }
                           , Mosaico.ad { contentUnit: "mosaico-ad__box4", inBody: false, hideAds }
