@@ -3,22 +3,21 @@ module Mosaico.Article.Image where
 import Prelude
 
 import Data.Array (head, last)
-import Data.Foldable (fold)
 import Data.Either (Either(..))
+import Data.Foldable (fold)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Monoid (guard)
 import Data.String as String
 import Data.String.Regex as Regex
 import Data.String.Regex.Flags as Flags
 import Lettera.Models (Image)
+import Partial.Unsafe (unsafeCrashWith)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (capture_)
 import React.Basic.Events (EventHandler)
-import React.Basic.Hooks as React
 import React.Basic.Hooks (Component, useState, (/\))
-import Partial.Unsafe (unsafeCrashWith)
-
+import React.Basic.Hooks as React
 
 type Props =
   { clickable :: Boolean
@@ -76,8 +75,8 @@ articleMainImage onClick props@{ image: img } =
 
 url :: Props -> String
 url props =
-  props.image.url <>
-  if String.take 16 props.image.url == "https://imengine" then fold props.params else ""
+  let composeImageUrl = props.image.url <> if String.take 16 props.image.url == "https://imengine" then fold props.params else ""
+  in fromMaybe composeImageUrl props.image.aoiCropped
 
 isSvg :: String -> Boolean
 isSvg fileUrl =
