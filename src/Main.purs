@@ -988,7 +988,7 @@ notFound env mainContent maybeMostReadArticles maybeLatestArticles = do
              )
     appendMosaico mosaicoString htmlTemplate >>=
       appendVars (mkWindowVariables windowVars) >>=
-      appendHead (makeTitle "Oops... 404")
+      appendHead (makeTitle "Oj... 404")
   pure $ htmlContent $ Response.notFound $ StringBody $ renderTemplateHtml html
 
 corsProxyPage

@@ -488,3 +488,35 @@
 .ksf-dim-star::before {
   content: "\e007";
 }
+
+.mosaico-article-error {
+  grid-area: main;
+  padding: 0 18px;
+  header {
+    margin: 0;
+  }
+  h1 {
+    font: 400 1.3rem "Duplex Serif Web", serif;
+    color: #333;
+    margin: 1rem auto 0;
+    text-align: center;
+    letter-spacing: -0.015em;
+    @media (min-width: @breakpoint-2col) {
+      font-size: 1.7rem;
+    }
+    @media (min-width: @breakpoint-3col) {
+      font-size: 2rem;
+      text-align: initial;
+    }
+  }
+  .mosaico-article__preamble {
+    margin: 0;
+  }
+  img {
+    width: 50%;
+    margin: 0 auto;
+    @media (min-width: @breakpoint-3col) {
+      margin: 0;
+    }
+  }
+}

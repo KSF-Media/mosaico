@@ -41,21 +41,38 @@
 
 .mosaico--static-page-error {
   h1 {
-    font-size: 3.75rem;
-    font: 700 3.75rem "Duplex Serif Web", serif;
+    font: 700 2rem "Duplex Serif Web", serif;
     color: #333;
-    margin: 1rem auto 1.5rem auto;
+    margin: 1rem auto 0;
+    text-align: center;
     letter-spacing: -0.015em;
+    @media (min-width: @breakpoint-2col) {
+      font-size: 1.7rem;
+    }
+    @media (min-width: @breakpoint-3col) {
+      font-size: 2.5rem;
+    }
+  }
+
+  @media (min-width: @breakpoint-3col) {
+    padding: 0;
   }
 }
 
 .mosaico--error-with-aside {
   h1 {
-    font-size: 3.75rem;
-    font: 700 3.75rem "Duplex Serif Web", serif;
+    font: 400 1.3rem "Duplex Serif Web", serif;
     color: #333;
-    margin: 1rem auto 1.5rem auto;
+    margin: 1rem auto 0;
+    text-align: center;
     letter-spacing: -0.015em;
+    @media (min-width: @breakpoint-2col) {
+      font-size: 1.7rem;
+    }
+    @media (min-width: @breakpoint-3col) {
+      font-size: 2rem;
+      text-align: initial;
+    }
   }
 }
 
@@ -72,4 +89,12 @@
   grid-area: article;
   height: 100px;
   background: initial;
+}
+
+.mosaico--error__img {
+  width: 50%;
+  margin: 0 auto;
+  @media (min-width: @breakpoint-3col) {
+    margin: 0;
+  }
 }

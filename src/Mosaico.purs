@@ -320,7 +320,7 @@ mosaicoComponent initialValues props = React.do
       Routes.SearchPage _ _ -> setTitle "Sök"
       Routes.ProfilePage -> setTitle "Min profil"
       Routes.MenuPage -> setTitle "Meny"
-      Routes.NotFoundPage _ -> setTitle "Oops... 404"
+      Routes.NotFoundPage _ -> setTitle "Oj... 404"
       Routes.CategoryPage (Category c) -> setTitle $ unwrap c.label
       Routes.EpaperPage -> setTitle "E-Tidningen"
       Routes.StaticPage page -> setTitle (staticPageTitle page mosaicoPaper)

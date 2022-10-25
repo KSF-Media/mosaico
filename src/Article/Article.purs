@@ -117,7 +117,10 @@ render embedsAllowed imageComponent boxComponent props =
         embedScripts = getExternalScripts props.article
 
     in DOM.article
-      { className: "mosaico-article"
+      { className: "mosaico-article" <>
+                   case props.article of
+                     Right { articleType: ErrorArticle } -> " mosaico-article-error"
+                     _                                   -> mempty
       , children:
           [ DOM.div {className: "[grid-area:breaking] lg:mx-24", children: [BreakingNews.render { content: props.breakingNews }]}
           , DOM.header_
@@ -150,6 +153,7 @@ render embedsAllowed imageComponent boxComponent props =
             ]
           , foldMap
               (\image -> imageComponent
+                -- TODO: make error image unclickable
                 { clickable: true
                 , main: true
                 , params: Just "&width=960&height=540&q=90"

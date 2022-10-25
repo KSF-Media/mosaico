@@ -1,8 +1,6 @@
 module Mosaico.Error where
 
-import Prelude
-
-import Lettera.Models (notFoundArticle)
+import Lettera.Models (notFoundArticle, notFoundImage)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 
@@ -17,5 +15,7 @@ notFoundWithAside :: JSX
 notFoundWithAside =
   DOM.div
     { className: "mosaico--error-with-aside"
-    , children: [ DOM.h1_ [ DOM.text $ notFoundArticle.article.title ] ]
+    , children: [ DOM.h1_ [ DOM.text notFoundArticle.article.title ]
+                , DOM.div_ [ DOM.img { className: "mosaico--error__img", src: notFoundImage } ]
+                ]
     }
