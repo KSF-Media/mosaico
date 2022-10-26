@@ -4,11 +4,11 @@ import Prelude
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 
-mainContent :: String -> Array JSX -> JSX
-mainContent className children =
+mainContent :: String -> Boolean -> Array JSX -> JSX
+mainContent className isAdvertorial children =
     DOM.div
       { id: "mosaico-main-content"
-      , className: "[grid-area:main] " <> className
+      , className: (if isAdvertorial then "[grid-area:article] " else "[grid-area:main] ") <> className
       , children
       }
 

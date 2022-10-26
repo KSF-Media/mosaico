@@ -56,8 +56,8 @@ render props =
           , children:
               [ guard (not props.headless) Header.topLine
               , guard (not props.headless) header
-              , guard (Just Advertorial == (_.articleType <$> props.article)) advertorialBanner props.article
-              , mainContent extraClasses [props.mainContent.content]
+              , guard isAdvertorial advertorialBanner props.article
+              , mainContent extraClasses isAdvertorial [props.mainContent.content]
               , guard (not props.headless) ( footer mosaicoPaper mempty mempty )
               , case props.mainContent.type of
                   FrontpageContent -> aside
@@ -84,6 +84,7 @@ render props =
             StaticPageContent _ -> false
             _ -> true
         }
+
     aside =
       DOM.aside
         { className: "mosaico--aside"
@@ -92,10 +93,15 @@ render props =
           , LatestList.render { latestArticles: props.latestArticles, onClickHandler: const mempty }
           ]
         }
+
     menuOpen = case props.mainContent.type of
       MenuContent -> " menu-open"
       _           -> mempty
+
     extraClasses = case props.mainContent.type of
       MenuContent -> "md:[grid-column:1/span_2] lg:[grid-column:2/span_3]"
       _           -> mempty
+
     advertorialBanner = foldMap advertorialTopBanner
+
+    isAdvertorial = Just Advertorial == (_.articleType <$> props.article)

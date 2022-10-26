@@ -41,7 +41,7 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User, Subscription, logout, magicLogin)
 import KSF.User.Cusno (Cusno)
 import Lettera as Lettera
-import Lettera.Models (ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, readArticleType, tagToURIComponent)
+import Lettera.Models (Article, ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, readArticleType, tagToURIComponent)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendArticleAnalytics, sendPageView)
 import Mosaico.Article as Article
@@ -712,18 +712,28 @@ render props setState state components router onPaywallEvent =
                   Routes.StaticPage _ -> false
                   _ -> true
               }
+
           mainContentClassName =
             if menuOpen
             then "md:[grid-column:1/span_2] lg:[grid-column:2/span_3]"
             else mempty
-          advertorialBanner = case state.route of
-            Routes.ArticlePage _articleId
-              | Just (Right fullArticle@{ article }) <- state.article ->
+
+          ifAdvertorial :: forall a. (Article -> a) -> Maybe a
+          ifAdvertorial fn = case state.route of
+            Routes.ArticlePage _
+              | Just (Right { article }) <- state.article ->
                   case article.articleType of
-                    Advertorial -> Advertorial.Basic.advertorialTopBanner article
-                    _ -> mempty
-            _ -> mempty
+                    Advertorial -> Just $ fn article
+                    _ -> Nothing
+            _ -> Nothing
           hideAds = not showAds
+
+          advertorialBanner :: JSX
+          advertorialBanner = fromMaybe mempty $ ifAdvertorial Advertorial.Basic.advertorialTopBanner
+
+          isAdvertorial :: Boolean
+          isAdvertorial = isJust $ ifAdvertorial \_ -> unit
+
       in DOM.div
            { id: Paper.toString mosaicoPaper
            , children:
@@ -736,7 +746,7 @@ render props setState state components router onPaywallEvent =
                      , guard (not props.headless) header
                      , Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false, hideAds }
                      , advertorialBanner
-                     , mainContent mainContentClassName [content]
+                     , mainContent mainContentClassName isAdvertorial [content]
                      , guard (not props.headless) (footer mosaicoPaper onCategoryClick onStaticPageClick) --remember to hide footer if headless
                      , guard showAside $ DOM.aside
                          { className: "mosaico--aside"
