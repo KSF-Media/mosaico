@@ -192,5 +192,10 @@
   {
     "route": "prenumerera",
     "destination": "https://prenumerera.ksfmedia.fi"
+  },
+  {
+    "route": "lucia",
+    "paper": "hbl",
+    "destination": "https://www.hbl.fi/tagg/lucia"
   }
 ]
