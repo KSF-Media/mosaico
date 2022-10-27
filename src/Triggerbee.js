@@ -6,6 +6,12 @@ export function sendTriggerbeeEvent(email) {
 }
 
 export function addToTriggerbeeObj(user) {
-  var triggerbee = window.triggerbee || {};
-  triggerbee.user = user || { isLoggedIn: false, isSubscriber: false };
+    if (!window.triggerbee) {
+      window.addEventListener("triggerbeeLoaded", (e) => {
+        var triggerbee = window.triggerbee || {};
+        triggerbee.user = user || { isLoggedIn: false, isSubscriber: false };
+      });
+    } else {
+      window.triggerbee.user = user;
+    }
 }

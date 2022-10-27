@@ -499,7 +499,13 @@ render props setState state components router onPaywallEvent =
                state.logger.setUser $ Just u
                onPaywallEvent
                runEffectFn1 sendTriggerbeeEvent u.email
-               runEffectFn1 addToTriggerbeeObj { isLoggedIn: true, isSubscriber: false }
+               now <- JSDate.now
+               let isSubscriber = any (isActive) u.subs
+                   isActive :: Subscription -> Boolean
+                   isActive subscription = case toMaybe subscription.dates.end of
+                     Just end -> now <= end
+                     Nothing  -> true
+               runEffectFn1 addToTriggerbeeObj { isLoggedIn: true, isSubscriber }
              Left _err -> do
                onPaywallEvent
                -- TODO: Handle properly
