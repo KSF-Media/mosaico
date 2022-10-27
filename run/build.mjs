@@ -5,6 +5,7 @@ import { config } from "dotenv";
 config();
 import glob from "tiny-glob";
 
+import axios from "axios";
 import path from "path";
 import { sassPlugin } from "esbuild-sass-plugin";
 import postcss from "postcss";
@@ -15,6 +16,7 @@ import * as fs from "fs";
 import cheerio from "cheerio";
 import * as util from "util";
 import * as cp from "child_process";
+
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
 
@@ -85,6 +87,13 @@ export async function runBuild() {
     // Refer to assets according to PUBLIC_URL env var
     // This will replace src or href of script and link tags
     let outfiles = Object.keys(result.metafile.outputs);
+
+    // fetch latest Aptoma css url and insert href into template
+    await axios.get(process.env.APTOMA_ASSETS)
+      .then(response => {
+        template("#aptoma-css").attr("href", response.data.cssUrl);
+      })
+      .catch(err => console.error("Error fetching Aptoma assets: " + err));
 
     template(".mosaico-asset").each((ix, elem) => {
       const src = template(elem).attr("src");
