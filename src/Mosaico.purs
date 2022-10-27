@@ -213,11 +213,26 @@ mosaicoComponent initialValues props = React.do
     withLoginLock <- (\l -> Aff.bracket (Aff.AVar.put unit l)
                             (const $ Aff.AVar.take l) <<< const) <$> AVar.empty
     alreadySentInitialAnalytics <- AVar.new false
-    let initialSendAnalytics = case props.article of
-          Just a -> sendArticleAnalytics a.article
-          Nothing -> const $ pure unit
+    let initialSendAnalytics u = do
+          foldMap (\user -> runEffectFn1 sendTriggerbeeEvent user.email) u
+          triggerbeeUser <- case u of
+                Just user -> do
+                  now <- JSDate.now
+                  let isSubscriber = any (isActive) user.subs
+                      isActive :: Subscription -> Boolean
+                      isActive subscription = case toMaybe subscription.dates.end of
+                        Just end -> now <= end
+                        Nothing  -> true
+                  pure { isLoggedIn: true, isSubscriber }
+                Nothing -> pure { isLoggedIn: false, isSubscriber: false }
+          runEffectFn1 addToTriggerbeeObj triggerbeeUser
+          case props.article of
+            Just a -> sendArticleAnalytics a.article u
+            Nothing -> pure unit
+    -- The initial loading state prevents opening the login dialog
+    -- also so better have a timeout.
     giveUpLogin <- Aff.killFiber (Exception.error "give up login") <$> Aff.launchAff do
-      Aff.delay $ Milliseconds 2000.0
+      Aff.delay $ Milliseconds 5000.0
       withLoginLock do
         liftEffect $ setState _ { user = Just Nothing }
         liftEffect $ initialSendAnalytics Nothing
@@ -245,18 +260,6 @@ mosaicoComponent initialValues props = React.do
         liftEffect do
           setState _ { user = Just u }
           state.logger.setUser u
-          foldMap (\user -> runEffectFn1 sendTriggerbeeEvent user.email) u
-          triggerbeeUser <- case u of
-                Just user -> do
-                  now <- JSDate.now
-                  let isSubscriber = any (isActive) user.subs
-                      isActive :: Subscription -> Boolean
-                      isActive subscription = case toMaybe subscription.dates.end of
-                        Just end -> now <= end
-                        Nothing  -> true
-                  pure { isLoggedIn: true, isSubscriber }
-                Nothing -> pure { isLoggedIn: false, isSubscriber: false }
-          runEffectFn1 addToTriggerbeeObj triggerbeeUser
         alreadySent <- Aff.AVar.take alreadySentInitialAnalytics
         when (not alreadySent) $ liftEffect $ initialSendAnalytics u
       advertorials <- Lettera.responseBody <$> Lettera.getAdvertorials mosaicoPaper

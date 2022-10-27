@@ -142,6 +142,9 @@ spec ::
          , googleSiteVerification ::
               GET "/google8c22fe93f3684c84.html"
                 { response :: File }
+         , ssoCallbackReceiver ::
+              GET "/xd_receiver.html"
+                { response :: File }
          , setTriggerbeeCookies ::
               GET "/api/triggerbee-cookies"
                 { response :: ResponseBody
@@ -297,7 +300,8 @@ main = do
     let env = { htmlTemplate, categoryStructure, categoryRegex, staticPages, cache, redirects }
         handlers =
           { getHealthz
-          , googleSiteVerification
+          , googleSiteVerification: staticAsset GoogleSiteVerification
+          , ssoCallbackReceiver: staticAsset SSOReceiver
           , setTriggerbeeCookies
           , getDraftArticle: getDraftArticle env
           , getArticle: getArticle env
@@ -312,7 +316,7 @@ main = do
           , notFoundPage: notFoundPage env
           , profilePage: profilePage env
           , menu: menu env
-          , adsTxt
+          , adsTxt: staticAsset AdsTXT
           , corsProxy: corsProxyPage env
           }
         guards =
@@ -464,11 +468,13 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
 assets :: { params :: { path :: List String } } -> Aff (Either Failure File)
 assets { params: { path } } = Handlers.directory "dist/assets" path
 
-adsTxt :: forall r. { | r} -> Aff File
-adsTxt = Handlers.file "dist/assets/ads.txt"
+data StaticAsset = AdsTXT | GoogleSiteVerification | SSOReceiver
 
-googleSiteVerification :: forall r. { | r} -> Aff File
-googleSiteVerification = Handlers.file "dist/assets/google8c22fe93f3684c84.html"
+staticAsset :: forall r. StaticAsset -> { | r} -> Aff File
+staticAsset asset = Handlers.file $ case asset of
+  AdsTXT -> "dist/assets/ads.txt"
+  GoogleSiteVerification -> "dist/assets/google8c22fe93f3684c84.html"
+  SSOReceiver -> "dist/assets/xd_receiver.html"
 
 type TriggerbeeCookies =
   { mtruid :: String

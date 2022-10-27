@@ -68,6 +68,32 @@ export GOOGLE_APPLICATION_CREDENTIALS=
 
 Where credentials is the JSON file downloaded from Google's cloud.
 
+### Server / Client
+
+Mosaico uses the same code base for running a version of the site on
+the front end and the server.  The differences this makes when
+developing for either are mostly papered over, but some things may
+still require a bit extra care.
+
+#### Unified dependencies
+
+Both environments use the same `package.json` and `spago.dhall` files
+for defining dependencies.  This means that the deps have some
+libraries that are to be used only in one context, like pubsub and the
+Affjax driver packages.  This works as long as modules using those are
+not included in both environments.  If a server only module is
+imported in both contextes it will fail with a bundler error.
+
+#### Environment variables
+
+Environment variables aren't by their nature available on the client
+side.  If you add new variables or modify their names, also update
+`runBuild` in `run/build.mjs`.  It pretty much does string
+substitutions if the JS files have matches with those.
+
+If you go "wait, `process` is undefined in this context" (like in
+`Mosaico.js`) you are not wrong, but the build has a trick for it.
+
 ## Tests
 
 Launch site as described in the Development sections.  The tests may
