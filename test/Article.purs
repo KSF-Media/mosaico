@@ -157,7 +157,7 @@ testPaywallOpen article originalBlocks page = do
         Chrome.click item page
         -- Test for premium badge
         Chrome.waitFor_ (sub " .mosaico-article__tag-n-share .premium-badge" article) page
-        Chrome.assertNotFound (sub " .mosaico--article-fading-body" article) page
+        Chrome.assertNotFound (sub " .vetrina--container" article) page
 
 testPaywallHolds :: Chrome.Selector -> Int -> Test
 testPaywallHolds article originalBlocks page = do

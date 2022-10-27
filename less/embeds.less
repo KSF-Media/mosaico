@@ -1,0 +1,10 @@
+// Without allowing embed scripts, IG embeds cause overflows on some specific screen sizes (eg. width=760px)
+.instagram-media {
+    @media (max-width: @breakpoint-3col) {
+        max-width: 50vw !important;
+        min-width: 0 !important;
+    }
+    @media (max-width: (@breakpoint-2col - 1)) {
+        max-width: 85vw !important;
+    }
+}

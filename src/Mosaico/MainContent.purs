@@ -5,10 +5,10 @@ import React.Basic (JSX)
 import React.Basic.DOM as DOM
 
 mainContent :: String -> Boolean -> Array JSX -> JSX
-mainContent className isAdvertorial children =
+mainContent className isArticle children =
     DOM.div
       { id: "mosaico-main-content"
-      , className: (if isAdvertorial then "[grid-area:article] " else "[grid-area:main] ") <> className
+      , className: (if isArticle then "[grid-area:article] " else "[grid-area:main] ") <> className
       , children
       }
 

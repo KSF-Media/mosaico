@@ -39,7 +39,7 @@ const listOfIcons = {
   kundservice: `url("../images/icon-mosaico-kundservice.svg")`,
   logout: `url("../images/icon-mosaico-logout.svg")`,
   login: `url("../images/icon-mosaico-login.svg")`,
-}
+};
 
 const maskImagePlugin = plugin(
   function ({ matchUtilities, theme }) {
@@ -77,12 +77,19 @@ module.exports = {
     files: ["./src/**/*", "./static/**/*"],
     transform: {
       // We have to use \\_ instead of \_ in purs files
-      purs: (content) => content.replace(/\\\\/g, '\\')
+      purs: (content) => content.replace(/\\\\/g, "\\"),
     },
   },
   theme: {
-    extend: {},
+    extend: {
+      spacing: {
+        192: "768px", // article title
+        216: "864px", // article body
+        240: "960px", // article image
+      },
+    },
     colors: {
+      transparent: "transparent",
       gray: {
         50: "#f7f5f3", // light
         100: "#e0e0e0", // hairline-color
@@ -125,7 +132,7 @@ module.exports = {
       md: "760px", // @breakpoint-2col
       lg: "1020px", // @breakpoint-3col
     },
-    backgroundImage: listOfIcons
+    backgroundImage: listOfIcons,
   },
   plugins: [maskImagePlugin, maskSizePlugin],
 };

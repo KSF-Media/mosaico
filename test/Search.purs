@@ -2,7 +2,7 @@ module Mosaico.Test.Search where
 
 import Prelude hiding (sub)
 
-import Mosaico.Test (Test, listArticle, log, site, sub)
+import Mosaico.Test (Test, assertNonEmpty, listArticle, log, site, sub)
 import KSF.Puppeteer as Chrome
 
 exampleSearch :: String
@@ -42,9 +42,8 @@ testExampleSearch page = do
   Chrome.assertNotFound (sub "[disabled]" buttonField) page
   Chrome.click buttonField page
   log "Wait for search results"
+  _ <- assertNonEmpty "Couldn't find expected search page header" <$> Chrome.findByText "h2" ("Sökresultat: " <> exampleSearch) page
   Chrome.waitFor_ listArticle page
-  Chrome.waitFor_ pageTitle page
-  Chrome.assertContent pageTitle ("Sökresultat: " <> exampleSearch) page
 
 testFailingSearch :: Test
 testFailingSearch page = do
@@ -52,6 +51,5 @@ testFailingSearch page = do
   Chrome.waitFor_ searchField page
   Chrome.type_ (Chrome.Selector ".mosaico-search input") exampleNegativeSearch page
   Chrome.click buttonField page
-  Chrome.waitFor_ pageTitle page
-  Chrome.assertContent pageTitle "Inga resultat" page
+  _ <- assertNonEmpty "Couldn't find expected search page header" <$> Chrome.findByText "h2" "Inga resultat" page
   Chrome.assertNotFound listArticle page

@@ -9,7 +9,7 @@ import Data.Either (Either(..), either, hush)
 import Data.Foldable (fold, foldMap)
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Monoid (guard)
-import Data.Newtype (un, unwrap)
+import Data.Newtype (unwrap)
 import Data.Set as Set
 import Data.String (toUpper)
 import Effect (Effect)
@@ -22,7 +22,7 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import KSF.Vetrina as Vetrina
 import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
-import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), FullArticle, Image, MosaicoArticleType(..), Tag(..), tagToURIComponent, ExternalScript)
+import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), FullArticle, Image, MosaicoArticleType(..), Tag, ExternalScript)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
@@ -32,6 +32,7 @@ import Mosaico.FallbackImage (fallbackImage)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
 import Mosaico.LatestList as LatestList
 import Mosaico.Share as Share
+import Mosaico.Tag (renderTag)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.Events (EventHandler)
@@ -117,40 +118,24 @@ render embedsAllowed imageComponent boxComponent props =
         embedScripts = getExternalScripts props.article
 
     in DOM.article
-      { className: "mosaico-article" <>
-                   case props.article of
+      { className: "flex justify-center mx-3 mosaico-article"
+                   <> case props.article of
                      Right { articleType: ErrorArticle } -> " mosaico-article-error"
                      _                                   -> mempty
       , children:
-          [ DOM.div {className: "[grid-area:breaking] lg:mx-24", children: [BreakingNews.render { content: props.breakingNews }]}
-          , DOM.header_
-            [ DOM.h1
-                { className: "mosaico-article__headline"
-                , children: [ DOM.text title ]
-                }
-            , DOM.section
-                { className: "mosaico-article__preamble"
-                , children: map (DOM.p_ <<< pure <<< DOM.text) $ getPreamble props.article
-                }
-            -- We don't want to be able to share error articles
-            , guard (maybe true ((_ /= ErrorArticle) <<< _.articleType) $ hush props.article)
-                DOM.section
-                  { className: "mosaico-article__tag-n-share"
-                  , children:
-                      [ DOM.div
-                          { className: "mosaico-article__tag-n-premium"
-                          , children:
-                              [ foldMap renderTag $ head tags
-                              , guard (isPremium props.article) $ DOM.div
-                                  { className: "premium-badge"
-                                  , children: [ DOM.span_ [ DOM.text "Premium" ]]
-                                  }
-                              ]
-                          }
-                      , Share.articleShareButtons title shareUrl
-                      ]
-                  }
-            ]
+        [ DOM.div {className: "flex flex-col items-center lg:w-240"
+        , children:
+          [ DOM.div {className: "lg:w-192", children: [BreakingNews.render { content: props.breakingNews }]}
+          , DOM.header
+              { className: "mb-4 lg:w-192"
+              , children:
+                [ headline title
+                , preamble $ getPreamble props.article
+                -- We don't want to be able to share error articles
+                , guard (maybe true ((_ /= ErrorArticle) <<< _.articleType) $ hush props.article)
+                    tagAndShareButtons tags props.onTagClick (isPremium props.article) title shareUrl
+                ]
+              }
           , foldMap
               (\image -> imageComponent
                 -- TODO: make error image unclickable
@@ -161,34 +146,36 @@ render embedsAllowed imageComponent boxComponent props =
                 , fullWidth: false
                 })
               mainImage
-          , DOM.div
-              { className: "mosaico-article__main"
-              , children:
-                    [ foldMap (renderMetabyline <<< _.article) $ hush props.article
-                    , DOM.div
-                        { className: "mosaico-article__body"
+              , DOM.div
+                  { className: "flex flex-col self-end md:flex-row lg:w-216"
+                  , children:
+                    [ DOM.div
+                        { className: "flex flex-col p-1 mosaico-article__main"
                         , children:
-                          [ embedNagBar embedScripts ]
-                          <>
-                          case _.articleType <$> props.article of
-                            Right PreviewArticle ->
-                              bodyWithoutAd
-                              `snoc` paywallFade
-                              `snoc` (if isNothing props.user then loadingSpinner else vetrina)
-                              `snoc` renderElem (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false })
-                              `snoc` advertorial
-                              `snoc` mostRead
-                            Right DraftArticle ->
-                              bodyWithoutAd
-                            Right FullArticle ->
-                              bodyWithAd
-                              `snoc` advertorial
-                              `snoc` mostRead
-                            Left _ -> [ loadingSpinner ]
-                            _ -> mempty
-                        }
+                            [ foldMap (renderMetabyline <<< _.article) $ hush props.article
+                            , DOM.div
+                                { className: "mosaico-article__body"
+                                , children:
+                                  [ embedNagBar embedScripts ]
+                                  <>
+                                  case _.articleType <$> props.article of
+                                    Right PreviewArticle ->
+                                      bodyWithoutAd
+                                      `snoc` (if isNothing props.user then loadingSpinner else vetrina)
+                                      `snoc` renderElem (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false })
+                                      `snoc` advertorial
+                                      `snoc` mostRead
+                                    Right DraftArticle ->
+                                      bodyWithoutAd
+                                    Right FullArticle ->
+                                      bodyWithAd
+                                      `snoc` advertorial
+                                      `snoc` mostRead
+                                    Left _ -> [ loadingSpinner ]
+                                    _ -> mempty
+                                }]}
                     , DOM.div
-                        { className: "mosaico-article__aside"
+                        { className: "md:w-72 mosaico-article__aside shrink-0"
                         , children:
                           [ Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
                           , LatestList.render
@@ -203,7 +190,7 @@ render embedsAllowed imageComponent boxComponent props =
                         }
                     ]
               }
-          ]
+          ]}]
     }
   where
     renderMetabyline :: Article -> JSX
@@ -265,17 +252,6 @@ render embedsAllowed imageComponent boxComponent props =
              , children: [ DOM.text "Den här artikeln innehåller inbäddat innehåll som kanske inte visas korrekt om vi inte har ditt samtycke att lagra information på din enhet. Du kan ändra ditt val under rubriken Dataskydd längst ned på sidan." ]
              }
       else mempty
-
-    renderTag tag =
-      DOM.a
-        { className: "mosaico-article__tag"
-        , children: [ DOM.text $ (un Tag) tag ]
-        , href: "/tagg/" <> tagToURIComponent tag
-        , onClick: props.onTagClick tag
-        }
-
-    paywallFade =
-        DOM.div { className: "mosaico--article-fading-body" }
 
     vetrina =
       Vetrina.vetrina
@@ -393,10 +369,43 @@ render embedsAllowed imageComponent boxComponent props =
           = i
           | otherwise = findAdSpace body' (i+1)
 
+headline :: String -> JSX
+headline title =
+  DOM.h1
+    { className: "mosaico-article__headline"
+    , children: [ DOM.text title ]
+    }
+
+preamble :: Array String -> JSX
+preamble texts =
+  DOM.section
+    { className: "mosaico-article__preamble"
+    , children: map (DOM.p_ <<< pure <<< DOM.text) texts
+    }
+
+tagAndShareButtons :: Array Tag -> (Tag -> EventHandler) -> Boolean -> String -> Maybe String -> JSX
+tagAndShareButtons tags onTagClick premium title shareUrl =
+  DOM.section
+    { className: "mosaico-article__tag-n-share"
+    , children:
+        [ DOM.div
+            { className: "mosaico-article__tag-n-premium"
+            , children:
+                [ foldMap (renderTag onTagClick) $ head tags
+                , guard premium $ DOM.div
+                    { className: "premium-badge"
+                    , children: [ DOM.span_ [ DOM.text "Premium" ]]
+                    }
+                ]
+            }
+        , Share.articleShareButtons title shareUrl
+        ]
+    }
+
 -- TODO: maybe we don't want to deal at all with the error cases
 -- and we want to throw them away?
 renderElement :: Boolean -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Maybe (ArticleStub -> EventHandler) -> BodyElement -> JSX
-renderElement hideAds imageComponent boxComponent onArticleClick el =  case el of
+renderElement hideAds imageComponent boxComponent onArticleClick el = case el of
   -- Can't place div's or blockquotes under p's, so place them under div.
   -- This is usually case with embeds
   Html content -> DOM.div

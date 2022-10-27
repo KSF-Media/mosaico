@@ -10,7 +10,7 @@ import Data.Array as Array
 import Data.Array (cons, find, foldl, fromFoldable, head, null)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..), hush)
-import Data.Foldable (fold, foldM, foldMap, elem)
+import Data.Foldable (fold, foldM, foldMap)
 import Data.HashMap as HashMap
 import Data.Map as Map
 import Data.Map (Map)
@@ -42,8 +42,7 @@ import Lettera as Lettera
 import Lettera.Models (ArticleStub, Category(..), CategoryLabel(..), CategoryType(..), DraftParams, FullArticle, ArticleType(..), articleToJson, articleStubToJson, correctionsCategory, frontpageCategoryLabel, notFoundArticle, uriComponentToTag)
 import Lettera.ArticleSchema (renderAsJsonLd)
 import Mosaico.Article as Article
-import Mosaico.Article.Advertorial.Basic as Advertorial.Basic
-import Mosaico.Article.Advertorial.Standard as Advertorial.Standard
+import Mosaico.Article.Advertorial as Advertorial
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
 import Mosaico.Cache (Stamped, parallelWithCommonLists)
@@ -392,11 +391,7 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
     Right a@{ article } -> do
       let articleJSX =
             case article.articleType of
-              Advertorial
-                | elem "Basic" article.categories
-                -> renderWithComponents Advertorial.Basic.render { article, imageProps: Nothing, advertorialClassName: Nothing }
-                | elem "Standard" article.categories -> renderWithComponents Advertorial.Standard.render { article }
-                | otherwise -> renderWithComponents Advertorial.Standard.render { article }
+              Advertorial -> renderWithComponents Advertorial.render { article }
               _ ->
                 renderWithComponents (Article.render Nothing)
                   { paper: mosaicoPaper

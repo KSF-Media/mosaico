@@ -20,11 +20,12 @@ import Foreign.Object as Object
 import KSF.Helpers (formatArticleTime)
 import KSF.HtmlRenderer (render) as HtmlRenderer
 import KSF.Spinner (loadingSpinner)
-import Lettera.Models (ArticleStub, Tag(..), tagToURIComponent)
+import Lettera.Models (ArticleStub, Tag(..))
 import Mosaico.BreakingNews as BreakingNews
 import Mosaico.FallbackImage (fallbackImage)
 import Mosaico.Frontpage.Models (Hook, toHookRep)
 import Mosaico.Paper (mosaicoPaper)
+import Mosaico.Tag (renderTag)
 import Mosaico.Timestamp (timestamp)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
@@ -54,7 +55,7 @@ premiumBadge = DOM.div { className: "premium-badge" , children: [ DOM.text "prem
 render :: Frontpage -> JSX
 render (List props) =
     DOM.div
-        { className: "mx-4 mosaico--article-list md:mx-0"
+        { className: "mx-4 mosaico--article-list lg:mx-0"
         , children:
           [ maybeLabel props.label
           , genericRender (\list -> map renderListArticle list <> [props.footer]) mempty props.content
@@ -65,14 +66,7 @@ render (List props) =
         addCrop url =
           if contains (Pattern "smooth-storage") url then url
           else url <> "&function=hardcrop&width=200&height=200&q=90"
-        tagLink a = foldMap (\tag ->
-                                DOM.a
-                                  { className: "relative z-20 mb-1 h-4 mosaico-article__tag"
-                                  , onClick: props.onTagClick tag
-                                  , href: "/tagg/" <> tagToURIComponent tag
-                                  , children: [ DOM.text $ un Tag tag ]
-                                  }
-                            ) $ head a.tags
+        tagLink a = foldMap (renderTag props.onTagClick) $ head a.tags
 
         articleTitle a = [ DOM.h3
                              { className: "text-xl leading-tight text-gray-900 font-duplexserif"

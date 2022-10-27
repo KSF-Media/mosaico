@@ -10,7 +10,7 @@ import Data.Argonaut.Decode (decodeJson)
 import Data.Array (any, catMaybes, cons, find, index, length, mapMaybe, null)
 import Data.Array.NonEmpty as NonEmptyArray
 import Data.Either (Either(..), hush)
-import Data.Foldable (foldMap, elem)
+import Data.Foldable (foldMap)
 import Data.HashMap (HashMap)
 import Data.HashMap as HashMap
 import Data.Int (ceil)
@@ -45,8 +45,7 @@ import Lettera.Models (Article, ArticleStub, ArticleType(..), Categories, Catego
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendArticleAnalytics, sendPageView)
 import Mosaico.Article as Article
-import Mosaico.Article.Advertorial.Basic as Advertorial.Basic
-import Mosaico.Article.Advertorial.Standard as Advertorial.Standard
+import Mosaico.Article.Advertorial as Advertorial
 import Mosaico.Cache as Cache
 import Mosaico.Epaper as Epaper
 import Mosaico.Error as Error
@@ -118,8 +117,7 @@ type Components =
   , webviewComponent :: Webview.Props -> JSX
   , articleComponent :: Article.Props -> JSX
   , epaperComponent :: Epaper.Props -> JSX
-  , basicAdvertorialComponent :: Advertorial.Basic.Props -> JSX
-  , standardAdvertorialComponent :: Advertorial.Standard.Props -> JSX
+  , advertorialComponent :: Advertorial.Props -> JSX
   , headerComponent :: Header.Props -> JSX
   }
 
@@ -415,14 +413,13 @@ getInitialValues = do
   logger <- Sentry.mkLogger sentryDsn Nothing "mosaico"
   logger.setTag "paper" _mosaicoPaper
 
-  loginModalComponent          <- LoginModal.loginModal
-  searchComponent              <- Search.searchComponent
-  webviewComponent             <- Webview.webviewComponent
-  articleComponent             <- Article.component
-  epaperComponent              <- Epaper.component
-  basicAdvertorialComponent    <- Advertorial.Basic.component
-  standardAdvertorialComponent <- Advertorial.Standard.component
-  headerComponent              <- Header.component
+  loginModalComponent  <- LoginModal.loginModal
+  searchComponent      <- Search.searchComponent
+  webviewComponent     <- Webview.webviewComponent
+  articleComponent     <- Article.component
+  epaperComponent      <- Epaper.component
+  advertorialComponent <- Advertorial.component
+  headerComponent      <- Header.component
   pure
     { state:
         { article: Nothing
@@ -449,8 +446,7 @@ getInitialValues = do
         , webviewComponent
         , articleComponent
         , epaperComponent
-        , basicAdvertorialComponent
-        , standardAdvertorialComponent
+        , advertorialComponent
         , headerComponent
         }
     , catMap
@@ -521,14 +517,7 @@ render props setState state components router onPaywallEvent =
            -- If we have this article already in `state`, let's render it
            then
              case article.articleType of
-               Advertorial
-                 | elem "Basic" article.categories
-                 -> components.basicAdvertorialComponent { article, imageProps: Nothing, advertorialClassName: Nothing }
-                 | elem "Standard" article.categories
-                 -> components.standardAdvertorialComponent { article }
-                 -- In a case we can't match the category of an advertorial article
-                 -- let's show it as a "Basic" advertorial, rather than a regular article
-                 | otherwise -> components.basicAdvertorialComponent { article, imageProps: Nothing, advertorialClassName: Nothing }
+               Advertorial -> components.advertorialComponent { article }
                _ -> renderArticle (Right fullArticle)
            else loadingSpinner
          | Just stub <- state.clickedArticle -> mosaicoLayoutNoAside $ renderArticle $ Left stub
@@ -729,10 +718,12 @@ render props setState state components router onPaywallEvent =
           hideAds = not showAds
 
           advertorialBanner :: JSX
-          advertorialBanner = fromMaybe mempty $ ifAdvertorial Advertorial.Basic.advertorialTopBanner
+          advertorialBanner = fromMaybe mempty $ ifAdvertorial Advertorial.advertorialTopBanner
 
-          isAdvertorial :: Boolean
-          isAdvertorial = isJust $ ifAdvertorial \_ -> unit
+          isArticle :: Boolean
+          isArticle = case state.route of
+            Routes.ArticlePage _ | Just (Right { article }) <- state.article -> true
+            _ -> false
 
       in DOM.div
            { id: Paper.toString mosaicoPaper
@@ -746,7 +737,7 @@ render props setState state components router onPaywallEvent =
                      , guard (not props.headless) header
                      , Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false, hideAds }
                      , advertorialBanner
-                     , mainContent mainContentClassName isAdvertorial [content]
+                     , mainContent mainContentClassName isArticle [content]
                      , guard (not props.headless) (footer mosaicoPaper onCategoryClick onStaticPageClick) --remember to hide footer if headless
                      , guard showAside $ DOM.aside
                          { className: "mosaico--aside"

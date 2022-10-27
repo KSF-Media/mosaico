@@ -57,7 +57,10 @@ articleImage onClick props@{ image: img } =
 articleMainImage :: EventHandler -> Props -> JSX
 articleMainImage onClick props@{ image: img } =
   DOM.div
-    { className: "mosaico-article__main-image" <> guard props.fullWidth " full-width"
+    { className:
+        if props.fullWidth
+        then "mosaico-article__main-image full-width"
+        else "lg:w-240 mosaico-article__main-image"
     , children:
         [ DOM.div
             { className: "wrapper"
