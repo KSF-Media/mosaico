@@ -552,7 +552,7 @@ tagList env { params: { tag } } = do
                     <> mkArticleFeed (TagFeed tag') (ArticleList (Cache.getContent articles))
               appendMosaico (Cache.getContent mosaicoString) htmlTemplate >>=
                 appendVars (mkWindowVariables windowVars) >>=
-                appendHead (makeTitle tag)
+                appendHead (makeTitle $ unwrap tag')
     now <- liftEffect nowDateTime
     pure $ Cache.addHeader now mosaicoString $
       htmlContent $ Response.ok $ StringBody $ renderTemplateHtml html
@@ -563,7 +563,7 @@ tagList env { params: { tag } } = do
       { mainContent:
           { type: TagListContent tag'
           , content: Frontpage.render $ Frontpage.List
-              { label: mempty
+              { label: Just $ unwrap tag'
               , content: Just articles
               , footer: mempty
               , onArticleClick: const mempty

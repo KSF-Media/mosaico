@@ -564,11 +564,12 @@ render props setState state components router onPaywallEvent =
               })
        Routes.NotFoundPage _ -> mosaicoLayoutNoAside $ renderArticle (Right notFoundArticle)
        Routes.TagPage tag ->
-         let maybeFeed = HashMap.lookup (TagFeed tag) state.feeds
+          let maybeFeed = HashMap.lookup (TagFeed tag) state.feeds
+              tagLabel = Just (CategoryLabel $ unwrap tag)
           in case maybeFeed of
                Just (ArticleList tagFeed)
                  | null tagFeed -> mosaicoDefaultLayout Error.notFoundWithAside
-               _                -> frontpageNoHeader Nothing maybeFeed
+               _                -> frontpageNoHeader tagLabel maybeFeed
        Routes.MenuPage ->
          flip (mosaicoLayout true) false
          $ Menu.render
