@@ -169,6 +169,7 @@ render embedsAllowed imageComponent boxComponent props =
                                       bodyWithoutAd
                                     Right FullArticle ->
                                       bodyWithAd
+                                      `snoc` DOM.div { id: "tb-embed" }
                                       `snoc` advertorial
                                       `snoc` mostRead
                                     Left _ -> [ loadingSpinner ]
