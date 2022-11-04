@@ -250,6 +250,7 @@ footerLinks onCategoryClick onStaticPageClick =
         , footerLink "Kontakta oss" "kontakt"
         , footerLink "Tipsa oss" "tipsa-oss"
         , footerLink "Nyhetsbrev" "nyhetsbrev"
+        , footerLink "App" "app"
         , categoryLink correctionsCategory
         ]
     }

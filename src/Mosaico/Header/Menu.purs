@@ -148,7 +148,13 @@ render props@{ onLogin, onLogout } = DOM.div
                     , className: Just "w-40"
                     }
                   ] <> paperSpecificLinks mosaicoPaper
-                  <> [ renderCategory { title: "NYHETSBREV"
+                  <> [ renderCategory { title: "NYHETSAPPAR"
+                    , subsections: []
+                    , url: "/sida/app"
+                    , onClick: capture_ $ props.changeRoute "/sida/app"
+                    , className: Just "w-40"
+                    }
+                  , renderCategory { title: "NYHETSBREV"
                     , subsections: []
                     , url: "/sida/nyhetsbrev"
                     , onClick: capture_ $ props.changeRoute "/sida/nyhetsbrev"
