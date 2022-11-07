@@ -10,6 +10,8 @@ function areAdsAllowed() {
       if (window.googlefc.getAllowAdsStatus() === googlefc.AllowAdsStatusEnum.ADS_ALLOWED) {
         console.log("User has consented to ads; allowing external scripts.");
         window.consentToEmbeddedScripts(true);
+      } else {
+        window.consentToEmbeddedScripts(false);
       }
     },
   });
