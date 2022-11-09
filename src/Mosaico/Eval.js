@@ -6,7 +6,7 @@ function areAdsAllowed() {
   window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
 
   window.googlefc.callbackQueue.push({
-    CONSENT_DATA_READY: () => {
+    AD_BLOCK_DATA_READY: () => {
       if (window.googlefc.getAllowAdsStatus() === googlefc.AllowAdsStatusEnum.ADS_ALLOWED) {
         console.log("User has consented to ads; allowing external scripts.");
         window.consentToEmbeddedScripts(true);
