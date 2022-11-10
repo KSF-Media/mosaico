@@ -12,9 +12,11 @@ import Data.Monoid (guard)
 import Data.Newtype (unwrap)
 import Data.Set as Set
 import Data.String (toUpper)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class (liftEffect)
+import Foreign.Object as Object
 import KSF.Helpers (formatArticleTime)
 import KSF.Paper (Paper(..))
 import KSF.Paper as Paper
@@ -22,7 +24,7 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import KSF.Vetrina as Vetrina
 import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
-import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), FullArticle, Image, MosaicoArticleType(..), Tag, ExternalScript)
+import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), ExternalScript, Image, MosaicoArticleType(..), Tag, FullArticle)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
@@ -65,6 +67,9 @@ getShareUrl = either _.shareUrl _.article.shareUrl
 
 getExternalScripts :: Either ArticleStub FullArticle -> Array ExternalScript
 getExternalScripts props = fromMaybe [] $ either (const mempty) _.article.externalScripts props
+
+getArticleCategories :: Either ArticleStub FullArticle -> Array String
+getArticleCategories = either (const mempty) _.article.categories
 
 type Props =
   { paper :: Paper
@@ -116,12 +121,14 @@ render embedsAllowed imageComponent boxComponent props =
           if null props.mostReadArticles then Nothing else Just $ take 5 props.mostReadArticles
         shareUrl = getShareUrl props.article
         embedScripts = getExternalScripts props.article
+        articleCategory = head $ getArticleCategories props.article
 
     in DOM.article
       { className: "flex justify-center mx-3 mosaico-article"
                    <> case props.article of
                      Right { articleType: ErrorArticle } -> " mosaico-article-error"
                      _                                   -> mempty
+      , _data: Object.fromFoldable $ Tuple "category" <$> (articleCategory <|> Just "")
       , children:
         [ DOM.div {className: "flex flex-col items-center lg:w-240"
         , children:
