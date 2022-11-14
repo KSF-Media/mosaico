@@ -5,6 +5,8 @@ import Prelude
 import Data.Foldable (foldMap, elem)
 import Data.Maybe (Maybe(..))
 import Data.String as String
+import Data.Tuple (Tuple(..))
+import Foreign.Object as Object
 import Lettera.Models (Article, Image, ArticleTypeDetails)
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
@@ -37,6 +39,7 @@ advertorialTopBanner article =
             Nothing -> "ANNONS"
   in DOM.div
        { className: "advertorial-top-banner"
+       , _data: Object.fromFoldable [Tuple "articletype" "advertorial"]
        , children:
            [ DOM.span
                { className: "advertorial-top-banner__company"
