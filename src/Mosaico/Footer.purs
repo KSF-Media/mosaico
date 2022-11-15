@@ -103,7 +103,7 @@ hblContactInfo commonFooter =
         , DOM.text ", "
         , email "annons@hbl.fi"
         , DOM.br {}
-        , DOM.text "Annonskiosken: "
+        , DOM.text "Privatannonser: "
         , columnLink "https://annonskiosken.ksfmedia.fi/ilmoita/hufvudstadsbladet" [ DOM.text "hbl.fi/annonskiosken"]
         ]
     ]
@@ -163,7 +163,7 @@ vastranylandContactInfo commonFooter =
         , DOM.text ", "
         , email "annons@vastranyland.fi"
         , DOM.br {}
-        , DOM.text "Annonskiosken: "
+        , DOM.text "Privatannonser: "
         , columnLink "https://annonskiosken.ksfmedia.fi/ilmoita/vastranyland" [ DOM.text "vastranyland.fi/annonskiosken"]
         ]
     ]
@@ -222,7 +222,7 @@ ostnylandContactInfo commonFooter =
         , DOM.text ", "
         , email "annons@ostnyland.fi"
         , DOM.br {}
-        , DOM.text "Annonskiosken: "
+        , DOM.text "Privatannonser: "
         , columnLink "https://annonskiosken.ksfmedia.fi/ilmoita/ostnyland" [ DOM.text "ostnyland.fi/annonskiosken"]
         ]
     ]
@@ -298,7 +298,7 @@ appLinks mosaicoPaper =
     { className: "flex flex-col justify-center items-center mx-auto mt-0 mb-8 px-2.5"
     , children:
       [ DOM.div
-          { className: "text-base text-gray-900 text-center mb-2 max-w-xs md:max-w-xl"
+          { className: "mb-2 max-w-xs text-base text-center text-gray-900 md:max-w-xl"
           , children:
               [ DOM.text "Ladda ned vår nyhetsapp – det smidigaste sättet att läsa våra nyheter." ]
           }

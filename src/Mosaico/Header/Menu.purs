@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Array (intersperse, foldl, snoc)
 import Effect (Effect)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (unwrap)
 import Data.String as String
 import Data.String (toUpper)
@@ -135,12 +135,13 @@ render props@{ onLogin, onLogout } = DOM.div
                     , onClick: capture_ $ props.changeRoute "/sida/kontakt"
                     , className: Just "w-40"
                     }
-                  , renderCategory { title: "ANNONSERA"
+                  , renderCategory { title: "FÖRETAGSANNONSER"
                     , subsections: []
                     , url: "https://www.ksfmedia.fi/"
                     , onClick: mempty
                     , className: Just "w-40"
                     }
+                  , maybe mempty renderPrivateAnnonserCategory $ privatAnnonserLink mosaicoPaper
                   , renderCategory { title: "JOBBA HOS OSS"
                     , subsections: []
                     , url: "https://www.ksfmedia.fi/jobba-hos-oss"
@@ -161,6 +162,22 @@ render props@{ onLogin, onLogout } = DOM.div
                     , className: Just "w-40"
                     }
                   ]
+
+    privatAnnonserLink :: Paper -> Maybe String
+    privatAnnonserLink HBL = Just "https://annonskiosken.ksfmedia.fi/ilmoita/hufvudstadsbladet"
+    privatAnnonserLink VN = Just "https://annonskiosken.ksfmedia.fi/ilmoita/vastranyland"
+    privatAnnonserLink ON = Just "https://annonskiosken.ksfmedia.fi/ilmoita/ostnyland"
+    privatAnnonserLink _ = Nothing
+
+    renderPrivateAnnonserCategory :: String -> JSX
+    renderPrivateAnnonserCategory url =
+      renderCategory
+        { title: "PRIVATANNONSER"
+        , subsections: []
+        , url
+        , onClick: mempty
+        , className: Just "w-40"
+        }
 
     paperSpecificLinks :: Paper -> Array JSX
     paperSpecificLinks VN = vastranylandMenuLinks
