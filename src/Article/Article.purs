@@ -154,10 +154,10 @@ render embedsAllowed imageComponent boxComponent props =
                 })
               mainImage
               , DOM.div
-                  { className: "flex flex-col self-end md:flex-row lg:w-216"
+                  { className: "flex flex-col self-end max-w-full md:flex-row lg:w-216"
                   , children:
                     [ DOM.div
-                        { className: "flex flex-col p-1 mosaico-article__main"
+                        { className: "flex flex-col p-1 max-w-full mosaico-article__main"
                         , children:
                             [ foldMap (renderMetabyline <<< _.article) $ hush props.article
                             , DOM.div
