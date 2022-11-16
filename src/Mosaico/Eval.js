@@ -17,14 +17,24 @@ function areAdsAllowed() {
   });
 }
 
-export function allowExternalScriptsImpl() {
-  return function() {
-    window.consentToEmbeddedScripts(true);
-  }
+if (typeof window !== "undefined") {
+  window.consentToEmbeddedScripts = (value) => {
+    window.consentToEmbeddedScriptsResolve(value);
+    consentedToEmbeddedScripts.then((consentStatus) => {
+      if (!consentStatus && value) {
+        // User has previously denied consent, but decided to now give it.
+        // Refresh the page to load additional content.
+        // Cannot use consentStatus !== value because the google consent box
+        // will actually call this with the value of false about two seconds
+        // after loading, regardless of the given consent.
+        location.reload();
+      }
+    });
+  };
 }
 
 export const consentedToEmbeddedScripts = (typeof window !== "undefined") && new Promise(resolve => {
-  window.consentToEmbeddedScripts = resolve;
+  window.consentToEmbeddedScriptsResolve = resolve;
   if(document && document.location.pathname.startsWith("/artikel/draft/")) {
     // We're in Aptoma's preview window, load embeds
     window.consentToEmbeddedScripts(true);

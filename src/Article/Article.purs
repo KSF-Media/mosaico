@@ -26,6 +26,7 @@ import KSF.Vetrina as Vetrina
 import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
 import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), ExternalScript, Image, MosaicoArticleType(..), Tag, FullArticle)
 import Mosaico.Ad (ad) as Mosaico
+import Mosaico.Ad (openConsentAndSetCookie)
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
 import Mosaico.BreakingNews as BreakingNews
@@ -37,7 +38,8 @@ import Mosaico.Share as Share
 import Mosaico.Tag (renderTag)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
-import React.Basic.Events (EventHandler)
+import React.Basic.DOM.Events (preventDefault)
+import React.Basic.Events (handler, EventHandler)
 import React.Basic.Hooks (Component, useEffect, useState', (/\))
 import React.Basic.Hooks as React
 
@@ -257,7 +259,15 @@ render embedsAllowed imageComponent boxComponent props =
       if (not $ null scripts) && (embedsAllowed == Just false)
       then DOM.div
              { className: "p-3 mb-2 w-full font-bold text-white rounded-md border-2 bg-brand border-brand"
-             , children: [ DOM.text "Den här artikeln innehåller inbäddat innehåll som kanske inte visas korrekt om vi inte har ditt samtycke att lagra information på din enhet. Du kan ändra ditt val under rubriken Dataskydd längst ned på sidan." ]
+             , children:
+               [ DOM.text "Den här artikeln innehåller inbäddat innehåll som kanske inte visas korrekt om vi inte har ditt samtycke att lagra information på din enhet. Du kan ändra ditt val under rubriken Dataskydd längst ned på sidan, eller genom att klicka "
+               , DOM.a
+                   { href: "#"
+                   , onClick: handler preventDefault openConsentAndSetCookie
+                   , children: [ DOM.text "här för att hantera dataskydd." ]
+                   , className: "italic underline decoration-2"
+                   }
+                ]
              }
       else mempty
 
