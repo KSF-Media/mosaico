@@ -727,9 +727,10 @@ render props setState state components router onPaywallEvent =
           advertorialBanner :: JSX
           advertorialBanner = fromMaybe mempty $ ifAdvertorial Advertorial.advertorialTopBanner
 
-          isArticle :: Boolean
-          isArticle = case state.route of
+          isFullWidth :: Boolean
+          isFullWidth = case state.route of
             Routes.ArticlePage _ | Just (Right { article }) <- state.article -> true
+            Routes.EpaperPage -> true
             _ -> false
 
       in DOM.div
@@ -744,7 +745,7 @@ render props setState state components router onPaywallEvent =
                      , guard (not props.headless) header
                      , Mosaico.ad { contentUnit: "mosaico-ad__parade", inBody: false, hideAds }
                      , advertorialBanner
-                     , mainContent mainContentClassName isArticle [content]
+                     , mainContent mainContentClassName isFullWidth [content]
                      , guard (not props.headless) (footer mosaicoPaper onCategoryClick onStaticPageClick) --remember to hide footer if headless
                      , guard showAside $ DOM.aside
                          { className: "mosaico--aside"

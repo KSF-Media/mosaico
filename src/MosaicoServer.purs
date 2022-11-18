@@ -3,7 +3,7 @@ module MosaicoServer where
 import Prelude
 
 import Data.Foldable (foldMap)
-import Data.Maybe (Maybe(..), isJust)
+import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import KSF.Paper as Paper
 import Lettera.Models (Article, ArticleStub, Category, Tag, ArticleType(Advertorial), categoriesMap)
@@ -24,6 +24,7 @@ type Props =
   , categoryStructure :: Array Category
   , headless :: Boolean
   , article :: Maybe Article
+  , isFullWidth :: Boolean
   }
 
 type MainContent =
@@ -57,7 +58,7 @@ render props =
               [ guard (not props.headless) Header.topLine
               , guard (not props.headless) header
               , guard isAdvertorial advertorialBanner props.article
-              , mainContent extraClasses (isJust props.article) [props.mainContent.content]
+              , mainContent extraClasses props.isFullWidth [props.mainContent.content]
               , guard (not props.headless) ( footer mosaicoPaper mempty mempty )
               , case props.mainContent.type of
                   FrontpageContent -> aside

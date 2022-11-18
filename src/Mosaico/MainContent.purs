@@ -5,10 +5,10 @@ import React.Basic (JSX)
 import React.Basic.DOM as DOM
 
 mainContent :: String -> Boolean -> Array JSX -> JSX
-mainContent className isArticle children =
+mainContent className fullWidth children =
     DOM.div
       { id: "mosaico-main-content"
-      , className: (if isArticle then "[grid-area:article] " else "[grid-area:main] ") <> className
+      , className: (if fullWidth then "[grid-area:full-width] " else "[grid-area:thin] ") <> className
       , children
       }
 

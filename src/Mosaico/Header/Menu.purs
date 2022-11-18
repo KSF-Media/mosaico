@@ -43,7 +43,7 @@ type Subsection =
 
 render :: Props -> JSX
 render props@{ onLogin, onLogout } = DOM.div
-  { className: "flex mx-6 lg:mx-0 [grid-area:main] md:[grid-column:1/span_2] lg:[grid-column:2/span_3] mosaico-menu"
+  { className: "flex mx-6 lg:mx-0 [grid-area:full-width] md:[grid-column:1/span_2] lg:[grid-column:2/span_3] mosaico-menu"
   , children: [ menuContent ]
   }
   where

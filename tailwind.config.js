@@ -92,6 +92,7 @@ module.exports = {
       transparent: "transparent",
       gray: {
         50: "#f7f5f3", // light
+        75: "#eceae6", // nude
         100: "#e0e0e0", // hairline-color
         200: "#dcd9d7", // almostlight
         300: "#cbcaca", // slightlylight
@@ -115,6 +116,7 @@ module.exports = {
       hbl: "#f07e26",
       on: "#518196",
       vn: "#c90c0f",
+      neutral: "#00a1ab",
       brand: "var(--brand-color)", // defined in _site.scss
       advertorial: "var(--color-advertorial, #fff3e6)", // defined in Aptoma's CSS
     },
