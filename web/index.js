@@ -345,35 +345,50 @@ const relevantConfig = {
   },
 };
 
-function loadAds(paper) {
-  // remove "if" block when hbl and vn programmatic ads go live
-  if (paper == "on") {
-    window.relevantDigital = window.relevantDigital || {};
-    relevantDigital.cmd = relevantDigital.cmd || [];
-    relevantDigital.cmd.push(function () {
-      relevantDigital.loadPrebid({
-        configId: relevantConfig[paper].configId,
-        manageAdserver: false,
-        noGpt: true,
-        collapseEmptyDivs: true,
-        collapseBeforeAdFetch: false,
-        allowedDivIds: null,
-        noSlotReload: false,
-      });
-    });
-  }
+const relevantScriptUrl = `https://apps-cdn.relevant-digital.com/static/tags/${
+  relevantConfig[process.env.PAPER].scriptId
+}.js`;
+
+function loadScript(url) {
+  const script = document.createElement("script");
+
+  return new Promise((resolve, reject) => {
+    script.onload = () => {
+      console.log(`${url} loaded`);
+      resolve();
+    };
+
+    script.onerror = () => {
+      reject(`Error loading script at ${url}`);
+    };
+
+    // Important to set the src after registering the onload listener
+    script.src = url;
+    document.head.appendChild(script);
+  });
 }
 
-function addProgrammaticAdsScript(paper) {
-  // remove "if" block when hbl and vn programmatic ads go live
-  if (paper == "on") {
-    const externalScript = document.createElement("script");
-    externalScript.src = "https://apps-cdn.relevant-digital.com/static/tags/" + relevantConfig[paper].scriptId + ".js";
-    externalScript.defer = true;
-    document.body.appendChild(externalScript);
-  }
-}
+var buildProgrammaticAdsConfig = (paper) => () => {
+  window.relevantDigital = window.relevantDigital || {};
+  relevantDigital.cmd = relevantDigital.cmd || [];
+  relevantDigital.cmd.push(function () {
+    relevantDigital.loadPrebid({
+      configId: relevantConfig[paper].configId,
+      manageAdserver: false,
+      noGpt: true,
+      collapseEmptyDivs: true,
+      collapseBeforeAdFetch: false,
+      allowedDivIds: null,
+      noSlotReload: false,
+    });
+  });
+};
 
 main();
-loadAds(process.env.PAPER);
-addProgrammaticAdsScript(process.env.PAPER);
+
+// remove "if" block when hbl and vn programmatic ads go live
+if (process.env.PAPER == "on") {
+  loadScript(relevantScriptUrl)
+    .then(() => buildProgrammaticAdsConfig(process.env.PAPER))
+    .catch(console.log);
+}
