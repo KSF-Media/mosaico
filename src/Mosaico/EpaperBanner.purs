@@ -1,7 +1,5 @@
 module Mosaico.EpaperBanner where
 
-import Prelude
-
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 

@@ -73,7 +73,7 @@ testCategoryLists page = do
       | c.type == Feed = do
         log $ "test feed category " <> show c.label
         letteraArticles <- fromMaybe [] <<< Lettera.responseBody <$>
-                           Lettera.getFrontpage HBL (Just $ show c.label) Nothing
+                           Lettera.getFrontpage HBL Nothing (Just $ show c.label) Nothing
         catElements <- Chrome.findByText "a" (toUpper $ show c.label) page
         catElement <- assertNonEmpty "Did not find link for the category" catElements
 

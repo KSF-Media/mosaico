@@ -3,7 +3,6 @@ module Mosaico.Search where
 import Prelude
 
 import Data.Maybe (Maybe(..), isNothing)
-import Data.Monoid (guard)
 import Effect (Effect)
 import KSF.InputField as InputField
 import React.Basic (JSX)

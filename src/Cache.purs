@@ -206,7 +206,7 @@ initServerCache categoryStructure = do
   mainCategoryFeed <-
     (map <<< map <<< rmap) (join <<< fromFoldable)
     Map.fromFoldable
-    <$> traverse (withCat $ startUpdates <<< Lettera.getFrontpage mosaicoPaper <<< Just) categoryStructure
+    <$> traverse (withCat $ startUpdates <<< Lettera.getFrontpage mosaicoPaper Nothing <<< Just) categoryStructure
   prerendered <- Map.fromFoldable <$> traverse
                  (withCat $ startUpdates <<< Lettera.getFrontpageHtml mosaicoPaper) prerenderedCategories
   mostRead <- (map <<< map <<< map) (join <<< fromFoldable) $
@@ -275,7 +275,7 @@ getFrontpage cache category = do
   case Map.lookup category cache.mainCategoryFeed of
     Just c -> (\(Controls x) -> x.content) c
     Nothing -> getUsingCache cache.feedList (CategoryFeed category) $
-               Lettera.getFrontpage mosaicoPaper (Just $ show category) Nothing
+               Lettera.getFrontpage mosaicoPaper Nothing (Just $ show category) Nothing
 
 getMostRead :: Cache -> Aff (Stamped (Array ArticleStub))
 getMostRead cache@{ mode: Client } =
