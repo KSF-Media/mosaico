@@ -1,5 +1,8 @@
 export function _pushToDataLayer(metadata) {
     window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(function() {
+        this.reset();
+      })
     let push_data = { event: "page_data" };
     push_data.title = metadata.title
     push_data.publishingTime =  metadata.publishingTime
@@ -17,6 +20,9 @@ export function _pushToDataLayer(metadata) {
 
 export function _sendPageView() {
     window.dataLayer = window.dataLayer || []
+    window.dataLayer.push(function() {
+        this.reset();
+      })
     let push_data = { event: "page_data", pageUrl: window.location.href, pageTitle: document.title}
     dataLayer.push(push_data)
 }
