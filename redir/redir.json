@@ -202,5 +202,20 @@
     "route": "karistelefon",
     "paper": "vn",
     "destination": "https://www.ksfmedia.fi/karistelefon"
+  },
+  {
+    "route": "jul22",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-jul22"
+  },
+  {
+    "route": "julkampanj2022",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-julkampanj2022"
+  },
+  {
+    "route": "julkampanj2022",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/on-julkampanj2022"
   }
 ]
