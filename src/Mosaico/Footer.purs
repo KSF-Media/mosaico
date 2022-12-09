@@ -120,7 +120,7 @@ hblContactInfo commonFooter =
         ]
     , section "Insändare: "
         [ columnLink "/sida/insandare" [ DOM.text "Skriv din insändare här" ] ]
-    , section "Mejla din insändäre: " [ email "debatt@hbl.fi" ]
+    , section "Mejla din insändare: " [ email "debatt@hbl.fi" ]
     ]
 
 vastranylandContactInfo :: JSX -> JSX
