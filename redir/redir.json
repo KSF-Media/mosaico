@@ -217,5 +217,15 @@
     "route": "julkampanj2022",
     "paper": "on",
     "destination": "https://www.ksfmedia.fi/on-julkampanj2022"
+  },
+  {
+    "route": "jul",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-julkampanj2022"
+  },
+  {
+    "route": "jul",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/on-julkampanj2022"
   }
 ]
