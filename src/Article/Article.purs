@@ -113,7 +113,8 @@ render embedsAllowed imageComponent boxComponent props =
         hideAds = getRemoveAds props.article
         bodyWithoutAd = map renderElem body
         bodyWithAd =
-          [ DOM.section
+          [ Mosaico.ad { contentUnit: "mosaico-ad__mobparad", inBody: false, hideAds }
+          , DOM.section
             { className: "article-content"
             , children: map renderElem $ insertAdsIntoBodyText "mosaico-ad__bigbox1" "mosaico-ad__bigbox2" body
             }
