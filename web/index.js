@@ -80,7 +80,7 @@ function getGamId(name) {
 window.adSlots = {
   mobile: [
     {
-      gamId: getGamId("mobparad"),
+      gamId: getGamId("digiframmob"),
       sizes: [
         [300, 100],
         [300, 250],
@@ -90,6 +90,24 @@ window.adSlots = {
       ],
       targetId: "mosaico-ad__top-parade",
       isLazy: false,
+    },
+    {
+      gamId: getGamId("mobparad"),
+      sizes: [
+        [300, 100],
+        [300, 250],
+        [300, 300],
+        [300, 431],
+        [300, 600],
+      ],
+      targetId: "mosaico-ad__mobparad",
+      isLazy: false,
+    },
+    {
+      gamId: getGamId("digihelmob"),
+      sizes: [300, 431],
+      targetId: "mosaico-ad__bigbox1",
+      isLazy: true,
     },
     {
       gamId: getGamId("mobmitt"),
@@ -161,12 +179,6 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__box5",
-      isLazy: true,
-    },
-    {
-      gamId: getGamId("digihelmob"),
-      sizes: [300, 431],
-      targetId: "mosaico-ad__bigbox1",
       isLazy: true,
     },
   ],

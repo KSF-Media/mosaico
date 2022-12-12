@@ -663,13 +663,14 @@ render props setState state components router onPaywallEvent =
             , Frontpage.Latest (foldMap Feed.toList $ HashMap.lookup LatestFeed state.feeds) onClickHandler
             , Frontpage.ArticleUrltoRelative
             , Frontpage.EpaperBanner
-            , Frontpage.Ad "Box Ad 1 DESKTOP" "mosaico-ad__box1"
-            , Frontpage.Ad "Box Ad 2 DESKTOP" "mosaico-ad__box2"
-            , Frontpage.Ad "Box Ad 3 DESKTOP" "mosaico-ad__box3"
-            , Frontpage.Ad "Box Ad 4 DESKTOP" "mosaico-ad__box4"
-            , Frontpage.Ad "Box Ad 5 DESKTOP" "mosaico-ad__box5"
-            , Frontpage.Ad "Ad 1"             "mosaico-ad__bigbox1"
-            , Frontpage.Ad "Ad 2"             "mosaico-ad__bigbox2"
+            , Frontpage.Ad "Box Ad 1 DESKTOP"     "mosaico-ad__box1"
+            , Frontpage.Ad "Box Ad 2 DESKTOP"     "mosaico-ad__box2"
+            , Frontpage.Ad "Box Ad 3 DESKTOP"     "mosaico-ad__box3"
+            , Frontpage.Ad "Box Ad 4 DESKTOP"     "mosaico-ad__box4"
+            , Frontpage.Ad "Box Ad 5 DESKTOP"     "mosaico-ad__box5"
+            , Frontpage.Ad "Ad 1"                 "mosaico-ad__bigbox1"
+            , Frontpage.Ad "Ad 2"                 "mosaico-ad__bigbox2"
+            , Frontpage.Ad "Ad MOBILE - mobparad" "mosaico-ad__mobparad"
             ]
 
     mosaicoDefaultLayout :: JSX -> JSX
