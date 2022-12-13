@@ -24,6 +24,7 @@ isWhitelisted url = case urlWithoutProtocol of
     "www.instagram.com/embed.js" -> Just urlAsHttps
     "platform.twitter.com/widgets.js" -> Just urlAsHttps
     "embed.tt.se/v10/tt-widget.js" -> Just urlAsHttps
+    "player-v2.yle.fi/embed.js" -> Just urlAsHttps
     _ -> Nothing
   where urlWithoutProtocol = replace protocolRegex "" url
         urlAsHttps = "https://" <> urlWithoutProtocol

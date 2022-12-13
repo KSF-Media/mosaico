@@ -39,6 +39,10 @@ export const consentedToEmbeddedScripts = (typeof window !== "undefined") && new
     // We're in Aptoma's preview window, load embeds
     window.consentToEmbeddedScripts(true);
   }
+  if(window.location.hostname === "localhost") {
+    // We're on localhost, load embeds
+    window.consentToEmbeddedScripts(true);
+  }
 });
 
 export async function evalExternalScriptsImpl(scripts) {
