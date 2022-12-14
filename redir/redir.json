@@ -227,5 +227,10 @@
     "route": "jul",
     "paper": "on",
     "destination": "https://www.ksfmedia.fi/on-julkampanj2022"
+  },
+  {
+    "route": "junior-jul",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbljunior-julkampanj2022"
   }
 ]
