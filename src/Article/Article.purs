@@ -127,10 +127,7 @@ render embedsAllowed imageComponent boxComponent props =
         articleCategory = head $ getArticleCategories props.article
 
     in DOM.article
-      { className: "flex justify-center mx-3 mosaico-article"
-                   <> case props.article of
-                     Right { articleType: ErrorArticle } -> " mosaico-article-error"
-                     _                                   -> mempty
+      { className: "flex justify-center mx-3 mosaico-article" <> (guard (isErrorArticle props) $ " mosaico-article-error")
       , _data: Object.fromFoldable $ Tuple "category" <$> (articleCategory <|> Just "")
       , children:
         [ DOM.div {className: "flex flex-col items-center lg:w-240"
@@ -156,7 +153,7 @@ render embedsAllowed imageComponent boxComponent props =
                 , fullWidth: false
                 })
               mainImage
-              , DOM.div
+              , guard (not $ isErrorArticle props) $ DOM.div
                   { className: "flex flex-col self-end max-w-full md:flex-row lg:w-216"
                   , children:
                     [ DOM.div
@@ -249,6 +246,11 @@ render embedsAllowed imageComponent boxComponent props =
                 }
             ]
         }
+
+    isErrorArticle :: Props -> Boolean
+    isErrorArticle props' = case props'.article of
+                        Right { articleType: ErrorArticle } -> true
+                        _                                   -> false
 
     renderOpinionType detail =
       foldMap (\opiniontype -> DOM.span

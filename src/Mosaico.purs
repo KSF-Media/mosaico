@@ -730,7 +730,8 @@ render props setState state components router onPaywallEvent =
 
           isFullWidth :: Boolean
           isFullWidth = case state.route of
-            Routes.ArticlePage _ | Just (Right { article }) <- state.article -> true
+            Routes.ArticlePage _ -> true
+            Routes.NotFoundPage _ -> true
             Routes.EpaperPage -> true
             _ -> false
 
