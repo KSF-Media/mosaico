@@ -12,12 +12,12 @@ import Data.Array (head, null)
 import Data.Foldable (fold, foldMap)
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Monoid (guard)
-import Data.Newtype (un, unwrap)
+import Data.Newtype (un)
 import Data.String (contains)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
 import Foreign.Object as Object
-import KSF.Helpers (formatArticleTime)
+import KSF.LocalDateTime (formatArticleTime)
 import KSF.HtmlRenderer (render) as HtmlRenderer
 import KSF.Spinner (loadingSpinner)
 import Lettera.Models (ArticleStub, Tag(..))
@@ -76,7 +76,7 @@ render (List props) =
                              { className: "mt-[2px]"
                              , children:
                                  [ foldMap (\publishingTime ->
-                                       timestamp [ DOM.span_ [ DOM.text $ formatArticleTime $ unwrap publishingTime ] ]
+                                       timestamp [ DOM.span_ [ DOM.text $ formatArticleTime publishingTime ] ]
                                    ) $ a.publishingTime
                                  , guard a.premium $
                                    DOM.div

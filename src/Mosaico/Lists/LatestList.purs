@@ -5,8 +5,7 @@ import Prelude
 import Data.Foldable (foldMap)
 import Data.Maybe (fromMaybe)
 import Data.Monoid (guard)
-import Data.Newtype (unwrap)
-import KSF.Helpers (formatArticleTime)
+import KSF.LocalDateTime (formatArticleTime)
 import Lettera.Models (ArticleStub)
 import Mosaico.Timestamp (timestamp)
 import React.Basic (JSX)
@@ -49,7 +48,7 @@ render props =
                               , children: [ DOM.text $ fromMaybe a.title a.listTitle ]
                               }
                           , foldMap (\publishingTime ->
-                              timestamp [ DOM.span_ [ DOM.text $ formatArticleTime $ unwrap publishingTime ] ]
+                              timestamp [ DOM.span_ [ DOM.text $ formatArticleTime publishingTime ] ]
                             ) $ a.publishingTime
                           , guard a.premium $ DOM.div
                               { className: "mosaico-article__meta"

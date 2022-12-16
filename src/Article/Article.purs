@@ -17,7 +17,7 @@ import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class (liftEffect)
 import Foreign.Object as Object
-import KSF.Helpers (formatArticleTime)
+import KSF.LocalDateTime (formatArticleTime)
 import KSF.Paper (Paper(..))
 import KSF.Paper as Paper
 import KSF.Spinner (loadingSpinner)
@@ -241,10 +241,10 @@ render embedsAllowed imageComponent boxComponent props =
                                   [ DOM.text $ " UPPDATERAD " <> updateTime]
                                 )
                                 ((\x -> guard (x /= publishingTime) $ Just x) =<<
-                                 formatArticleTime <<< unwrap <$> article.updateTime)
+                                 formatArticleTime <$> article.updateTime)
                               ]
                           })
-                        (formatArticleTime <<< unwrap <$> article.publishingTime)
+                        (formatArticleTime <$> article.publishingTime)
                     ]
                 }
             ]
