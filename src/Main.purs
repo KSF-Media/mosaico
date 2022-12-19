@@ -55,7 +55,7 @@ import Mosaico.Feed (ArticleFeed(..), ArticleFeedType(..), mkArticleFeed)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
 import Mosaico.Frontpage.Models (Hook(..)) as Frontpage
 import Mosaico.Header.Menu as Menu
-import Mosaico.Paper (mosaicoPaper, _mosaicoPaper)
+import Mosaico.Paper (mosaicoPaper)
 import Mosaico.Profile as Profile
 import Mosaico.Search as Search
 import Mosaico.StaticPageMeta (staticPageTitle, staticPageDescription)
@@ -258,7 +258,7 @@ main = do
   staticPages  <- do
       let pageMatch =
             maybe (const false) Regex.test $ hush $
-            Regex.regex ("^\\./dist/static/(" <> _mosaicoPaper <> "/[^/]+\\.html|[^/]+\\.js)$")
+            Regex.regex ("^\\./dist/static/(" <> (String.toLower $ Paper.toString mosaicoPaper) <> "/[^/]+\\.html|[^/]+\\.js)$")
             Regex.noFlags
       staticPageNames <- List.filter pageMatch <$> readDir "./dist/static"
       let makeMap acc staticPagePath = do
