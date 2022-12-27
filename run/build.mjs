@@ -89,11 +89,31 @@ export async function runBuild() {
     let outfiles = Object.keys(result.metafile.outputs);
 
     // fetch latest Aptoma css url and insert href into template
-    await axios.get(process.env.APTOMA_ASSETS)
-      .then(response => {
+    await axios
+      .get(process.env.APTOMA_ASSETS)
+      .then((response) => {
         template("#aptoma-css").attr("href", response.data.cssUrl);
       })
-      .catch(err => console.error("Error fetching Aptoma assets: " + err));
+      .catch((err) => console.error("Error fetching Aptoma assets: " + err));
+
+    const relevantScriptIds = {
+      hbl: "61bc52c2df5a45f309c9e2bb",
+      on: "61bc52cb8bc0f138aac9e2bc",
+      vn: "61bc52d80bae0f393cc9e2bd",
+    };
+
+    const relevantScriptUrl = `https://apps-cdn.relevant-digital.com/static/tags/${
+      relevantScriptIds[process.env.PAPER]
+    }.js`;
+
+    template("#relevant-js").attr("src", relevantScriptUrl);
+
+    const programmaticAdsScriptUrl = `https://cdn.ksfmedia.fi/assets/js/programmatic-ads-scripts/programmatic-ads-${process.env.PAPER}.js`
+
+    // Remove conditional when HBL and VN programmatic ads are switched on
+    if (process.env.PAPER == "on") {
+      template("#programmatic-ads-js").attr("src", programmaticAdsScriptUrl);
+    }
 
     template(".mosaico-asset").each((ix, elem) => {
       const src = template(elem).attr("src");
@@ -160,7 +180,6 @@ export async function runBuild() {
           "@babel/preset-react",
         ],
       };
-
 
       await Promise.all(
         [...outfiles, ...staticFiles].map((file) =>
