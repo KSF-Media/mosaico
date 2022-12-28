@@ -23,7 +23,7 @@ render =
         , className: "block"
         , children:
           [ DOM.span
-              { className: "block overflow-hidden w-72 max-w-full h-72 bg-top bg-no-repeat bg-contain mosaico-epaper--bg-cover"
+              { className: "block overflow-hidden w-72 max-w-full h-72 bg-top bg-no-repeat bg-contain mosaico-epaper--bg-cover mx-auto"
               , children: [ DOM.span
                               { className: "sr-only"
                               , children: [DOM.text "E-tidningen"]
