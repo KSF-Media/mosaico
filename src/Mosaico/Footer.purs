@@ -95,8 +95,7 @@ hblContactInfo commonFooter =
         , DOM.text ", "
         , email "pren@ksfmedia.fi"
         , DOM.br {}
-        , DOM.text "(mån-fre kl. 8.00-12.00 och 13.00-16.00."
-        , DOM.text "På onsdagar stänger kundservice kl. 15.00)"
+        , DOM.text "(mån-fre kl. 9.00-12.00 och 13.00-15.00.)"
         ]
     , section "Annonser: "
         [ tel "09 125 35 58"
@@ -145,11 +144,10 @@ vastranylandContactInfo commonFooter =
         , DOM.br {}
         , DOM.text "10650 Ekenäs"
         ]
-    , section "Prenumerationer: "
+    , section "Prenumerationer och kundservice: "
         [ tel "09 1253 500"
         , DOM.br {}
-        , DOM.text "(mån-fre kl. 8.00-12.00 och 13.00-16.00."
-        , DOM.text "På onsdagar stänger kundservice kl. 15.00)"
+        , DOM.text "(mån-fre kl. 9.00-12.00 och 13.00-15.00.)"
         , DOM.text ", "
         , email "pren@ksfmedia.fi"
         ]
@@ -208,9 +206,7 @@ ostnylandContactInfo commonFooter =
         , DOM.br {}
         , columnLink "mailto:pren@ksfmedia.fi" [ DOM.text "pren@ksfmedia.fi" ]
         , DOM.br {}
-        , DOM.text "(mån-fre kl. 8.00-12.00 och 13.00-16.00."
-        , DOM.br {}
-        , DOM.text "På onsdagar stänger kundservice kl. 15.00)"
+        , DOM.text "(mån-fre kl. 9.00-12.00 och 13.00-15.00.)"
         ]
     , section "Redaktionen: "
         [ tel "044 777 6000"
@@ -327,7 +323,7 @@ appLinks mosaicoPaper =
         }
 
 column :: Array JSX -> JSX
-column children = DOM.div { className: "max-w-xs", children }
+column children = DOM.div { className: "basis-1/3 max-w-xs", children }
 
 columnLink :: String -> Array JSX -> JSX
 columnLink href children = DOM.a { href, children, className: "text-blue-link" }
