@@ -946,6 +946,9 @@ notFoundPage env { params: { path } } = do
     (route : Nil)      | Just destination <- Map.lookup (route /\ mosaicoPaper) env.redirects -> redir destination
     -- Same route with trailing slash
     (route : "" : Nil) | Just destination <- Map.lookup (route /\ mosaicoPaper) env.redirects -> redir destination
+    -- Any other route with trailing slash: Redirect to the same without
+    xs | List.last xs == Just ""                                                              ->
+      redir $ ("/" <> _) $ List.intercalate "/" $ List.filter (_ /= "") xs
     _                                                                                         -> pass
 
 notFoundArticleContent :: MainContent
