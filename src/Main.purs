@@ -405,6 +405,7 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
                   , onPaywallEvent: pure unit
                   , onTagClick: const mempty
                   , onArticleClick: const mempty
+                  , onAuthorClick: const mempty
                   , mostReadArticles
                   , latestArticles
                   , advertorial: Nothing
@@ -962,6 +963,7 @@ notFoundArticleContent =
     , onPaywallEvent: pure unit
     , onTagClick: const mempty
     , onArticleClick: const mempty
+    , onAuthorClick: const mempty
     , mostReadArticles: mempty
     , latestArticles: mempty
     , advertorial: Nothing

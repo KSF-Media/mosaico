@@ -805,6 +805,7 @@ render props setState state components router onPaywallEvent =
         , onPaywallEvent
         , onTagClick
         , onArticleClick
+        , onAuthorClick
         , mostReadArticles
         , latestArticles
         , advertorial: state.singleAdvertorial
@@ -829,6 +830,9 @@ render props setState state components router onPaywallEvent =
       simpleRoute $ "/tagg/" <> tagToURIComponent tag
 
     onArticleClick article = capture_ $ handleArticleClick article
+
+    onAuthorClick author = capture_ do
+      simpleRoute $ "/sök?q=" <> author.byline
 
     handleArticleClick article = do
       setState _ { clickedArticle = Just article }

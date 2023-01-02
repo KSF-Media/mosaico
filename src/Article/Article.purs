@@ -24,7 +24,7 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import KSF.Vetrina as Vetrina
 import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
-import Lettera.Models (Article, ArticleStub, ArticleType(..), BodyElement(..), ExternalScript, Image, MosaicoArticleType(..), Tag, FullArticle)
+import Lettera.Models (Article, ArticleStub, ArticleType(..), Author, BodyElement(..), ExternalScript, Image, MosaicoArticleType(..), Tag, FullArticle)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Ad (openConsentAndSetCookie)
 import Mosaico.Article.Box as Box
@@ -80,6 +80,7 @@ type Props =
   , onPaywallEvent :: Effect Unit
   , onTagClick :: Tag -> EventHandler
   , onArticleClick :: ArticleStub -> EventHandler
+  , onAuthorClick :: Author -> EventHandler
   , user :: Maybe (Maybe User)
   , mostReadArticles :: Array ArticleStub
   , latestArticles :: Array ArticleStub
@@ -159,7 +160,7 @@ render embedsAllowed imageComponent boxComponent props =
                     [ DOM.div
                         { className: "flex flex-col p-1 max-w-full mosaico-article__main"
                         , children:
-                            [ foldMap (renderMetabyline <<< _.article) $ hush props.article
+                            [ foldMap (renderMetabyline props.onAuthorClick <<< _.article) $ hush props.article
                             , DOM.div
                                 { className: "mosaico-article__body"
                                 , children:
@@ -201,8 +202,8 @@ render embedsAllowed imageComponent boxComponent props =
           ]}]
     }
   where
-    renderMetabyline :: Article -> JSX
-    renderMetabyline article =
+    renderMetabyline :: (Author -> EventHandler) -> Article -> JSX
+    renderMetabyline onAuthorClick article =
       DOM.div
         { className: "[grid-area:articlemetabyline] border-solid border-y mb-6 border-gray-100 text-gray-500 font-roboto md:mr-8"
         , children:
@@ -214,8 +215,10 @@ render embedsAllowed imageComponent boxComponent props =
                           { className: "mb-1 text-sm font-medium text-gray-900"
                           , children: [ guard (article.articleType == Opinion) $
                                         renderOpinionType article.articleTypeDetails
-                                      , DOM.span
+                                      , DOM.a
                                           { className: "inline-block mr-2"
+                                          , href: "/sök?q=" <> author.byline
+                                          , onClick: onAuthorClick author
                                           , children: [ DOM.text author.byline ]
                                           }
                                       , foldMap
