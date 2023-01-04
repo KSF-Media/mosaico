@@ -292,11 +292,15 @@ mosaicoComponent initialValues props = React.do
       Routes.ArticlePage articleId
         | Just article <- map _.article (join $ map hush state.article)
         , articleId == article.uuid
-        -> do
-          when (state.ssrPreview && _.premium article) do
-            -- When we're in a SSR premium article, don't send analytics events
-            -- We already get it when trying to resolve authed user on startup
-            loadArticle articleId false
+        ->
+          -- When we're in a SSR premium article, don't send analytics events
+          -- We already get it when trying to resolve authed user on startup
+          if state.ssrPreview && _.premium article
+          then loadArticle articleId false
+          -- We already have the article content, but we need feeds
+          else Aff.launchAff_ do
+            cache <- Aff.AVar.read initialValues.cache
+            Cache.parallelWithCommonActions cache setFeed mempty
         | otherwise -> loadArticle articleId true
       Routes.CategoryPage (Category c) -> setFrontpage (CategoryFeed c.label) Nothing
       Routes.StaticPage page
