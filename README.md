@@ -117,3 +117,7 @@ spago -x test.dhall test
 
 ## Static Pages
 Since the js script does not work if inserted as inner html, therefore the script is in an external file. The js file has identical name as the html file and fetched at the same time as the html file and run after the DOM tree is built. When developing, `yarn start-dev` will include the static files and hot-reload changes in the browser. Both html and js files for static pages are found in `static/` directory.
+
+
+## Git Hooks
+You can install included git hooks with `make hooks`
