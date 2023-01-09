@@ -69,10 +69,7 @@ window.googletag = window.googletag || { cmd: [] };
 // Temporary function to keep hbl using the old GAM units, while ÖN uses the new.
 function getGamId(name) {
   let paper = process.env.PAPER;
-  if (paper === "on") {
-    return paper + "/" + paper + "_" + name;
-  }
-  return name.toUpperCase();
+  return paper + "/" + paper + "_" + name;
 }
 
 // When targetId's are changed, remember to change them accordingly in
