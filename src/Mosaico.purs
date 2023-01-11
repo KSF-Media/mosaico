@@ -518,6 +518,7 @@ render props setState state components router onPaywallEvent =
                -- TODO: Handle properly
                Console.error $ "Login error " <> show _err
         , onClose: setState \s -> s { modalView = Nothing }
+        , paper: mosaicoPaper
         }
     _ -> mempty
   <> renderRouteContent state.route

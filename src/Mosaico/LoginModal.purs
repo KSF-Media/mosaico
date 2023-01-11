@@ -9,7 +9,7 @@ import Data.Set as Set
 import Data.Traversable (foldMap)
 import Effect (Effect)
 import Effect.Aff as Aff
-import Effect.Class.Console as Console
+import KSF.Paper as Paper
 import KSF.User (UserError, User)
 import KSF.User.Login as Login
 import React.Basic (JSX)
@@ -27,6 +27,7 @@ import Web.UIEvent.KeyboardEvent as KeyboardEvent
 type Props =
   { onUserFetch :: Either UserError User -> Effect Unit
   , onClose :: Effect Unit
+  , paper :: Paper.Paper
   }
 
 type State =
@@ -81,6 +82,7 @@ render props state =
                     , onUserFetch: props.onUserFetch
                     , onLogin: Aff.launchAff_
                     , disableSocialLogins: Set.empty
+                    , paper: Just props.paper
                     }
                 ]
             }
