@@ -232,5 +232,20 @@
     "route": "junior-jul",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbljunior-julkampanj2022"
+  },
+  {
+    "route": "newsmap.xml",
+    "paper": "hbl",
+    "destination": "https://lettera.api.ksfmedia.fi/v4/list/newsmap?paper=HBL"
+  },
+  {
+    "route": "newsmap.xml",
+    "paper": "vn",
+    "destination": "https://lettera.api.ksfmedia.fi/v4/list/newsmap?paper=VN"
+  },
+  {
+    "route": "newsmap.xml",
+    "paper": "on",
+    "destination": "https://lettera.api.ksfmedia.fi/v4/list/newsmap?paper=ON"
   }
 ]
