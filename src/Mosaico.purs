@@ -41,7 +41,7 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User, Subscription, logout, magicLogin)
 import KSF.User.Cusno (Cusno)
 import Lettera as Lettera
-import Lettera.Models (Article, ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, readArticleType, tagToURIComponent)
+import Lettera.Models (Article, ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, MosaicoArticleType(..), articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, parseDraftArticle, readArticleType, tagToURIComponent)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendArticleAnalytics, sendPageView)
 import Mosaico.Article as Article
@@ -466,9 +466,13 @@ getInitialValues = do
 
 fromJSProps :: JSProps -> Props
 fromJSProps jsProps =
-  let article = { articleType: _, article: _ }
-                <$> (readArticleType =<< JSON.toString jsProps.articleType)
-                <*> (hush $ parseArticleWithoutLocalizing jsProps.article)
+  let articleType = readArticleType =<< JSON.toString jsProps.articleType
+      article = { articleType: _, article: _ }
+                <$> articleType
+                <*> (hush $ (case articleType of
+                                Just DraftArticle -> parseDraftArticle
+                                _                 -> parseArticleWithoutLocalizing
+                            ) jsProps.article)
       initialFeeds =
         catMaybes
         [ parseFeed =<< toMaybe jsProps.initialFrontpageFeed
