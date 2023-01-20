@@ -9,6 +9,7 @@ import Effect.Aff (Aff, bracket, launchAff_)
 import Effect.Class.Console (log)
 import Effect.Class (liftEffect)
 import Effect.Exception (throw)
+import Mosaico.Server.Env (Redirect)
 import Mosaico.Test.Account as Account
 import Mosaico.Test.Article as Article
 import Mosaico.Test.Embeds as Embeds
@@ -18,7 +19,6 @@ import Mosaico.Test.Lettera as Lettera
 import Mosaico.Test.Search as Search
 import Mosaico.Test.Static as Static
 import Mosaico.Test.Tags as Tags
-import Main (Redirect)
 import KSF.Puppeteer as Chrome
 import Node.Encoding (Encoding(..))
 import Node.FS.Sync (readTextFile) as FS

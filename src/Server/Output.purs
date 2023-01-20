@@ -1,4 +1,4 @@
-module MosaicoServer where
+module Mosaico.Server.Output where
 
 import Prelude
 
@@ -14,7 +14,11 @@ import Mosaico.MainContent (mainContent, jumpToMainContent)
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.MostReadList as MostReadList
 import Mosaico.LatestList as LatestList
+import Payload.ContentType as ContentType
+import Payload.Headers as Headers
+import Payload.ResponseTypes (Response(..))
 import React.Basic.DOM as DOM
+import React.Basic.DOM.Server as DOM.Server
 import React.Basic.Hooks (JSX)
 
 type Props =
@@ -43,8 +47,16 @@ data MainContentType
   | ProfileContent
   | MenuContent
 
-app :: Props -> JSX
-app = render
+htmlContent :: forall a. Response a -> Response a
+htmlContent (Response response) =
+  Response $ response { headers = Headers.set "content-type" ContentType.html response.headers }
+
+jsContent :: forall a. Response a -> Response a
+jsContent (Response response) =
+  Response $ response { headers = Headers.set "content-type" ContentType.javaScript response.headers }
+
+renderToString :: Props -> String
+renderToString = DOM.Server.renderToString <<< render
 
 render :: Props -> JSX
 render props =
