@@ -3,16 +3,18 @@ module Mosaico.Server.Test where
 import Prelude
 
 import Data.Array (fromFoldable)
-import Data.Either (hush)
+import Data.Either (Either(..), hush)
 import Data.Maybe (Maybe(..), maybe)
 import Data.UUID as UUID
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Lettera as Lettera
-import Lettera.Models (CategoryLabel(..))
+import Lettera.Models as Lettera.Models
+import Lettera.Models (CategoryLabel(..), MosaicoArticleType(..), notFoundArticle)
 import Mosaico.Cache (getContent, parallelWithCommonLists)
 import Mosaico.Feed (ArticleFeed(..), ArticleFeedType(..), mkArticleFeed)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
+import Mosaico.Server.Article (renderArticle)
 import Mosaico.Server.Env (Env, stdVars)
 import Mosaico.Server.Output (MainContentType(..), htmlContent, renderToString)
 import Mosaico.Server.Template (appendMosaico, appendVars, cloneTemplate, mkWindowVariables, renderTemplateHtml)
@@ -53,3 +55,15 @@ debugList env { params: { uuid } } = do
         , article: Nothing
         , isFullWidth: false
         }
+
+getDraftArticleTest :: Env -> {} -> Aff (Response ResponseBody)
+getDraftArticleTest env _ = do
+  let article =
+        { articleType: DraftArticle
+        , article: notFoundArticle.article
+            { title = "Draft title"
+            , body = [ Lettera.Models.Html "Just some draft content" ]
+            , authors = [{ byline: "Test test", image: Nothing, email: Nothing }]
+            }
+        }
+  renderArticle env (Right article) mempty mempty false

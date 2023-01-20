@@ -44,6 +44,8 @@ main = launchAff_ do
       Right (_ :: Array Redirect) -> pure []
       Left err -> throw ("Could not parse redir.json! Please fix. Error: " <> show err)
 
+  log "Test draft article"
+  withBrowserPage $ Article.testDraftArticle
   let loginTestUser = if testUser == "" then entitledUser else testUser
       loginTestPassword = if testPassword == "" then entitledPassword else testPassword
   if loginTestUser == "" || loginTestPassword == ""

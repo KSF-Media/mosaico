@@ -82,6 +82,9 @@ spec ::
                 { response :: ResponseBody
                 , guards :: Guards ("triggerbee" : Nil)
                 }
+         , getDraftArticleTest ::
+              GET "/artikel/draft/test"
+                { response :: ResponseBody }
          , getDraftArticle ::
               GET "/artikel/draft/<aptomaId>/?dp-time=<time>&publicationId=<publication>&user=<user>&hash=<hash>"
                 { response :: ResponseBody
@@ -180,6 +183,7 @@ main = do
           , googleSiteVerification: staticAsset GoogleSiteVerification
           , ssoCallbackReceiver: staticAsset SSOReceiver
           , setTriggerbeeCookies
+          , getDraftArticleTest: Server.Test.getDraftArticleTest env
           , getDraftArticle: getDraftArticle env
           , getArticle: getArticle env
           , assets

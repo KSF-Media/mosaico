@@ -179,3 +179,12 @@ testRelatedWith example page = do
   Chrome.waitFor_ (Chrome.Selector "article.mosaico-article .article-element__html") page
   newTitle <- Chrome.getContent (Chrome.Selector "article.mosaico-article .mosaico-article__headline") page
   Assert.assert "Article title changes after clicking on a related article" $ originalTitle /= newTitle
+
+testDraftArticle :: Test
+testDraftArticle page = do
+  Chrome.goto (Chrome.URL $ site <> "artikel/draft/test") page
+  -- Ensure that React hydrate has been run
+  Chrome.waitFor_ (Chrome.Selector ".mosaico-header__account-icon") page
+  let article = Chrome.Selector "article.mosaico-article"
+  draftContent <- Chrome.getContent (sub " .article-element__html" article) page
+  Assert.assert "Draft content matches with test data" $ draftContent == "Just some draft content"
