@@ -19,6 +19,7 @@ import * as cp from "child_process";
 
 const exec = util.promisify(cp.exec);
 const writeFile = util.promisify(fs.writeFile);
+const readFile = util.promisify(fs.readFile);
 
 const minify = process.env.NODE_ENV === "production";
 
@@ -108,7 +109,7 @@ export async function runBuild() {
 
     template("#relevant-js").attr("src", relevantScriptUrl);
 
-    const programmaticAdsScriptUrl = `https://cdn.ksfmedia.fi/assets/js/programmatic-ads-scripts/programmatic-ads-${process.env.PAPER}.js`
+    const programmaticAdsScriptUrl = `https://cdn.ksfmedia.fi/assets/js/programmatic-ads-scripts/programmatic-ads-${process.env.PAPER}.js`;
 
     // Remove conditional when HBL and VN programmatic ads are switched on
     if (process.env.PAPER == "on") {
@@ -163,6 +164,24 @@ export async function runBuild() {
     await exec("mkdir -p dist/assets && cp -R ./dist/static/* ./dist/assets/");
 
     const staticFiles = Object.keys(staticResult.metafile.outputs);
+
+    console.log("Transforming CSS files using Autoprefixer");
+    await Promise.all(
+      outfiles.map((file) =>
+        file.endsWith(".css")
+          ? readFile(file).then((css) =>
+              postcss([autoprefixer])
+                .process(css, { from: file, to: file })
+                .then(async (result) => {
+                  await writeFile(file, result.css);
+                  if (result.map) {
+                    await writeFile(file + ".map", result.map.toString());
+                  }
+                })
+            )
+          : Promise.resolve(undefined)
+      )
+    );
 
     if (minify) {
       console.log("Transpiling results with Babel");
