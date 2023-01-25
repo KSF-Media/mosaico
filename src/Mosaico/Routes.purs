@@ -32,8 +32,8 @@ data MosaicoPage
   | ArticlePage String
   | NotFoundPage String
   | StaticPage String
-  | CategoryPage Category
-  | TagPage Tag
+  | CategoryPage Category (Maybe Int)
+  | TagPage Tag (Maybe Int)
   | SearchPage (Maybe String) (Maybe Int)
   | DebugPage String -- Used for testing
   | DeployPreview -- Used for deploy previews only
@@ -52,13 +52,13 @@ routes categories = root *> oneOf
   , StaticPage <$> (lit "sida" *> str)
   , EpaperPage <$ (lit "epaper" *> optionalMatch params *> end)
   , ProfilePage <$ (lit "konto" *> end)
-  , TagPage <<< uriComponentToTag <$> (lit "tagg" *> str)
+  , TagPage <<< uriComponentToTag <$> (lit "tagg" *> str) <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
   , Frontpage <$ end
   , MenuPage <$ lit "meny"
   , SearchPage <$> (lit "sök" *> optionalMatch (param "q")) <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
   , DebugPage <$> (lit "debug" *> str)
   , DeployPreview <$ str <* lit "mosaico" <* lit "index.html" <* end
-  , CategoryPage <$> categoryRoute
+  , CategoryPage <$> categoryRoute <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
   , NotFoundPage <$> str
   ]
   where

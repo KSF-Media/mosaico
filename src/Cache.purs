@@ -6,7 +6,7 @@ import Control.Alternative (guard)
 import Control.Monad.Rec.Class (untilJust)
 import Control.Parallel.Class (parallel, sequential)
 import Control.Plus (class Plus, empty)
-import Data.Array (filter, fromFoldable, length, mapMaybe)
+import Data.Array (filter, fromFoldable, length, mapMaybe, take)
 import Data.DateTime (DateTime, adjust, diff)
 import Data.Either (Either(..), hush)
 import Data.Foldable (foldMap)
@@ -227,7 +227,12 @@ initServerCache categoryStructure = do
     , mode = Server
     }
 
-getUsingCache :: forall k m. Ord k => Monoid m  => AVar (Map k (Stamped m)) -> k -> Aff (LetteraResponse m) -> Aff (Stamped m)
+getUsingCache
+  :: forall k m. Ord k
+  => Monoid m => AVar (Map k (Stamped m))
+  -> k
+  -> Aff (LetteraResponse m)
+  -> Aff (Stamped m)
 getUsingCache var key action = do
   store <- AVar.read var
   let fetch = do
@@ -244,7 +249,9 @@ getUsingCache var key action = do
     case Map.lookup key store of
       Just value@(Stamped { validUntil }) -> do
         now <- liftEffect nowDateTime
-        if now > validUntil then fetch else pure { value, newStore: Nothing }
+        if now <= validUntil
+        then pure { value, newStore: Nothing }
+        else fetch
       Nothing -> fetch
   -- TODO: This is good enough locking to allow concurrent requests to
   -- different resources, but better yet would be to let at most one
@@ -253,6 +260,43 @@ getUsingCache var key action = do
               oldStore <- AVar.take var
               AVar.put (f oldStore) var) newStore
   pure value
+
+getListUsingCache
+  :: forall k a. Ord k
+  => AVar (Map k (Stamped (Array a)))
+  -> k
+  -> Maybe Int
+  -> (Int -> Int -> Aff (LetteraResponse (Array a)))
+  -> Aff (Stamped (Array a))
+getListUsingCache var key limit action = do
+  store <- AVar.read var
+  now <- liftEffect nowDateTime
+  let oldContent = do
+        c@(Stamped {validUntil}) <- Map.lookup key store
+        guard $ validUntil >= now
+        pure c
+  let start = maybe 0 (\(Stamped {content}) -> length content) oldContent
+      toFetch = fromMaybe 20 limit - start
+  if toFetch <= 0 then pure $ fromMaybe eotStamp oldContent else do
+    LetteraResponse response <- action start toFetch
+    let newContent = case (\content validUntil -> Stamped { content, age: now, validUntil })
+                          <$> hush response.body
+                          -- Don't discard new data if it's missing max-age
+                          <*> pure (fromMaybe now (toValidUntil now response.maxAge)) of
+                       Just value -> Just $ (\old new -> old <> new)
+                                     <$> fromMaybe eotStamp oldContent
+                                     <*> value
+                       -- TODO error message
+                       _ -> oldContent
+    oldStore <- AVar.take var
+    let newStore = case newContent of
+                        Just value -> Map.insert key value oldStore
+                        _ -> Map.delete key oldStore
+    AVar.put newStore var
+    pure $ fromMaybe emptyStamp newContent
+
+search :: Cache -> String -> Maybe Int -> Aff (Stamped (Array ArticleStub))
+search cache query limit = getListUsingCache cache.feedList (SearchFeed query) limit $ \s l -> Lettera.search s l mosaicoPaper query
 
 -- Only main category prerendered contents are actively cached, others
 -- will be fetched on demand.
@@ -270,12 +314,23 @@ getBreakingNewsHtml cache =
   getUsingCache cache.feedString BreakingNewsFeed $
     Lettera.getBreakingNewsHtml mosaicoPaper Nothing
 
-getFrontpage :: Cache -> CategoryLabel -> Aff (Stamped (Array ArticleStub))
-getFrontpage cache category = do
+getFrontpage :: Cache -> Maybe Int -> CategoryLabel -> Aff (Stamped (Array ArticleStub))
+getFrontpage cache count category = do
   case Map.lookup category cache.mainCategoryFeed of
-    Just c -> (\(Controls x) -> x.content) c
-    Nothing -> getUsingCache cache.feedList (CategoryFeed category) $
-               Lettera.getFrontpage mosaicoPaper Nothing Nothing (Just $ show category) Nothing
+    Just c -> do
+      Stamped {content, age, validUntil} <- (\(Controls x) -> x.content) c
+      maybe
+        useFeed
+        (\newContent -> pure $ Stamped { content: newContent, age, validUntil } )
+        (case count of
+          Nothing -> Just content
+          Just n -> if length content >= n then Just (take n content) else Nothing)
+    Nothing -> useFeed
+
+  where
+    useFeed =
+      getListUsingCache cache.feedList (CategoryFeed category) count $
+        \s l -> Lettera.getFrontpage mosaicoPaper (Just s) (Just l) (Just $ show category) Nothing
 
 getMostRead :: Cache -> Aff (Stamped (Array ArticleStub))
 getMostRead cache@{ mode: Client } =
@@ -289,39 +344,10 @@ getLatest cache@{ mode: Client } =
   Lettera.getLatest 0 10 mosaicoPaper
 getLatest cache = cache.latest
 
-getByTag :: Cache -> Tag -> Aff (Stamped (Array ArticleStub))
-getByTag cache tag =
-  getUsingCache cache.feedList (TagFeed tag) $
-  Lettera.getByTag 0 20 tag mosaicoPaper
-
-search :: Cache -> String -> Maybe Int -> Aff (Stamped (Array ArticleStub))
-search cache query limit = do
-  let key = SearchFeed query
-  store <- AVar.read cache.feedList
-  now <- liftEffect nowDateTime
-  let oldContent = do
-        c@(Stamped {validUntil}) <- Map.lookup (SearchFeed query) store
-        guard $ validUntil >= now
-        pure c
-  let start = maybe 0 (\(Stamped {content}) -> length content) oldContent
-      toFetch = fromMaybe 20 limit - start
-  if toFetch <= 0 then pure $ fromMaybe eotStamp oldContent else do
-    LetteraResponse response <- Lettera.search start toFetch mosaicoPaper query
-    let newContent = case (\content validUntil -> Stamped { content, age: now, validUntil })
-                          <$> hush response.body
-                          -- Don't discard new data if it's missing max-age
-                          <*> pure (fromMaybe now (toValidUntil now response.maxAge)) of
-                       Just value -> Just $ (\old new -> old <> new)
-                                     <$> fromMaybe eotStamp oldContent
-                                     <*> value
-                       -- TODO error message
-                       _ -> oldContent
-    oldStore <- AVar.take cache.feedList
-    let newStore = case newContent of
-                        Just value -> Map.insert key value oldStore
-                        _ -> Map.delete key oldStore
-    AVar.put newStore cache.feedList
-    pure $ fromMaybe emptyStamp newContent
+getByTag :: Cache -> Tag -> Maybe Int -> Aff (Stamped (Array ArticleStub))
+getByTag cache tag count =
+  getListUsingCache cache.feedList (TagFeed tag) count $
+    \s l -> Lettera.getByTag s l tag mosaicoPaper
 
 resetCategory :: Cache -> CategoryLabel -> Aff Unit
 resetCategory cache category = do
@@ -458,20 +484,21 @@ parallelLoadFeeds cache f action = do
   parallelWithCommonActions cache f action >>= uncurry f
 
 loadFeed :: Cache -> Categories -> ArticleFeedType -> Maybe Int -> Maybe (Aff ArticleFeed)
-loadFeed cache catMap feedName limit =
+loadFeed cache catMap feedName limit = do
   case feedName of
-    TagFeed t -> Just $
-      ArticleList <<< getContent <$> getByTag cache t
+    TagFeed t -> do
+      Just $ ArticleList <<< getContent <$> getByTag cache t limit
     CategoryFeed c
       | Just cat <- unwrap <$> Map.lookup c catMap ->
         case cat.type of
           Prerendered -> Just do
             {list, html} <- sequential $
               {list: _, html: _}
-              <$> parallel (getContent <$> getFrontpage cache cat.label)
+              <$> parallel (getContent <$> getFrontpage cache limit cat.label)
               <*> parallel (getContent <$> getFrontpageHtml cache cat.label)
             pure $ maybe (ArticleList list) (Html list) html
-          Feed -> Just $ ArticleList <<< getContent <$> getFrontpage cache cat.label
+          Feed -> do
+            Just $ ArticleList <<< getContent <$> getFrontpage cache limit cat.label
           _ -> Nothing
     CategoryFeed _ -> Nothing
     SearchFeed q -> Just $ ArticleList <<< getContent <$> search cache q limit

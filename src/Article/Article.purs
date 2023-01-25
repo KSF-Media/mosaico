@@ -325,7 +325,8 @@ render embedsAllowed imageComponent boxComponent props =
       (Frontpage.render $ Frontpage.List
         { label: mempty
         , content: Just articles
-        , footer: mempty
+        , loadMore: mempty
+        , loading: false
         , onArticleClick: props.onArticleClick
         , onTagClick: props.onTagClick
         })

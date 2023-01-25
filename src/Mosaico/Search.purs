@@ -66,11 +66,3 @@ render query setQuery { doSearch, searching } =
             }
         ]
     }
-
-moreButton :: Effect Unit -> JSX
-moreButton getMore =
-  DOM.button
-    { children: [ DOM.text "Fler resultat" ]
-    , className: "button-green"
-    , onClick: capture_ getMore
-    }

@@ -40,7 +40,8 @@ debugList env { params: { uuid } } = do
             , content: Frontpage.render $ Frontpage.List
                 { label: mempty
                 , content: pure <$> article
-                , footer: mempty
+                , loadMore: Just $ pure unit
+                , loading: false
                 , onArticleClick: const mempty
                 , onTagClick: const mempty
                 }

@@ -287,7 +287,7 @@ mosaicoComponent initialValues props = React.do
   useEffect (state.route /\ map _.cusno (join state.user)) do
     case state.route of
       Routes.Frontpage -> setFrontpage (CategoryFeed frontpageCategoryLabel) Nothing
-      Routes.TagPage tag -> setFrontpage (TagFeed tag) Nothing
+      Routes.TagPage tag limit -> setFrontpage (TagFeed tag) limit
       Routes.SearchPage (Just query) limit -> setFrontpage (SearchFeed query) limit
       Routes.ArticlePage articleId
         | Just article <- map _.article (join $ map hush state.article)
@@ -302,7 +302,7 @@ mosaicoComponent initialValues props = React.do
             cache <- Aff.AVar.read initialValues.cache
             Cache.parallelWithCommonActions cache setFeed mempty
         | otherwise -> loadArticle articleId true
-      Routes.CategoryPage (Category c) -> setFrontpage (CategoryFeed c.label) Nothing
+      Routes.CategoryPage (Category c) limit -> setFrontpage (CategoryFeed c.label) limit
       Routes.StaticPage page
         | Just (StaticPageResponse r) <- state.staticPage
         , r.pageName == page
@@ -321,12 +321,12 @@ mosaicoComponent initialValues props = React.do
 
     case state.route of
       Routes.Frontpage -> setTitle $ Paper.paperName mosaicoPaper
-      Routes.TagPage tag -> setTitle $ unwrap tag
+      Routes.TagPage tag _ -> setTitle $ unwrap tag
       Routes.SearchPage _ _ -> setTitle "Sök"
       Routes.ProfilePage -> setTitle "Min profil"
       Routes.MenuPage -> setTitle "Meny"
       Routes.NotFoundPage _ -> setTitle "Oj... 404"
-      Routes.CategoryPage (Category c) -> setTitle $ unwrap c.label
+      Routes.CategoryPage (Category c) _ -> setTitle $ unwrap c.label
       Routes.EpaperPage -> setTitle "E-Tidningen"
       Routes.StaticPage page -> setTitle (staticPageTitle page mosaicoPaper)
       _ -> pure unit
@@ -336,17 +336,31 @@ mosaicoComponent initialValues props = React.do
     case state of
       -- User may have already started scrolling while content is loading
       { starting: true }              -> setState _ { starting = false }
+
       -- Let's always scroll to top with article pages, as the behaviour of going back in
       -- browser history is a bit buggy currently. This is because each time we land on an article page,
       -- the page is basically blank, so the browser loses the position anyway (there's nothing to recover to).
       -- If we want to fix this, we'd have to keep prev article in state too.
       { route: Routes.ArticlePage _ } -> scrollToYPos 0
+
       -- Keep position when getting more results.
       { route: Routes.SearchPage s1 l1
       , prevRoute: Just (Tuple (Routes.SearchPage s2 l2) _)
       , scrollToYPosition: pos }      ->
         when (s1 /= s2 || fromMaybe 20 l1 <= fromMaybe 20 l2) $
           scrollToYPos $ maybe 0 ceil pos
+      { route: Routes.CategoryPage c1 l1
+      , prevRoute: Just (Tuple (Routes.CategoryPage c2 l2) _)
+      , scrollToYPosition: pos }      ->
+        when (c1 /= c2 || fromMaybe 20 l1 <= fromMaybe 20 l2) $
+          scrollToYPos $ maybe 0 ceil pos
+      { route: Routes.TagPage t1 l1
+      , prevRoute: Just (Tuple (Routes.TagPage t2 l2) _)
+      , scrollToYPosition: pos }      ->
+        when (t1 /= t2 || fromMaybe 20 l1 <= fromMaybe 20 l2) $
+          scrollToYPos $ maybe 0 ceil pos
+
+      -- Otherwise, scroll to the y position, or top of page if not specified
       { scrollToYPosition: Just y }   -> scrollToYPos (ceil y)
       { scrollToYPosition: Nothing }  -> scrollToYPos 0
 
@@ -528,7 +542,7 @@ render props setState state components router onPaywallEvent =
   <> renderRouteContent state.route
   where
     renderRouteContent = case _ of
-       Routes.CategoryPage category -> renderCategory category
+       Routes.CategoryPage category limit -> renderCategory category limit
        Routes.ArticlePage articleId
          | Just (Right fullArticle@{ article }) <- state.article -> mosaicoLayoutNoAside $
            if article.uuid == articleId
@@ -552,10 +566,10 @@ render props setState state components router onPaywallEvent =
               -- Don't use state.loadingFeed for this, this'll show
               -- the existing results while loading more.
               searching = isNothing frontpageArticles
-              footer = if noResults
-                       then mempty
-                       else if state.loadingFeed then loadingSpinner
-                            else Search.moreButton $ doSearchLimit queryString $ maybe 40 (_ + 20) limit
+              loadMore = if noResults
+                       then Nothing
+                       else Just $ doSearchLimit queryString $ increaseSearchLimit limit
+              loading = state.loadingFeed
               noResults = case frontpageArticles of
                 Just (ArticleList list)
                   | null list -> true
@@ -570,18 +584,19 @@ render props setState state components router onPaywallEvent =
              (Frontpage.render $ Frontpage.List
               { label
               , content
-              , footer
+              , loadMore
+              , loading
               , onArticleClick
               , onTagClick
               })
        Routes.NotFoundPage _ -> mosaicoLayoutNoAside $ renderArticle (Right notFoundArticle)
-       Routes.TagPage tag ->
+       Routes.TagPage tag limit ->
           let maybeFeed = HashMap.lookup (TagFeed tag) state.feeds
               tagLabel = Just (CategoryLabel $ unwrap tag)
           in case maybeFeed of
                Just (ArticleList tagFeed)
                  | null tagFeed -> mosaicoDefaultLayout Error.notFoundWithAside
-               _                -> frontpageNoHeader tagLabel maybeFeed
+               _                -> frontpageNoHeader tagLabel (Just $ doTagLimit (tagToURIComponent tag) $ increaseSearchLimit limit) maybeFeed
        Routes.MenuPage ->
          flip (mosaicoLayout true) false
          $ Menu.render
@@ -616,35 +631,40 @@ render props setState state components router onPaywallEvent =
            DOM.div { className: "mosaico--static-page", dangerouslySetInnerHTML: { __html: page.pageContent } }
          Just StaticPageNotFound -> Error.notFoundWithAside
          Just StaticPageOtherError -> Error.somethingWentWrong
-       Routes.DebugPage _ -> frontpageNoHeader Nothing $ HashMap.lookup (CategoryFeed $ CategoryLabel "debug") state.feeds
+       Routes.DebugPage _ -> frontpageNoHeader Nothing Nothing $ HashMap.lookup (CategoryFeed (CategoryLabel "debug")) state.feeds
        -- NOTE: This should not ever happen, as we always "redirect" to Frontpage route from DeployPreview
        Routes.DeployPreview -> renderFrontpage
-    renderFrontpage = maybe mempty renderCategory $ Map.lookup frontpageCategoryLabel state.catMap
+    renderFrontpage = maybe mempty (\cat -> renderCategory cat Nothing) $ Map.lookup frontpageCategoryLabel state.catMap
 
-    renderCategory :: Category -> JSX
-    renderCategory category@(Category c) =
+    increaseSearchLimit :: Maybe Int -> Int
+    increaseSearchLimit Nothing = 40
+    increaseSearchLimit (Just n) = n + 20
+
+    renderCategory :: Category -> Maybe Int -> JSX
+    renderCategory category@(Category c) limit =
       let maybeFeed = HashMap.lookup (CategoryFeed c.label) state.feeds
       in case c.type of
         Webview -> mosaicoLayoutNoAside $ components.webviewComponent { category }
         Link -> mempty -- TODO
-        Prerendered -> maybe (mosaicoLayoutNoAside loadingSpinner) (frontpageNoHeader Nothing <<< Just) maybeFeed
-        Feed -> frontpageNoHeader (Just c.label) maybeFeed
+        Prerendered -> maybe (mosaicoLayoutNoAside loadingSpinner) (frontpageNoHeader Nothing Nothing <<< Just) maybeFeed
+        Feed -> frontpageNoHeader (Just c.label) (Just $ doCategoryLimit (unwrap c.label) $ increaseSearchLimit limit) maybeFeed
 
-    frontpageNoHeader :: Maybe CategoryLabel -> Maybe ArticleFeed -> JSX
+    frontpageNoHeader :: Maybe CategoryLabel -> Maybe (Effect Unit) -> Maybe ArticleFeed -> JSX
     frontpageNoHeader = frontpage Nothing <<< map unwrap
 
-    frontpage :: Maybe JSX -> Maybe String -> Maybe ArticleFeed -> JSX
-    frontpage maybeHeader maybeCategorLabel (Just (ArticleList list)) = listFrontpage maybeHeader maybeCategorLabel $ Just list
-    frontpage maybeHeader _ (Just (Html list html))                   = prerenderedFrontpage maybeHeader list $ Just html
-    frontpage maybeHeader _ _                                         = listFrontpage maybeHeader Nothing Nothing
+    frontpage :: Maybe JSX -> Maybe String -> Maybe (Effect Unit) -> Maybe ArticleFeed -> JSX
+    frontpage maybeHeader maybeCategoryLabel loadMore (Just (ArticleList list)) = listFrontpage maybeHeader maybeCategoryLabel loadMore $ Just list
+    frontpage maybeHeader _                  _        (Just (Html list html))   = prerenderedFrontpage maybeHeader list $ Just html
+    frontpage maybeHeader _                  _        _                         = listFrontpage maybeHeader Nothing Nothing Nothing
 
-    listFrontpage :: Maybe JSX -> Maybe String -> Maybe (Array ArticleStub) -> JSX
-    listFrontpage maybeHeader label content = mosaicoDefaultLayout $
+    listFrontpage :: Maybe JSX -> Maybe String -> Maybe (Effect Unit) -> Maybe (Array ArticleStub) -> JSX
+    listFrontpage maybeHeader label loadMore content = mosaicoDefaultLayout $
       (fromMaybe mempty maybeHeader) <>
       (Frontpage.render $ Frontpage.List
         { label
         , content
-        , footer: mempty
+        , loadMore
+        , loading: state.loadingFeed
         , onArticleClick
         , onTagClick
         })
@@ -786,7 +806,7 @@ render props setState state components router onPaywallEvent =
 
     showAds = not props.globalDisableAds && case state.route of
       Routes.Frontpage -> true
-      Routes.TagPage _ -> true
+      Routes.TagPage _ _ -> true
       Routes.SearchPage _ _ -> true
       Routes.DraftPage -> false
       Routes.ProfilePage -> false
@@ -798,7 +818,7 @@ render props setState state components router onPaywallEvent =
           Left _ -> false
       Routes.MenuPage -> false
       Routes.NotFoundPage _ -> false
-      Routes.CategoryPage _ -> true
+      Routes.CategoryPage _ _ -> true
       Routes.EpaperPage -> true
       Routes.StaticPage _ -> false
       Routes.DebugPage _ -> false
@@ -829,7 +849,7 @@ render props setState state components router onPaywallEvent =
       mempty
     onCategoryClick cat@(Category c) =
       case state.route of
-        Routes.CategoryPage category | category == cat -> mempty
+        Routes.CategoryPage category _ | category == cat -> mempty
         _ -> capture_ do
           simpleRoute $ "/" <> if c.label == frontpageCategoryLabel then "" else show c.label
 
@@ -865,6 +885,12 @@ render props setState state components router onPaywallEvent =
 
     doSearchLimit query limit =
       Routes.changeRoute router ("/sök?q=" <> query <> ("&c=" <> show limit))
+
+    doTagLimit tag limit =
+      Routes.changeRoute router ("/tagg/" <> tag <> ("?c=" <> show limit))
+
+    doCategoryLimit category limit =
+      Routes.changeRoute router ("/" <> category <> ("?c=" <> show limit))
 
     simpleRoute = Routes.changeRoute router
 

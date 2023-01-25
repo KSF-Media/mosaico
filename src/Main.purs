@@ -105,9 +105,10 @@ spec ::
                 , response :: File
                 }
          , tagList ::
-              GET "/tagg/<tag>"
+              GET "/tagg/<tag>/?c=<limit>"
                 { response :: ResponseBody
                 , params :: { tag :: String }
+                , query :: { limit :: Maybe Int }
                 }
          , frontpage ::
               GET "/"
@@ -137,10 +138,11 @@ spec ::
                 , params :: { uuid :: String }
                 }
           , categoryPage ::
-              GET "/<categoryName>"
+              GET "/<categoryName>/?c=<limit>"
                 { response :: ResponseBody
                 , params :: { categoryName :: String }
                 , guards :: Guards ("category" : Nil)
+                , query :: { limit :: Maybe Int }
                 }
           , searchPage ::
               GET "/sök?q=<search>&c=<limit>"

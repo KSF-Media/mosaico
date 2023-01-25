@@ -16,6 +16,7 @@ import Data.Newtype (un)
 import Data.String (contains)
 import Data.String.Pattern (Pattern(..))
 import Data.Tuple (Tuple(..))
+import Effect (Effect)
 import Foreign.Object as Object
 import KSF.LocalDateTime (formatArticleTime)
 import KSF.HtmlRenderer (render) as HtmlRenderer
@@ -29,6 +30,7 @@ import Mosaico.Tag (renderTag)
 import Mosaico.Timestamp (timestamp)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
+import React.Basic.DOM.Events (capture_)
 import React.Basic.Events (EventHandler)
 
 -- | Represents a frontpage
@@ -37,7 +39,8 @@ data Frontpage = List ListFrontpageProps | Prerendered PrerenderedFrontpageProps
 type ListFrontpageProps =
   { label :: Maybe String
   , content :: Maybe (Array ArticleStub)
-  , footer :: JSX
+  , loading :: Boolean
+  , loadMore :: Maybe (Effect Unit)
   , onArticleClick :: ArticleStub -> EventHandler
   , onTagClick :: Tag -> EventHandler
   }
@@ -58,7 +61,11 @@ render (List props) =
         { className: "mx-4 mosaico--article-list lg:mx-0"
         , children:
           [ maybeLabel props.label
-          , genericRender (\list -> map renderListArticle list <> [props.footer]) mempty props.content
+          , genericRender (\list ->
+              map renderListArticle list
+              <> [if props.loading then loadingSpinner else mempty]
+              <> [maybe mempty moreButton props.loadMore]
+              ) mempty props.content
           ]
         }
       where
@@ -137,6 +144,14 @@ render (Prerendered props@{ hooks }) = genericRender
   )
   props.onClick
   props.content
+
+moreButton :: Effect Unit -> JSX
+moreButton getMore =
+  DOM.button
+    { children: [ DOM.text "Fler resultat" ]
+    , className: "button-green"
+    , onClick: capture_ getMore
+    }
 
 maybeLabel :: Maybe String -> JSX
 maybeLabel categoryLabel =

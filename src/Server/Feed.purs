@@ -41,15 +41,15 @@ import React.Basic.DOM.Server (renderToStaticMarkup) as DOM
 frontpage :: Env -> {} -> Aff (Response ResponseBody)
 frontpage env {} = do
   case head env.categoryStructure of
-    Just frontpageCategory ->   renderCategoryPage env frontpageCategory
+    Just frontpageCategory -> renderCategoryPage env Nothing frontpageCategory
     _ -> pure $ Response.internalError $ StringBody "no categorystructure defined"
 
-tagList :: Env -> { params :: { tag :: String } } -> Aff (Response ResponseBody)
-tagList env { params: { tag } } = do
+tagList :: Env -> { params :: { tag :: String }, query :: { limit :: Maybe Int } } -> Aff (Response ResponseBody)
+tagList env { params: { tag }, query: { limit } } = do
   let tag' = uriComponentToTag tag
       htmlTemplate = cloneTemplate env.htmlTemplate
   { pageContent: articles, breakingNews, mostReadArticles, latestArticles } <-
-    parallelWithCommonLists env.cache $ Cache.getByTag env.cache tag'
+    parallelWithCommonLists env.cache $ Cache.getByTag env.cache tag' limit
   if null $ Cache.getContent articles
     then notFound
           env
@@ -76,7 +76,8 @@ tagList env { params: { tag } } = do
           , content: Frontpage.render $ Frontpage.List
               { label: Just $ unwrap tag'
               , content: Just articles
-              , footer: mempty
+              , loadMore: Just $ pure unit
+              , loading: false
               , onArticleClick: const mempty
               , onTagClick: const mempty
               }
@@ -89,17 +90,23 @@ tagList env { params: { tag } } = do
       , isFullWidth: false
       }
 
-categoryPage :: Env -> { params :: { categoryName :: String }, guards :: { category :: Category} } -> Aff (Response ResponseBody)
-categoryPage env { guards: { category }} = do
-  renderCategoryPage env category
+categoryPage
+  :: Env
+  -> { params :: { categoryName :: String }
+     , guards :: { category :: Category}
+     , query :: { limit :: Maybe Int }
+     }
+  -> Aff (Response ResponseBody)
+categoryPage env { guards: { category }, query: { limit }} = do
+  renderCategoryPage env limit category
 
-renderCategoryPage :: Env -> Category -> Aff (Response ResponseBody)
-renderCategoryPage env (Category category@{ label, type: categoryType, url}) = do
+renderCategoryPage :: Env -> Maybe Int -> Category -> Aff (Response ResponseBody)
+renderCategoryPage env limit (Category category@{ label, type: categoryType, url}) = do
   { feed, mainContent, breakingNews, mostReadArticles, latestArticles } <- do
     case categoryType of
       Feed -> do
         { pageContent, breakingNews, mostReadArticles, latestArticles } <-
-          parallelWithCommonLists env.cache $ Cache.getFrontpage env.cache label
+          parallelWithCommonLists env.cache $ Cache.getFrontpage env.cache limit label
         pure { feed: Just $ ArticleList $ Cache.getContent pageContent
              , mainContent:
                  (\articles ->
@@ -107,7 +114,8 @@ renderCategoryPage env (Category category@{ label, type: categoryType, url}) = d
                      , content: Frontpage.render $ Frontpage.List
                                   { label: Just $ unwrap label
                                   , content: Just articles
-                                  , footer: mempty
+                                  , loadMore: Just $ pure unit
+                                  , loading: false
                                   , onArticleClick: const mempty
                                   , onTagClick: const mempty
                                   }
@@ -123,7 +131,7 @@ renderCategoryPage env (Category category@{ label, type: categoryType, url}) = d
           <*> parallel (Cache.getBreakingNewsHtml env.cache)
           <*> parallel (Cache.getMostRead env.cache)
           <*> parallel (Cache.getLatest env.cache)
-          <*> parallel (Cache.getFrontpage env.cache label)
+          <*> parallel (Cache.getFrontpage env.cache limit label)
         let hooks = [ Frontpage.RemoveTooltips
                     , Frontpage.MostRead (Cache.getContent mostReadArticles) (const mempty)
                     , Frontpage.Latest (Cache.getContent latestArticles) (const mempty)
@@ -183,7 +191,7 @@ renderCategoryPage env (Category category@{ label, type: categoryType, url}) = d
              }
 
   -- Fallback to using list feed style
-  let fallbackToList = renderCategoryPage env $ Category $ category { type = Feed }
+  let fallbackToList = renderCategoryPage env Nothing $ Category $ category { type = Feed }
   case categoryType of
     Prerendered
       | Nothing <- feed -> fallbackToList
@@ -251,7 +259,8 @@ searchPage env { query: { search, limit } } = do
                                             then Just "Inga resultat"
                                             else ("Sökresultat: " <> _) <$> query
                                    , content: Just articles
-                                   , footer: mempty
+                                   , loadMore: Just $ pure unit
+                                   , loading: false
                                    , onArticleClick: const mempty
                                    , onTagClick: const mempty
                                    })
