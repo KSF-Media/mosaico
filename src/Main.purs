@@ -388,7 +388,7 @@ staticPage env { params: { pageName } } = do
               , categoryStructure: env.categoryStructure
               , headless: false
               , article: Nothing
-              , isFullWidth: false
+              , isFullWidth: true
               }
       html <- liftEffect do
         let windowVars =
