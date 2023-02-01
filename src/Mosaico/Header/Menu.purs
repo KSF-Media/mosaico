@@ -4,7 +4,7 @@ import Prelude
 
 import Data.Array (intersperse, foldl, snoc)
 import Effect (Effect)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.String as String
 import Data.String (toUpper)
@@ -33,7 +33,6 @@ type Section =
   , subsections :: Array Subsection
   , url :: String
   , onClick :: EventHandler
-  , className :: Maybe String
   }
 
 type Subsection =
@@ -62,7 +61,7 @@ render props@{ onLogin, onLogout } = DOM.div
     bottomBlock :: JSX
     bottomBlock =
       DOM.div
-      { className: "flex flex-col justify-around mb-4 lg:flex-row lg:flex-nowrap lg:justify-center"
+      { className: "flex flex-col justify-around mb-4 lg:flex-row lg:flex-nowrap lg:justify-evenly"
       , children: bottomLinks
       }
 
@@ -124,7 +123,6 @@ render props@{ onLogin, onLogout } = DOM.div
               , subsections: map mkSubsection c.subCategories
               , url: "/" <> show c.label
               , onClick: props.onCategoryClick category
-              , className: Nothing
               }
       in acc `snoc` section
 
@@ -133,33 +131,28 @@ render props@{ onLogin, onLogout } = DOM.div
                     , subsections: []
                     , url: "/sida/kontakt"
                     , onClick: capture_ $ props.changeRoute "/sida/kontakt"
-                    , className: Just "w-40"
                     }
                   , renderCategory { title: "FÖRETAGSANNONSER"
                     , subsections: []
                     , url: "https://www.ksfmedia.fi/"
                     , onClick: mempty
-                    , className: Just "w-40"
                     }
                   , maybe mempty renderPrivateAnnonserCategory $ privatAnnonserLink mosaicoPaper
                   , renderCategory { title: "JOBBA HOS OSS"
                     , subsections: []
                     , url: "https://www.ksfmedia.fi/jobba-hos-oss"
                     , onClick: mempty
-                    , className: Just "w-40"
                     }
                   ] <> paperSpecificLinks mosaicoPaper
                   <> [ renderCategory { title: "NYHETSAPPAR"
                     , subsections: []
                     , url: "/sida/app"
                     , onClick: capture_ $ props.changeRoute "/sida/app"
-                    , className: Just "w-40"
                     }
                   , renderCategory { title: "NYHETSBREV"
                     , subsections: []
                     , url: "/sida/nyhetsbrev"
                     , onClick: capture_ $ props.changeRoute "/sida/nyhetsbrev"
-                    , className: Just "w-40"
                     }
                   ]
 
@@ -176,7 +169,6 @@ render props@{ onLogin, onLogout } = DOM.div
         , subsections: []
         , url
         , onClick: mempty
-        , className: Just "w-40"
         }
 
     paperSpecificLinks :: Paper -> Array JSX
@@ -189,7 +181,6 @@ render props@{ onLogin, onLogout } = DOM.div
         , subsections: []
         , url: "/sida/anslagstavlan"
         , onClick: capture_ $ props.changeRoute "/sida/anslagstavlan"
-        , className: Just "w-40"
         }
       ]
 
@@ -221,7 +212,7 @@ render props@{ onLogin, onLogout } = DOM.div
       }
 
     renderCategory :: Section -> JSX
-    renderCategory { subsections, title, url, onClick, className } = DOM.div
+    renderCategory { subsections, title, url, onClick } = DOM.div
       { className: "lg:my-8 lg:flex lg:flex-col lg:min-w-[130px]"
       , children: [ renderCategoryHeader
                       [ DOM.h2_
@@ -229,7 +220,7 @@ render props@{ onLogin, onLogout } = DOM.div
                               { href: url
                               , children: [ DOM.text title ]
                               , onClick
-                              , className: "block " <> fromMaybe mempty className
+                              , className: "block"
                               }
                           ]
                       ]
