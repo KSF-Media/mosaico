@@ -6,6 +6,7 @@ window.setTimeout = function (fn, timeout, ...args) {
    * uses of setTimeout!
    */
   if (timeout === 5000) {
+    console.log("setTimeout was called with timeout=5000, setting it to 500");
     timeout = 500;
   }
   return _setTimeout(fn, timeout, ...args);

@@ -6,12 +6,17 @@ export function sendTriggerbeeEvent(email) {
 }
 
 export function addToTriggerbeeObj(user) {
-    if (!window.triggerbee) {
-      window.addEventListener("triggerbeeLoaded", (e) => {
-        var triggerbee = window.triggerbee || {};
-        triggerbee.user = user || { isLoggedIn: false, isSubscriber: false };
-      });
-    } else {
-      window.triggerbee.user = user;
-    }
+  console.log("addToTriggrebeeObj", user);
+  if (!window.triggerbee) {
+    console.log("Triggerbee not loaded, adding event listener");
+    window.addEventListener("triggerbeeLoaded", (e) => {
+      console.log("triggerbeeLoaded callback, updating user state");
+      var triggerbee = window.triggerbee || {};
+      triggerbee.user = user || { isLoggedIn: false, isSubscriber: false };
+    });
+  } else {
+    console.log("Triggerbee loaded, adding directly to triggerbee");
+    window.triggerbee.user = user;
+    window.triggerbee.widgets.api.init();
+  }
 }

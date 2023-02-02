@@ -232,7 +232,7 @@ mosaicoComponent initialValues props = React.do
     -- The initial loading state prevents opening the login dialog
     -- also so better have a timeout.
     giveUpLogin <- Aff.killFiber (Exception.error "give up login") <$> Aff.launchAff do
-      Aff.delay $ Milliseconds 5000.0
+      Aff.delay $ Milliseconds 4999.0
       withLoginLock do
         liftEffect $ setState _ { user = Just Nothing }
         liftEffect $ initialSendAnalytics Nothing

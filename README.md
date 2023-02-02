@@ -121,3 +121,8 @@ Since the js script does not work if inserted as inner html, therefore the scrip
 
 ## Git Hooks
 You can install included git hooks with `make hooks`
+
+## setTimeout(..., 5000) waits for only 500 milliseconds
+Due to Google Tag Manager related reasons (see index.js), setTimeout is shimmed
+to replace setTimeout calls with 5 seconds to setTimeout with only 500
+milliseconds.
