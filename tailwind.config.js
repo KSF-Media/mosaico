@@ -36,6 +36,7 @@ const listOfIcons = {
   on: `url(../images/logo-on.svg)`,
   search: `url("../images/icon-mosaico-search.svg")`,
   epaper: `url("../images/icon-mosaico-epaper.svg")`,
+  crosswords: `url("../images/icon-mosaico-crossword.svg")`,
   kundservice: `url("../images/icon-mosaico-kundservice.svg")`,
   logout: `url("../images/icon-mosaico-logout.svg")`,
   login: `url("../images/icon-mosaico-login.svg")`,

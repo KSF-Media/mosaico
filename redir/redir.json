@@ -171,6 +171,21 @@
     "destination": "https://www.ostnyland.fi/sida/kontakt"
   },
   {
+    "route": "korsord",
+    "paper": "hbl",
+    "destination": "https://www.hbl.fi/sida/korsord"
+  },
+  {
+    "route": "korsord",
+    "paper": "vn",
+    "destination": "https://www.vastranyland.fi/sida/korsord"
+  },
+  {
+    "route": "korsord",
+    "paper": "on",
+    "destination": "https://www.ostnyland.fi/sida/korsord"
+  },
+  {
     "route": "nyhetsbrev",
     "paper": "hbl",
     "destination": "https://www.hbl.fi/sida/nyhetsbrev"

@@ -12,6 +12,7 @@ staticPageTitle page paper =
     "fragor-och-svar", _ -> "Frågor och svar"
     "insandare", _       -> "Insändare"
     "kontakt", _         -> "Kontakta oss"
+    "korsord", _         -> "Korsord"
     "kundservice", _     -> "Kundservice"
     "nyhetsbrev", HBL    -> "Beställ HBL:s nyhetsbrev!"
     "nyhetsbrev", ON     -> "Beställ Östnylands nyhetsbrev!"

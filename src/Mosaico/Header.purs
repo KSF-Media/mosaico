@@ -98,6 +98,12 @@ render scrollPosition props =
                                     , href: "/epaper"
                                     , onClick: capture_ $ props.changeRoute "/epaper/"
                                     }
+                                , DOM.text "|"
+                                , DOM.a
+                                    { children: [ DOM.text "KORSORD" ]
+                                    , href: "/sida/korsord"
+                                    , onClick: props.onStaticPageClick "korsord"
+                                    }
                                 ]
                             }
                         , DOM.div

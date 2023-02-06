@@ -374,7 +374,7 @@ staticPage env { params: { pageName } } = do
             DOM.div { className: "mosaico--static-page"
                     , children:
                         [ DOM.div { dangerouslySetInnerHTML: { __html: staticPageContent } }
-                        , foldMap (\script -> DOM.script { dangerouslySetInnerHTML: { __html: script } }) staticPageScript
+                        , foldMap (\script -> DOM.script { className: "mosaico--static-page_script", dangerouslySetInnerHTML: { __html: script } }) staticPageScript
                         ]
                     }
       let mosaicoString =

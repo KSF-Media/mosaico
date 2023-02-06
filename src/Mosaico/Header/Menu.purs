@@ -3,20 +3,20 @@ module Mosaico.Header.Menu where
 import Prelude
 
 import Data.Array (intersperse, foldl, snoc)
-import Effect (Effect)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
-import Data.String as String
 import Data.String (toUpper)
+import Data.String as String
+import Effect (Effect)
 import KSF.Paper (Paper(..), toString)
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import Lettera.Models (Category(..), CategoryLabel)
 import Mosaico.Paper (mosaicoPaper)
 import React.Basic (JSX)
-import React.Basic.Events (EventHandler)
 import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (capture_)
+import React.Basic.Events (EventHandler)
 
 type Props =
   { changeRoute :: String -> Effect Unit
@@ -80,6 +80,9 @@ render props@{ onLogin, onLogout } = DOM.div
     onEpaper :: EventHandler
     onEpaper = capture_ $ props.changeRoute "/epaper/"
 
+    onCrosswords :: EventHandler
+    onCrosswords = capture_ $ props.changeRoute "/sida/korsord/"
+
     onKundservice :: EventHandler
     onKundservice = capture_ $ props.changeRoute "/sida/kundservice/"
 
@@ -104,6 +107,7 @@ render props@{ onLogin, onLogout } = DOM.div
       , children:
         [ renderIcon "bg-search" "SÖK" "/sök" onSearch
         , renderIcon "bg-epaper" "E-TIDNINGEN" "/epaper" onEpaper
+        , renderIcon "bg-crosswords" "KORSORD" "/sida/korsord" onCrosswords
         , renderIcon "bg-kundservice" "KUNDSERVICE" "/sida/kundservice" onKundservice
         , case props.user of
             Nothing -> renderLoadingIcon

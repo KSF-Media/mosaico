@@ -4,6 +4,6 @@ export function getInitialStaticPageContent() {
 }
 
 export function getInitialStaticPageScript() {
-    const scriptContainer = document.querySelector('#app .mosaico--static-page script');
+    const scriptContainer = document.querySelector('#app .mosaico--static-page .mosaico--static-page_script');
     return scriptContainer ? scriptContainer.innerHTML : null;
 }
