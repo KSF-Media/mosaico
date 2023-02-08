@@ -262,5 +262,10 @@
     "route": "newsmap.xml",
     "paper": "on",
     "destination": "https://lettera.api.ksfmedia.fi/v4/list/newsmap?paper=ON"
+  },
+  {
+    "route": "junior-vinterkampanj",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/vinterkampanj-hbl-junior"
   }
 ]
