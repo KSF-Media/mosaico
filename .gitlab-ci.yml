@@ -25,6 +25,11 @@ stages:
   environment: test/$CI_COMMIT_BRANCH
   except:
     - master
+  cache:
+    key: "mosaico-build-n-test"
+    paths:
+      - output/
+      - .spago/
   script:
     # Install all project dependencies 
     - NODE_ENV=development yarn --cwd $CI_PROJECT_DIR install
@@ -38,6 +43,11 @@ stages:
   environment: staging/$SERVICE_NAME
   only:
     - master
+  cache:
+    key: "mosaico-trunk-build"
+    paths:
+      - output/
+      - .spago/
   artifacts:
     paths:
       - artifacts/
