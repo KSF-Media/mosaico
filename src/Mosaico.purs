@@ -703,6 +703,9 @@ render props setState state components router onPaywallEvent =
             , Frontpage.Ad "Ad 1"                 "mosaico-ad__bigbox1"
             , Frontpage.Ad "Ad 2"                 "mosaico-ad__bigbox2"
             , Frontpage.Ad "Ad MOBILE - mobparad" "mosaico-ad__mobparad"
+            , Frontpage.Ad "Box Ad 1 MOBILE"      "mosaico-ad__mobbox1"
+            , Frontpage.Ad "Box Ad 2 MOBILE"      "mosaico-ad__mobbox2"
+            , Frontpage.Ad "Box Ad 3 MOBILE"      "mosaico-ad__mobbox3"
             ]
 
     mosaicoDefaultLayout :: JSX -> JSX

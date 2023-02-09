@@ -62,16 +62,15 @@ var startConsentCookieSetup = require("../output/Consent.Consent/index.js").star
 
 window.googletag = window.googletag || { cmd: [] };
 
-// My suggestion would be to set all the ad slots in viewport on the initial
-// page load as non-lazy and all the lower ad slots as lazy.
-// Those would be Maxparad, parad and box_0 on desktop and mobparad_0
-// on mobile I think. Rest can be set as lazy.
 
-// Temporary function to keep hbl using the old GAM units, while ÖN uses the new.
 function getGamId(name) {
   let paper = process.env.PAPER;
+  // set paper to "test" in .env.local to test ads locally
   return paper + "/" + paper + "_" + name;
 }
+
+// Advice from Relevant: Set all the ad slots in viewport on the initial
+// page load as non-lazy and all the lower ad slots as lazy.
 
 // When targetId's are changed, remember to change them accordingly in
 // Mosaico.purs hooks, Article.purs, classnames in ads.less
@@ -128,7 +127,7 @@ window.adSlots = {
         [300, 431],
         [300, 600],
       ],
-      targetId: "mosaico-ad__box1",
+      targetId: "mosaico-ad__mobbox1",
       isLazy: true,
     },
     {
@@ -140,7 +139,7 @@ window.adSlots = {
         [300, 431],
         [300, 600],
       ],
-      targetId: "mosaico-ad__box2",
+      targetId: "mosaico-ad__mobbox2",
       isLazy: true,
     },
     {
@@ -152,31 +151,7 @@ window.adSlots = {
         [300, 431],
         [300, 600],
       ],
-      targetId: "mosaico-ad__box3",
-      isLazy: true,
-    },
-    {
-      gamId: getGamId("mobbox4"),
-      sizes: [
-        [300, 100],
-        [300, 250],
-        [300, 300],
-        [300, 431],
-        [300, 600],
-      ],
-      targetId: "mosaico-ad__box4",
-      isLazy: true,
-    },
-    {
-      gamId: getGamId("mobbox5"),
-      sizes: [
-        [300, 100],
-        [300, 250],
-        [300, 300],
-        [300, 431],
-        [300, 600],
-      ],
-      targetId: "mosaico-ad__box5",
+      targetId: "mosaico-ad__mobbox3",
       isLazy: true,
     },
   ],
@@ -192,7 +167,10 @@ window.adSlots = {
     },
     {
       gamId: getGamId("jattebox"),
-      sizes: [468, 400],
+      sizes: [
+        [468, 400],
+        [468, 600],
+      ],
       targetId: "mosaico-ad__bigbox2",
       isLazy: true,
     },
@@ -274,7 +252,7 @@ window.adSlots = {
       isLazy: true,
     },
     // {
-    //   gamId: "WALLPAPER",
+    //   gamId: "wallpaper",
     //   sizes: [ [1600,1200], [1920,1080] ],
     //   targetId: "mosaico-ad__wallpaper",
     //   isLazy: true
@@ -283,9 +261,6 @@ window.adSlots = {
 };
 
 window.googletag.cmd.push(function () {
-  // googletag.pubads().setTargeting("Test", "mosaico_test");
-  googletag.pubads().setTargeting("Newspaper", process.env.PAPER || "hbl");
-
   /* Ad slots to use */
   const networkCode = "/21664538223/";
 

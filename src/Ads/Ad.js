@@ -2,21 +2,20 @@ export function fetchAdImpl(contentUnit) {
   try {
     window.googletag.cmd.push(function () {
       if (window.definedSlots.includes(contentUnit)) {
-	window.googletag
-	  .pubads()
-	  .getSlots()
-	  .map((s) => {
-	    if (s.getSlotElementId() === contentUnit) {
-	      window.googletag.pubads().refresh([s]);
-	      // console.log("Refreshing ad: " + s.getSlotElementId());
-	    } else {
-	      window.googletag.display(contentUnit);
-	    }
-	  });
+        window.googletag
+          .pubads()
+          .getSlots()
+          .map((s) => {
+            if (s.getSlotElementId() === contentUnit) {
+              window.googletag.pubads().refresh([s]);
+            } else {
+              window.googletag.display(contentUnit);
+            }
+          });
       }
     });
   } catch (err) {}
-};
+}
 
 export function getGamId(contentUnit) {
   try {
@@ -30,7 +29,7 @@ export function getGamId(contentUnit) {
   } catch (err) {
     return null;
   }
-};
+}
 
 export function getIsLazy(contentUnit) {
   try {

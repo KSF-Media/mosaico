@@ -186,12 +186,19 @@ render embedsAllowed imageComponent boxComponent props =
                     , DOM.div
                         { className: "md:w-72 mosaico-article__aside shrink-0"
                         , children:
-                          [ Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
+                        -- Race conditions a problem when detecting screen width here,
+                        -- so both mobile and desktop ad slots are listed here.
+                        -- These then get filtered down to mobile-only or desktop-only
+                        -- slots in the Mosaico.ad code.
+                          [ Mosaico.ad { contentUnit: "mosaico-ad__mobbox1", inBody: false, hideAds }
+                          , Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
                           , LatestList.render
                                      { latestArticles: props.latestArticles
                                      , onClickHandler: props.onArticleClick
                                      }
+                          , Mosaico.ad { contentUnit: "mosaico-ad__mobbox2", inBody: false, hideAds }
                           , Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false, hideAds }
+                          , Mosaico.ad { contentUnit: "mosaico-ad__mobbox3", inBody: false, hideAds }
                           , Mosaico.ad { contentUnit: "mosaico-ad__box3", inBody: false, hideAds }
                           , Mosaico.ad { contentUnit: "mosaico-ad__box4", inBody: false, hideAds }
                           , Mosaico.ad { contentUnit: "mosaico-ad__box5", inBody: false, hideAds }
