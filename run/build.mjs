@@ -46,7 +46,7 @@ export async function runBuild() {
     const template = cheerio.load(fs.readFileSync(templateFile, "utf8"));
 
     const buildOpts = {
-      entryPoints: ["./web/index.js"],
+      entryPoints: ["./web/index.js", "./web/darkmode.js"],
       entryNames: "[name]-[hash]",
       bundle: true,
       outdir: "./dist/assets",

@@ -20,7 +20,7 @@ type Props =
 render :: Props -> JSX
 render props =
   DOM.div
-    { className: "p-2 border border-gray-100 mosaico-asidelist mosaico-asidelist__latest"
+    { className: "p-2 border border-gray-100 md:mt-4 dark:border-gray-500 mosaico-asidelist mosaico-asidelist__latest"
     , children:
         [ DOM.h2
             { className: "my-3 mr-0 ml-2 text-lg font-bold uppercase lg:ml-3 font-roboto text-brand"
@@ -33,7 +33,7 @@ render props =
     renderLatestArticle :: ArticleStub -> JSX
     renderLatestArticle a =
       DOM.li
-        { className: "py-2 my-0 mx-2 border-b border-dotted lg:mx-3 border-b-gray-100"
+        { className: "py-2 my-0 mx-2 border-t border-dotted lg:mx-3 border-t-gray-100 first:border-t-0"
         , children:
           [ DOM.a
               { onClick: props.onClickHandler a

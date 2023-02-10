@@ -2,7 +2,6 @@
 @mosaico-grid-columns: 1fr @content-block @content-block @content-block 1fr;
 
 .mosaico {
-  background: white;
   display: grid;
   margin: 0 auto;
   min-height: 100%;
@@ -42,7 +41,7 @@
 .mosaico--static-page-error {
   h1 {
     font: 700 2rem "Duplex Serif Web", serif;
-    color: #333;
+    color: var(--header-color);
     margin: 1rem auto 0;
     text-align: center;
     letter-spacing: -0.015em;
@@ -62,7 +61,7 @@
 .mosaico--error-with-aside {
   h1 {
     font: 400 1.3rem "Duplex Serif Web", serif;
-    color: #333;
+    color: var(--header-color);
     margin: 1rem auto 0;
     text-align: center;
     letter-spacing: -0.015em;

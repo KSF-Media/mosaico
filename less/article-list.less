@@ -28,7 +28,15 @@
 
 .mosaico-asidelist {
   font: 1rem "Duplex Serif", serif;
+  padding: var(--asidelist-padding);
+  background-color: var(--group-content-bg);
   margin-bottom: 15px;
+
+  @media screen and (min-width: @breakpoint-2col) {
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
 
   h6 {
     font: 400 1.2rem/1.15 "Duplex Serif", serif;
@@ -43,13 +51,16 @@
   &__mostread {
     @counter-size: 30px;
     counter-reset: listcounter;
-    border-bottom: solid 1px @hairline-color;
+    border-bottom: solid 1px var(--color-border);
 
     li {
       counter-increment: listcounter;
       margin: 0 10px;
       padding: 10px 0;
-      border-bottom: dotted 1px @hairline-color;
+      border-top: solid 1px @hairline-color;
+      &:first-child {
+        border-top: none;
+      }
 
       > a {
         cursor: pointer;

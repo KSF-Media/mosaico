@@ -65,7 +65,7 @@ render props =
     , children:
         [ jumpToMainContent
         , DOM.div
-          { className: "grid mosaico" <> menuOpen
+          { className: "grid mosaico text-aptoma-text-color bg-aptoma-site-background" <> menuOpen
           , children:
               [ guard (not props.headless) Header.topLine
               , guard (not props.headless) header

@@ -6,6 +6,7 @@ import Data.Array (intersperse, foldl, snoc)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
 import Data.String (toUpper)
+import Foreign.Object (singleton)
 import Data.String as String
 import Effect (Effect)
 import KSF.Paper (Paper(..), toString)
@@ -40,6 +41,8 @@ type Subsection =
   , onClick :: EventHandler
   }
 
+foreign import toggleMode :: Effect Unit
+
 render :: Props -> JSX
 render props@{ onLogin, onLogout } = DOM.div
   { className: "flex mx-6 lg:mx-0 [grid-area:full-width] md:[grid-column:1/span_2] lg:[grid-column:2/span_3] mosaico-menu"
@@ -48,8 +51,8 @@ render props@{ onLogin, onLogout } = DOM.div
   where
     menuContent :: JSX
     menuContent = DOM.div
-      { className: "flex flex-col justify-around mt-5 w-full"
-      , children: [ prenumereraBlock, topButtons, renderSeparator, categories, renderDesktopSeparator, bottomBlock ]
+      { className: "flex flex-col justify-around mt-5 mb-10 w-full"
+      , children: [ prenumereraBlock, topButtons, renderSeparator, categories, renderDesktopSeparator, bottomBlock, themeToggler ]
       }
 
     categories :: JSX
@@ -61,7 +64,7 @@ render props@{ onLogin, onLogout } = DOM.div
     bottomBlock :: JSX
     bottomBlock =
       DOM.div
-      { className: "flex flex-col justify-around mb-4 lg:flex-row lg:flex-nowrap lg:justify-evenly"
+      { className: "flex flex-col justify-around lg:flex-row lg:flex-nowrap lg:justify-center"
       , children: bottomLinks
       }
 
@@ -105,14 +108,14 @@ render props@{ onLogin, onLogout } = DOM.div
     topButtons = DOM.div
       { className: "flex flex-col justify-around mb-4 lg:flex-row lg:flex-nowrap lg:justify-center"
       , children:
-        [ renderIcon "bg-search" "SÖK" "/sök" onSearch
-        , renderIcon "bg-epaper" "E-TIDNINGEN" "/epaper" onEpaper
-        , renderIcon "bg-crosswords" "KORSORD" "/sida/korsord" onCrosswords
-        , renderIcon "bg-kundservice" "KUNDSERVICE" "/sida/kundservice" onKundservice
+        [ renderIcon "maskimage-search w-9 h-7" "SÖK" "/sök" onSearch
+        , renderIcon "maskimage-epaper w-9 h-9" "E-TIDNINGEN" "/epaper" onEpaper
+        , renderIcon "maskimage-crosswords w-9 h-7" "KORSORD" "/sida/korsord" onCrosswords
+        , renderIcon "maskimage-kundservice w-9 h-9" "KUNDSERVICE" "/sida/kundservice" onKundservice
         , case props.user of
             Nothing -> renderLoadingIcon
-            Just (Just _) -> renderIcon "bg-logout" "LOGGA UT" "" onLogout
-            Just Nothing -> renderIcon "bg-login" "LOGGA IN" "" onLogin
+            Just (Just _) -> renderIcon "maskimage-logout w-9 h-7" "LOGGA UT" "" onLogout
+            Just Nothing -> renderIcon "maskimage-login w-9 h-7" "LOGGA IN" "" onLogin
         ]
       }
 
@@ -196,17 +199,17 @@ render props@{ onLogin, onLogout } = DOM.div
 
     renderIcon :: String -> String -> String -> EventHandler -> JSX
     renderIcon icon title href onClick = DOM.a
-      { children: [ DOM.span { className: "block mr-3 w-9 h-9 bg-no-repeat bg-contain" <> " " <> icon}
+      { children: [ DOM.span { className: "block mr-3 bg-aptoma-text-color mask-repeat-none mask-size-contain mask-position-center" <> " " <> icon}
                   , DOM.text title
                   ]
-      , className: "flex items-center mr-4 w-40 text-sm font-semibold lg:justify-center font-roboto"
+      , className: "flex items-center mr-4 mb-2 w-40 text-sm font-semibold lg:mb-0 lg:justify-center font-roboto"
       , href
       , onClick
       }
 
     renderCategoryHeader :: Array JSX -> JSX
     renderCategoryHeader children = DOM.div
-      { className: "justify-center text-sm lg:flex lg:flex-row lg:justify-between"
+      { className: "justify-center text-sm lg:flex lg:flex-row lg:justify-around"
       , children:
           [ DOM.div
               { className: "py-4 text-sm font-semibold font-roboto"
@@ -217,7 +220,7 @@ render props@{ onLogin, onLogout } = DOM.div
 
     renderCategory :: Section -> JSX
     renderCategory { subsections, title, url, onClick } = DOM.div
-      { className: "lg:my-8 lg:flex lg:flex-col lg:min-w-[130px]"
+      { className: "lg:my-8 lg:flex lg:flex-col lg:min-w-[130px] lg:px-1"
       , children: [ renderCategoryHeader
                       [ DOM.h2_
                           [ DOM.a
@@ -246,4 +249,30 @@ render props@{ onLogin, onLogout } = DOM.div
               , onClick
               }
           ]
+      }
+
+    themeToggler :: JSX
+    themeToggler =
+      DOM.div
+        { className: "flex py-4 lg:justify-center"
+        , children: [
+            DOM.button
+              { className: "flex flex-row-reverse items-center text-sm font-semibold lg:flex-row font-roboto"
+              , onClick: capture_ toggleMode
+              , children:
+                [ DOM.i
+                    { className: "mr-3 w-7 h-7 glyphicon glyphicon-adjust text-[24px]"
+                    , _aria: singleton "hidden" "true"
+                    }
+                , DOM.span
+                    { className: "hidden mr-3 dark:block"
+                    , children: [ DOM.text "MÖRKT TEMA AKTIVERAD" ]
+                    }
+                , DOM.span
+                    { className: "block mr-3 dark:hidden"
+                    , children: [ DOM.text "MÖRKT TEMA INAKTIVERAD" ]
+                    }
+                ]
+              }
+        ]
       }

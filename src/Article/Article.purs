@@ -219,7 +219,7 @@ render embedsAllowed imageComponent boxComponent props =
                 , children:
                     map
                         (\author -> DOM.div
-                          { className: "mb-1 text-sm font-medium text-gray-900"
+                          { className: "mb-1 text-sm font-medium text-aptoma-text-color"
                           , children: [ guard (article.articleType == Opinion) $
                                         renderOpinionType article.articleTypeDetails
                                       , DOM.a

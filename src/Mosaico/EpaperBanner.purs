@@ -7,7 +7,7 @@ import React.Basic.DOM as DOM
 render :: JSX
 render =
   DOM.section
-    { className: "mb-3 bg-gray-50"
+    { className: "pb-3 mb-3 md:mx-2 bg-aptoma-epaper-background"
     , children:
       [ DOM.header
           { className: "py-2 text-center"
@@ -23,7 +23,7 @@ render =
         , className: "block"
         , children:
           [ DOM.span
-              { className: "block overflow-hidden w-72 max-w-full h-72 bg-top bg-no-repeat bg-contain mosaico-epaper--bg-cover mx-auto"
+              { className: "block overflow-hidden mx-auto w-72 max-w-full h-72 bg-top bg-no-repeat bg-contain mosaico-epaper--bg-cover"
               , children: [ DOM.span
                               { className: "sr-only"
                               , children: [DOM.text "E-tidningen"]

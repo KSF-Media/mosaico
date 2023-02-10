@@ -23,7 +23,7 @@ pageTitle = Chrome.Selector ".mosaico--article-list > h2"
 
 testSearchNavigation :: Test
 testSearchNavigation page = do
-  let searchButton = Chrome.Selector ".mosaico-header__icon-button--search"
+  let searchButton = Chrome.Selector ".maskimage-search"
   Chrome.goto (Chrome.URL site) page
   Chrome.waitFor_ searchButton page
   Chrome.click searchButton page

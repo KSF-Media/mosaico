@@ -96,7 +96,7 @@ renderPaper paper onLogin loading userAuth entitled =
 section :: Array JSX -> JSX
 section children =
   DOM.div
-    { className: "flex flex-col items-center p-5 md:pt-14 md:flex-row md:justify-around odd:bg-gray-75 odd:md:pb-14"
+    { className: "flex flex-col items-center p-5 md:pt-14 md:flex-row md:justify-around odd:bg-aptoma-epaper-background odd:md:pb-14"
     , children
     }
 

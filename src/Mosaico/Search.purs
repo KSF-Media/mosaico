@@ -29,7 +29,7 @@ render query setQuery { doSearch, searching } =
     { className: "pb-3 max-w-xl mb-3 mosaico-search md:pb-5 [grid-area:search]"
     , children:
         [ DOM.form
-            { className: "flex border border-gray-300 border-solid mosaico-search__form"
+            { className: "flex border border-gray-300 border-solid mosaico-search__form dark:border-0 dark:bg-aptoma-group-content-bg"
             , children:
                 [ DOM.span
                     { className: "flex-auto"

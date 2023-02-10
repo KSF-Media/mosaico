@@ -32,7 +32,7 @@ autoExpand a = (length $ joinWith mempty a) < 600
 render :: EventHandler -> Props -> JSX
 render setExpanded props =
   DOM.section
-    { className: "bg-gray-50 border-b-2 border-t-4 border-brand [.article-element\\_\\_reviewbox>&]:border [.article-element\\_\\_reviewbox>&]:border-gray-100"
+    { className: "bg-aptoma-fact-box-color border-b-2 border-t-4 border-brand [.article-element\\_\\_reviewbox>&]:border [.article-element\\_\\_reviewbox>&]:border-gray-100"
     , children:
         [ DOM.header
             { className: "p-4 border-b border-gray-100"

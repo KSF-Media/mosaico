@@ -18,13 +18,13 @@ import React.Basic.Events (handler, EventHandler)
 footer :: Paper -> (Category -> EventHandler) -> (String -> EventHandler) -> JSX
 footer mosaicoPaper onCategoryClick onStaticPageClick =
   DOM.footer
-    { className: "flex flex-col items-center py-12 px-0 m-0 bg-gray-50 lg:px-2 font-roboto [grid-area:foot]"
+    { className: "flex flex-col items-center py-12 px-0 m-0 bg-aptoma-footer-color lg:px-2 font-roboto [grid-area:foot]"
     , children:
         [ contactInfo mosaicoPaper commonFooter
         , appLinks mosaicoPaper
         , DOM.hr { className: "w-4/5 md:w-56 lg:w-96 mt-0 mx-auto mb-5 bg-gray-300 border-0 h-[1px]" }
         , DOM.div
-            { className: "mt-6 mb-4 text-sm font-black text-gray-400"
+            { className: "mt-6 mb-4 text-sm text-aptoma-footer-text-color"
             , children: [ DOM.text "ALLA KSF-TIDNINGAR" ]
             }
         , DOM.div
@@ -43,7 +43,7 @@ footer mosaicoPaper onCategoryClick onStaticPageClick =
       children = foldMap (\cls ->
         [ DOM.div { className: "w-14 h-14 bg-gray-400 mask-size-14" <> cls}
         , DOM.div
-            { className: "text-xs text-gray-400 whitespace-nowrap"
+            { className: "text-xs whitespace-nowrap"
             , children: [ DOM.text $ paperName paper ]
             }
         ]) $ logoClass paper
@@ -71,7 +71,7 @@ hblContactInfo commonFooter =
   DOM.div
     { children:
         [ DOM.div
-            { className: "inline text-sm text-gray-600 lg:flex"
+            { className: "inline text-sm lg:flex"
             , children:
                 [ column firstColumn
                 , column secondColumn
@@ -127,7 +127,7 @@ vastranylandContactInfo commonFooter =
   DOM.div
     { children:
         [ DOM.div
-            { className: "inline text-sm text-gray-600 lg:flex"
+            { className: "inline text-sm lg:flex"
             , children:
                 [ column firstColumn
                 , column secondColumn
@@ -183,7 +183,7 @@ ostnylandContactInfo commonFooter =
   DOM.div
     { children:
         [ DOM.div
-            { className: "inline text-sm text-gray-600 lg:flex"
+            { className: "inline text-sm lg:flex"
             , children:
                 [ column firstColumn
                 , column secondColumn
@@ -254,14 +254,14 @@ footerLinks onCategoryClick onStaticPageClick =
     externalLink caption url =
       DOM.a
         { href: url
-        , className: "my-1 mx-auto text-sm text-gray-900 no-underline md:mx-5"
+        , className: "my-1 mx-auto text-sm no-underline text-aptoma-text-color md:mx-5"
         , children: [ DOM.text caption ]
         }
 
     footerLink caption link =
       DOM.a
         { href: "/sida/" <> link
-        , className: "my-1 mx-auto text-sm text-gray-900 no-underline md:mx-5"
+        , className: "my-1 mx-auto text-sm no-underline text-aptoma-text-color md:mx-5"
         , children: [ DOM.text caption ]
         , onClick: onStaticPageClick link
         }
@@ -269,7 +269,7 @@ footerLinks onCategoryClick onStaticPageClick =
     categoryLink cat@(Category {id, label, url}) =
       DOM.a
         { href: fromMaybe ("/" <> id) url
-        , className: "my-1 mx-auto text-sm text-gray-900 no-underline md:mx-5"
+        , className: "my-1 mx-auto text-sm no-underline text-aptoma-text-color md:mx-5"
         , children: [ DOM.text $ unwrap label ]
         , onClick: onCategoryClick cat
         }
@@ -294,7 +294,7 @@ appLinks mosaicoPaper =
     { className: "flex flex-col justify-center items-center mx-auto mt-0 mb-8 px-2.5"
     , children:
       [ DOM.div
-          { className: "mb-2 max-w-xs text-base text-center text-gray-900 md:max-w-xl"
+          { className: "mb-2 max-w-xs text-base text-center text-aptoma-text-color md:max-w-xl"
           , children:
               [ DOM.text "Ladda ned vår nyhetsapp – det smidigaste sättet att läsa våra nyheter." ]
           }
@@ -323,10 +323,10 @@ appLinks mosaicoPaper =
         }
 
 column :: Array JSX -> JSX
-column children = DOM.div { className: "basis-1/3 max-w-xs", children }
+column children = DOM.div { className: "max-w-xs basis-1/3", children }
 
 columnLink :: String -> Array JSX -> JSX
-columnLink href children = DOM.a { href, children, className: "text-blue-link" }
+columnLink href children = DOM.a { href, children, className: "text-aptoma-link-color" }
 
 section :: String -> Array JSX -> JSX
 section title children =
@@ -334,7 +334,7 @@ section title children =
     { className: "block pr-1 pl-1 mt-4 mb-2"
     , children:
         [ DOM.b
-        { className: "font-black"
+        { className: "text-aptoma-text-color"
         , children: [ DOM.text title, DOM.text " " ] }
         , DOM.div
         { className:  "no-underline"
@@ -362,7 +362,7 @@ thirdColumn =
           { href: "#"
           , onClick: handler preventDefault openConsentAndSetCookie
           , children: [ DOM.text "Hantera dataskydd" ]
-          , className: "text-blue-link"
+          , className: "text-aptoma-link-color"
           }
       ]
   ]

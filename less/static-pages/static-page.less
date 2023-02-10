@@ -3,7 +3,7 @@
 .mosaico--static-page {
   font: 300 1.07rem "Roboto";
   line-height: 1.2;
-  color: #333;
+  color: var(--header-color);
   padding: 0 18px;
   @media (min-width: @breakpoint-2col) {
     padding-right: 40px;
@@ -38,20 +38,29 @@
   }
 
   .static-page__list-link {
-    color: @dark-text;
+    display: flex;
+    color: var(--text-color);
     font-weight: 400;
     text-decoration: none;
   }
 
   .static-page__list-link::before {
-    content: url("../../images/double-chevron-right.svg");
+    content: ' ';
+    display: inline-block;
+    width: 16px;
+    height: 20px;
     margin-right: 5px;
+    mask-image: url("../../images/double-chevron-right.svg");
+    mask-size: contain;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    background-color: var(--text-color);
   }
 
   .static-page__link:link,
   .static-page__link:visited {
     text-decoration: none;
-    color: @link;
+    color: var(--link-color);
   }
 
   .static-page__back-to-top {

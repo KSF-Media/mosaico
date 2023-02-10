@@ -1,37 +1,43 @@
 @import (reference) "../affresco/less/ksf-colors.less";
 
+/*
+md-h: 24px
+lg-h: 36px;
+*/
+
 .header-container-container {
   position: sticky;
   grid-row: 2;
   grid-column: 1 / span 5;
   height: 115px;
-  top: 10px;
+  top: 12px;
   z-index: 100;
 
-      @media (max-width: @breakpoint-2col) {
-        height: 78px;
-      }
+  @media (max-width: @breakpoint-2col) {
+    height: 78px;
+  }
 }
 
 .header-container {
   display: grid;
-  grid-row-gap: @mosaico-grid-row-gap;
   grid-template-rows: auto auto;
   grid-template-columns: 5px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 5px;
 
   @media (min-width: @breakpoint-3col) {
+    grid-template-rows: auto auto;
     max-width: 100%;
     grid-template-columns: @mosaico-grid-columns;
   }
 
-  background-color: white;
-  padding-top: 8px;
+  transition: all 0.2s, background-color 0;
 
   * {
-    transition: all 0.2s;
+    transition: all 0.2s, background-color 0;
   }
 
-  transition: all 0.2s;
+  &.static-header {
+    padding-top: 8px;
+  }
 }
 
 .header-container.static-header {
@@ -62,270 +68,104 @@
 }
 
 .mosaico-header {
-  @logo-size-desktop: 68px;
-  @logo-size-mobile: 48px;
-  @max-mobile-width: 640px;
-  @font-weight: 500;
-
   display: grid;
   grid-column: 2 / span 3;
 
-  grid-template-rows: auto;
+  grid-template-rows: auto 5px auto;
   grid-template-columns: 1fr 1fr 1fr;
   @media (min-width: @breakpoint-2col) {
+    grid-template-rows: auto 0px auto;
     grid-template-columns: 15% 1fr 15%;
     row-gap: 5px;
   }
-  .menu-label {
-    display: none;
-    @media (min-width: @breakpoint-3col) {
-      display: inline-block;
-    }
-  }
 
-  font: @font-weight 16px "Roboto", sans-serif;
+  padding-bottom: 4px;
 
   &__left-links {
     grid-row-start: 1;
     grid-column: 1;
 
-    width: fit-content;
-    white-space: nowrap;
-
-    font: @font-weight 13px "Roboto", sans-serif;
-    color: @grey-medium;
-
-    display: none;
     z-index: 200; // Fixes the logo overlapping with the links
-
-    @media (min-width: @breakpoint-2col) {
-      display: flex;
-      padding-left: 5px;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-      padding: 0 5px;
-    }
   }
 
   &__right-links {
     grid-row: 1 / span 2;
     grid-column-start: 3;
 
-    font: @font-weight 13px "Roboto", sans-serif;
-    color: #00a1ab;
-
     ul {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-
-      margin-top: 0px;
-      list-style-type: none;
       li {
         transition: none;
       }
     }
-
-    display: none;
-
-    @media (min-width: @breakpoint-2col) {
-      display: block;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-      display: inline-block;
-    }
-  }
-
-  &__kundservice-link {
-    padding-bottom: 4px;
-  }
-
-  &__prenumerera-link {
-    border-radius: 3px;
-    background-color: #00a1ab;
-    color: #fff !important;
-    text-align: center;
-    padding: 3px 3px 1px 3px;
   }
 
   &__logo {
     grid-row-start: 1;
-    background-position: center;
-    background-size: @logo-size-mobile;
-    cursor: pointer;
-
     grid-column-start: 2;
-    height: @logo-size-mobile;
-
-    #HBL & {
-      background-image: url("../images/logo-hbl.svg");
-    }
-    #VN & {
-      background-image: url("../images/logo-vn.svg");
-    }
-    #ON & {
-      background-image: url("../images/logo-on.svg");
-    }
-    background-repeat: no-repeat;
-
-    @media (min-width: @breakpoint-3col) {
-      background-size: @logo-size-desktop;
-      height: @logo-size-desktop;
-    }
   }
 
   &__account {
     grid-row-start: 1;
-    align-self: center;
     grid-column-start: 1;
-    text-transform: uppercase;
-    color: @grey-deepdark;
-    display: flex;
-    align-items: center;
-    padding-left: 8px;
-    text-decoration: none;
-    color: inherit;
-    height: 32px;
 
     @media (min-width: @breakpoint-2col) {
-      grid-row-start: 2;
-      align-self: stretch;
-      padding-left: 10px;
-    }
-
-    &-icon {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      margin-right: 5px;
-      span {
-        width: 30px;
-        height: 30px;
-        @media (min-width: @breakpoint-2col) {
-          width: 19px;
-          height: 19px;
-        }
-        background-image: url("../images/icon-mosaico-profile.svg");
-        background-repeat: no-repeat;
-      }
-    }
-
-    &--active {
-      cursor: pointer;
-      .mosaico-header__account-icon {
-        span {
-          @media (min-width: @breakpoint-2col) {
-          }
-          background-image: url("../images/icon-mosaico-login.svg");
-        }
-      }
+      grid-row-start: 3;
     }
   }
 
   &__center-links {
-    grid-row-start: 2;
+    grid-row-start: 3;
     grid-column-start: 2;
-    color: @grey-deepdark;
-
-    display: none;
-
-    justify-content: center;
-    align-items: center;
-
-    a,
-    a:hover,
-    a:focus,
-    a:active {
-      text-decoration: none;
-      color: inherit;
-      height: 19px;
-      padding: 0 8px;
-    }
-
-    @media (min-width: @breakpoint-2col) {
-      display: flex;
-      flex-wrap: wrap;
-      height: 32px;
-      overflow-y: hidden;
-    }
   }
 
   &__right-buttons {
     grid-row-start: 1;
     grid-column-start: 3;
-    color: @grey-deepdark;
-
-    display: flex;
-
-    justify-content: flex-end;
-    align-items: center;
 
     @media (min-width: @breakpoint-2col) {
-      grid-row-start: 2;
+      grid-row-start: 3;
     }
   }
 
-  &__icon-button {
-    &--search {
-      margin-right: 15px;
-    }
-  }
+  .mosaico-header__icon--paper {
+    width: 100%;
+    height: 36px;
 
-  &__icon-button {
-    &--search,
-    &--menu {
-      align-items: center;
-      display: flex;
-      text-decoration: none;
-      color: black;
+    @media (max-width: @breakpoint-2col) {
+      height: 28px;
     }
-    cursor: pointer;
-  }
 
-  &__icon {
-    width: 30px;
-    height: 30px;
-    @media (min-width: @breakpoint-2col) {
-      width: 19px;
-      height: 19px;
-    }
-    display: inline-block;
-    margin-top: 1px;
-    background-repeat: no-repeat;
-    background-position: top;
-    background-size: 100%;
-    margin-right: 5px;
-    &--menu {
-      background-image: url("../images/icon-mosaico-menu.svg");
-      margin-right: 8px;
-      @media (min-width: @breakpoint-3col) {
-        margin-right: 5px;
-      }
-      .menu-open & {
-        background-image: url("../images/icon-close-mosaico.svg");
-        background-size: 20px;
-        @media (min-width: @breakpoint-2col) {
-          background-size: 13px;
-        }
-        background-position: center;
+    .static-header & {
+      height: 20px;
+      margin-top: 8px;
+
+      @media (max-width: @breakpoint-2col) {
+        margin-top: 0px;
       }
     }
-    &--search {
-      background-image: url("../images/icon-mosaico-search.svg");
+
+    #HBL & {
+      mask-image: url("../images/logo-hbl.svg");
     }
+
+    #VN & {
+      mask-image: url("../images/logo-vn.svg");
+    }
+
+    #ON & {
+      mask-image: url("../images/logo-on.svg");
+    }
+  }
+
+  .menu-open .maskimage-menu {
+    mask-image: url("../images/icon-mosaico-menu-close.svg");
   }
 }
 
 .mosaico-main-separator {
   border: 0px;
   margin: 0px;
-  background-color: @grey-almostlight;
+  background-color: var(--header-separator-color, @grey-almostlight);
   height: @separator-height;
 
   width: 100%;

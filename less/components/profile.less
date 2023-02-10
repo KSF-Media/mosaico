@@ -3,6 +3,7 @@
   width: 100%;
   font-size: 1.07rem;
   line-height: 1.5;
+  color: var(--header-color);
 
   @media (max-width: @breakpoint-3col) {
     grid-column: 1;
@@ -11,8 +12,7 @@
   &--header {
     padding-bottom: 50px;
     font-family: 'Roboto', sans-serif;
-    color: @grey-dark;
-    border-bottom: 1px solid @grey-almostlight;
+    border-bottom: 1px solid var(--profile-border-color);
   }
 
   &--data {
@@ -26,7 +26,7 @@
   }
 
   &--actions {
-    color: @grey-medium;
+    color: var(--profile-color);
     padding: 2em 0;
     div {
       padding: 11px 0;
@@ -35,7 +35,7 @@
     a {
       font-size: 0.9em;
       border-radius: 20px;
-      border: solid 1px @grey-almostlight;
+      border: solid 1px var(--profile-border-color);
       padding: 11px;
       text-decoration: none;
       color: inherit;

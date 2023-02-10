@@ -28,7 +28,7 @@ relatedExample = case mosaicoPaper of
 
 navigateToNews :: Chrome.Page -> Aff Unit
 navigateToNews page = do
-  Chrome.click (Chrome.Selector ".mosaico-header__icon-button--menu") page
+  Chrome.click (Chrome.Selector ".maskimage-menu") page
   links <- Chrome.findByText "a" "NYHETER" page
   link <- assertNonEmpty "Did not find link for the NYHETER category" links
   Chrome.clickElement link
@@ -184,7 +184,7 @@ testDraftArticle :: Test
 testDraftArticle page = do
   Chrome.goto (Chrome.URL $ site <> "artikel/draft/test") page
   -- Ensure that React hydrate has been run
-  Chrome.waitFor_ (Chrome.Selector ".mosaico-header__account-icon") page
+  Chrome.waitFor_ (Chrome.Selector ".maskimage-login") page
   let article = Chrome.Selector "article.mosaico-article"
   draftContent <- Chrome.getContent (sub " .article-element__html" article) page
   Assert.assert "Draft content matches with test data" $ draftContent == "Just some draft content"

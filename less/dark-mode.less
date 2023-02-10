@@ -1,0 +1,57 @@
+.light-variables() {
+  /* These are used in Mosaico */
+  --color-bg-body: var(--color-white);
+  --epaper-background: #eceae6;
+  --fact-box-color: #f7f5f3;
+  --footer-color: #f7f5f3;
+  --footer-text-color: #999999;
+  --header-color: #333;
+  --link-color: #00698e;
+  --site-background: #ffffff;
+  --header-separator-color: #dcd9d7;
+  --asidelist-padding: 0 0 15px 0;
+  --profile-color: @grey-medium;
+  --profile-border-color: @grey-almostlight;
+
+  --vetrina-background: #f7f5f3;
+  --vetrina-footer-background: #eceae6;
+  --vetrina-link-color: var(--link-color);
+  --vetrina-text-color: var(--text-color);
+}
+
+.dark-variables() {
+  --color-bg-body: var(--color-white);
+  --epaper-background: var(--group-content-bg);
+  --fact-box-color: var(--group-content-bg);
+  --footer-color: #000;
+  --footer-text-color: #cccccc;
+  --header-color: #eee;
+  --link-color: var(--color-blue);
+  --site-background: #121314;
+  --header-separator-color: #757575;
+  --asidelist-padding: 15px;
+  --profile-color: white;
+  --profile-border-color: white;
+
+  --vetrina-background: var(--group-content-bg);
+  --vetrina-footer-background: #25292b;
+  --vetrina-link-color: var(--link-color);
+  --vetrina-text-color: var(--text-color);
+}
+
+.theme-hbl-fi,
+.theme-hbl-fi-variables .theme-hbl-fi,
+.theme-hbl-fi-variables {
+  .light-variables();
+  @media (prefers-color-scheme: dark) {
+    .dark-variables();
+  }
+}
+.theme-hbl-fi-light-variables .theme-hbl-fi,
+.theme-hbl-fi-light-variables {
+  .light-variables();
+}
+.theme-hbl-fi-dark-variables .theme-hbl-fi,
+.theme-hbl-fi-dark-variables {
+  .dark-variables();
+}

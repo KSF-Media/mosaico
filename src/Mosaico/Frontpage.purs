@@ -76,7 +76,7 @@ render (List props) =
         tagLink a = foldMap (renderTag props.onTagClick) $ head a.tags
 
         articleTitle a = [ DOM.h3
-                             { className: "text-xl leading-tight text-gray-900 font-duplexserif"
+                             { className: "text-xl leading-tight text-aptoma-text-color font-duplexserif"
                              , children: [ DOM.text $ fromMaybe a.title a.listTitle ]
                              }
                          , DOM.div
