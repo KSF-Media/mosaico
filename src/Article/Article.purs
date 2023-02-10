@@ -4,7 +4,7 @@ import Prelude
 
 import Bottega.Models.Order (OrderSource(..))
 import Control.Alt ((<|>))
-import Data.Array (head, insertAt, length, null, snoc, take, (!!))
+import Data.Array (cons, head, insertAt, length, null, snoc, take, (!!))
 import Data.Either (Either(..), either, hush)
 import Data.Foldable (fold, foldMap)
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
@@ -168,7 +168,8 @@ render embedsAllowed imageComponent boxComponent props =
                                   <>
                                   case _.articleType <$> props.article of
                                     Right PreviewArticle ->
-                                      bodyWithoutAd
+                                      renderElem (Ad { contentUnit: "mosaico-ad__mobparad", inBody: false })
+                                      `cons` bodyWithoutAd
                                       `snoc` (if isNothing props.user then loadingSpinner else vetrina)
                                       `snoc` renderElem (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false })
                                       `snoc` advertorial

@@ -101,8 +101,8 @@ premiumArticleTest sel page = do
   Chrome.waitFor_ (sub " .mosaico-article__main .mosaico-article__body .vetrina--container" sel) page
   -- Test for premium badge
   Chrome.waitFor_ (sub " .mosaico-article__tag-n-share .premium-badge" sel) page
-  -- Test that there's at most one element of content
-  Chrome.assertNotFound (sub " .mosaico-article__body .article-element:nth-of-type(2)" sel) page
+  -- Test that there's at most three elements of content
+  Chrome.assertNotFound (sub " .mosaico-article__body .article-element:nth-of-type(4)" sel) page
 
 navigateTo :: String -> Chrome.Page -> Aff Unit
 navigateTo uuid page = do
