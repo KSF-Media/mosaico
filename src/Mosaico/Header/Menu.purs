@@ -266,11 +266,11 @@ render props@{ onLogin, onLogout } = DOM.div
                     }
                 , DOM.span
                     { className: "hidden mr-3 dark:block"
-                    , children: [ DOM.text "MÖRKT TEMA AKTIVERAD" ]
+                    , children: [ DOM.text "MÖRKT TEMA PÅ" ]
                     }
                 , DOM.span
                     { className: "block mr-3 dark:hidden"
-                    , children: [ DOM.text "MÖRKT TEMA INAKTIVERAD" ]
+                    , children: [ DOM.text "MÖRKT TEMA AV" ]
                     }
                 ]
               }

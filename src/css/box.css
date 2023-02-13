@@ -6,3 +6,8 @@
     theme("colors.gray.50 / 0%") 100%
   );
 }
+.theme-hbl-fi-dark-variables .boxinfo-fader-gradient {
+  /* We use hardcoded values here since we can't calculate
+   * opacity values through CSS variables */
+  background: linear-gradient(0deg, #313639ff 0%, #31363980 40%, #31363900 100%);
+}
