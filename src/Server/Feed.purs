@@ -5,7 +5,7 @@ import Prelude
 import Control.Parallel.Class (parallel, sequential)
 import Data.Array (head, fromFoldable, null)
 import Data.Either (Either(..))
-import Data.Foldable (fold, foldMap)
+import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
 import Data.Monoid (guard)
 import Data.Newtype (unwrap)
@@ -22,10 +22,10 @@ import Lettera.Models (Category(..), CategoryType(..), frontpageCategoryLabel, u
 import Mosaico.Error (notFoundWithAside)
 import Mosaico.Cache as Cache
 import Mosaico.Cache (parallelWithCommonLists)
-import Mosaico.FallbackImage (fallbackImageShare)
 import Mosaico.Feed (ArticleFeed(..), ArticleFeedType(..), mkArticleFeed)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
 import Mosaico.Frontpage.Models (Hook(..)) as Frontpage
+import Mosaico.Meta as Meta
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.Search as Search
 import Mosaico.Server.Article (notFound)
@@ -35,7 +35,7 @@ import Mosaico.Server.Template (appendHead, appendMosaico, appendVars, cloneTemp
 import Mosaico.Webview as Webview
 import Payload.ResponseTypes (Response, ResponseBody(..))
 import Payload.Server.Response as Response
-import React.Basic.DOM (div, meta, text) as DOM
+import React.Basic.DOM (div, text) as DOM
 import React.Basic.DOM.Server (renderToStaticMarkup) as DOM
 
 frontpage :: Env -> {} -> Aff (Response ResponseBody)
@@ -225,16 +225,8 @@ renderCategoryPage env limit (Category category@{ label, type: categoryType, url
           , article: Nothing
           , isFullWidth: false
           }
-    title = if label == frontpageCategoryLabel then Paper.paperName mosaicoPaper else unwrap label
-    startpageDescription = Paper.paperDescription mosaicoPaper
-    startpageMeta = DOM.renderToStaticMarkup $
-      fold
-        [ DOM.meta { property: "og:type", content: "website" }
-        , DOM.meta { property: "og:title", content: title }
-        , DOM.meta { property: "og:image", content: fallbackImageShare mosaicoPaper }
-        , foldMap (\content -> DOM.meta { property: "og:description", content }) startpageDescription
-        , foldMap (\content -> DOM.meta { name: "description", content }) startpageDescription
-        ]
+    title = if label == frontpageCategoryLabel then (Paper.paperName mosaicoPaper) else unwrap label
+    startpageMeta = DOM.renderToStaticMarkup $ Meta.defaultMeta $ Just title
 
 searchPage :: Env -> { query :: { search :: Maybe String, limit :: Maybe Int } } -> Aff (Response ResponseBody)
 searchPage env { query: { search, limit } } = do

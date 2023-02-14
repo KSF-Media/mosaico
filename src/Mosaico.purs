@@ -61,13 +61,13 @@ import Mosaico.Header.Menu as Menu
 import Mosaico.LatestList as LatestList
 import Mosaico.LoginModal as LoginModal
 import Mosaico.MainContent (jumpToMainContent, mainContent)
+import Mosaico.Meta as Meta
 import Mosaico.MostReadList as MostReadList
 import Mosaico.Paper (mosaicoPaper, _mosaicoPaper)
 import Mosaico.Profile as Profile
 import Mosaico.Routes as Routes
 import Mosaico.Search as Search
 import Mosaico.StaticPage (StaticPageResponse(..), fetchStaticPage, getInitialStaticPageContent, getInitialStaticPageScript)
-import Mosaico.StaticPageMeta (staticPageTitle)
 import Mosaico.Triggerbee (addToTriggerbeeObj, sendTriggerbeeEvent)
 import Mosaico.Webview as Webview
 import React.Basic (JSX)
@@ -157,10 +157,13 @@ getPathFromLocationState locationState = Routes.stripFragment $ locationState.pa
 mosaicoComponent
   :: InitialValues
   -> Props
-  -> Render Unit (UseEffect (Tuple Routes.MosaicoPage (Maybe Cusno)) (UseEffect Unit (UseState State Unit))) JSX
+  -> Render Unit
+            (UseEffect (Tuple Routes.MosaicoPage (Maybe Cusno))
+              (UseEffect (Tuple Routes.MosaicoPage (Maybe (Either Unit String)))
+                (UseEffect Unit (UseState State Unit))))
+            JSX
 mosaicoComponent initialValues props = React.do
-  let setTitle t = Web.setTitle t =<< Web.document =<< Web.window
-      initialCatMap = if null props.categoryStructure then Map.empty
+  let initialCatMap = if null props.categoryStructure then Map.empty
                       else categoriesMap $ correctionsCategory `cons` props.categoryStructure
       initialPath = getPathFromLocationState initialValues.locationState
   state /\ setState <- useState initialValues.state
@@ -187,14 +190,12 @@ mosaicoComponent initialValues props = React.do
         case UUID.parseUUID articleId of
           Nothing -> liftEffect $ setState _ { article = Just $ Left unit }
           Just uuid -> do
-            liftEffect $ setTitle "Laddar..."
             liftEffect $ setState _ { article = Nothing }
             cache <- Aff.AVar.read initialValues.cache
             eitherArticle <- Cache.parallelWithCommonActions cache setFeed $
                              Lettera.getArticleAuth uuid mosaicoPaper
             liftEffect case eitherArticle of
               Right a@{ article } -> do
-                liftEffect $ setTitle article.title
                 Article.evalEmbeds article
                 when withAnalytics $
                   sendArticleAnalytics article $ join state.user
@@ -205,7 +206,6 @@ mosaicoComponent initialValues props = React.do
                   , singleAdvertorial = randomAdvertorial
                   }
               Left _ -> do
-                liftEffect $ setTitle "Något gick fel"
                 setState _ { article = Just $ Left unit }
 
   useEffectOnce do
@@ -284,6 +284,12 @@ mosaicoComponent initialValues props = React.do
       onPaywallEvent = do
         maybe (pure unit) (\u -> loadArticle u true) $ _.article.uuid <$> (join <<< map hush $ state.article)
 
+  useEffect (state.route /\ map (map _.article.title) state.article) do
+    let setTitle t = Web.setTitle t =<< Web.document =<< Web.window
+    setTitle $ Meta.pageTitle state.route state.article
+    Meta.updateMeta $ Meta.getMeta state.route state.article
+    pure mempty
+
   useEffect (state.route /\ map _.cusno (join state.user)) do
     case state.route of
       Routes.Frontpage -> setFrontpage (CategoryFeed frontpageCategoryLabel) Nothing
@@ -318,19 +324,6 @@ mosaicoComponent initialValues props = React.do
               _ -> mempty
       Routes.DeployPreview -> liftEffect $ setState _  { route = Routes.Frontpage }
       _ -> pure unit
-
-    case state.route of
-      Routes.Frontpage -> setTitle $ Paper.paperName mosaicoPaper
-      Routes.TagPage tag _ -> setTitle $ unwrap tag
-      Routes.SearchPage _ _ -> setTitle "Sök"
-      Routes.ProfilePage -> setTitle "Min profil"
-      Routes.MenuPage -> setTitle "Meny"
-      Routes.NotFoundPage _ -> setTitle "Oj... 404"
-      Routes.CategoryPage (Category c) _ -> setTitle $ unwrap c.label
-      Routes.EpaperPage -> setTitle "E-Tidningen"
-      Routes.StaticPage page -> setTitle (staticPageTitle page mosaicoPaper)
-      _ -> pure unit
-
 
     let scrollToYPos y = Web.window >>= Web.scroll 0 y
     case state of

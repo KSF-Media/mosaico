@@ -6,22 +6,19 @@ import Data.Argonaut.Core as JSON
 import Data.Argonaut.Encode (encodeJson)
 import Data.Array (null)
 import Data.Either (Either(..))
-import Data.Foldable (fold, foldMap)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.String as String
+import Data.Foldable (foldMap)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..))
 import Data.Tuple.Nested ((/\))
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import KSF.Paper as Paper
-import Lettera.ArticleSchema (renderAsJsonLd)
 import Lettera.Models (ArticleStub, ArticleType(..), FullArticle, articleStubToJson, articleToJson, notFoundArticle)
 import Mosaico.Article as Article
 import Mosaico.Article.Advertorial as Advertorial
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
-import Mosaico.FallbackImage (fallbackImageShare)
 import Mosaico.Feed (ArticleFeed(..), ArticleFeedType(..), mkArticleFeed)
+import Mosaico.Meta as Meta
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.Server.Env (Env)
 import Mosaico.Server.Output (MainContent, MainContentType(..), htmlContent, renderToString)
@@ -29,7 +26,6 @@ import Mosaico.Server.Template (appendHead, appendMosaico, appendVars, cloneTemp
 import Payload.ResponseTypes (Response, ResponseBody(..))
 import Payload.Server.Response as Response
 import React.Basic (JSX)
-import React.Basic.DOM (meta, script, text, title) as DOM
 import React.Basic.DOM.Server (renderToStaticMarkup) as DOM
 
 renderArticle
@@ -83,29 +79,7 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
               , "breakingNews"      /\ JSON.jsonNull
               , "headless"          /\ JSON.fromBoolean headless
               ]
-            metaTags =
-                DOM.renderToStaticMarkup $
-                  fold
-                    [ DOM.meta { property: "og:type", content: "article" }
-                    , DOM.meta { property: "og:title", content: article.title }
-                    , DOM.meta { property: "og:url", content: fromMaybe "" article.shareUrl }
-                    , DOM.meta { property: "og:description", content: description }
-                    , DOM.meta { property: "og:image", content: maybe (fallbackImageShare mosaicoPaper) _.url article.mainImage }
-                    , DOM.meta { name: "description", content: description }
-                    , foldMap (const $ DOM.meta { name: "robots", content: "max-image-preview:large"}) article.mainImage
-                    , DOM.title { children: [ DOM.text article.title ] }
-                    , DOM.script
-                        { type: "application/ld+json"
-                        , dangerouslySetInnerHTML:
-                            { __html:
-                                String.replaceAll (String.Pattern "<") (String.Replacement "\\u003c")
-                                  $ JSON.stringify
-                                  $ renderAsJsonLd article
-                            }
-                        }
-                    ]
-                where
-                  description = if null article.preamble then fold (Paper.paperDescription mosaicoPaper) else fold article.preamble
+            metaTags = DOM.renderToStaticMarkup $ Meta.articleMeta article
 
         appendMosaico mosaicoString htmlTemplate >>= appendVars (mkWindowVariables windowVars) >>= appendHead metaTags
 

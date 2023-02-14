@@ -34,17 +34,17 @@ import Mosaico.Cache (parallelWithCommonLists)
 import Mosaico.Cache as Cache
 import Mosaico.Epaper as Epaper
 import Mosaico.Error (notFoundWithAside)
-import Mosaico.FallbackImage (fallbackImageShare)
 import Mosaico.Header.Menu as Menu
+import Mosaico.Meta as Meta
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.Profile as Profile
+import Mosaico.Routes as Routes
 import Mosaico.Server.Article (renderArticle, notFound, notFoundArticleContent)
 import Mosaico.Server.Env (Env, newEnv, stdVars)
 import Mosaico.Server.Feed as Server.Feed
 import Mosaico.Server.Output (MainContentType(..), htmlContent, jsContent, renderToString)
 import Mosaico.Server.Template (appendHead, appendMosaico, appendVars, cloneTemplate, makeTitle, mkWindowVariables, renderTemplateHtml)
 import Mosaico.Server.Test as Server.Test
-import Mosaico.StaticPageMeta (staticPageTitle, staticPageDescription)
 import Mosaico.Version (mosaicoVersion)
 import Node.HTTP as HTTP
 import Payload.Headers as Headers
@@ -56,8 +56,7 @@ import Payload.Server.Handlers as Handlers
 import Payload.Server.Response as Response
 import Payload.Server.Status as Status
 import Payload.Spec (type (:), GET, Guards, Spec(Spec), Nil)
-import React.Basic (fragment) as DOM
-import React.Basic.DOM (div, meta, script) as DOM
+import React.Basic.DOM (div, script) as DOM
 import React.Basic.DOM.Server (renderToStaticMarkup) as DOM
 import React.Basic.Events (handler_)
 
@@ -401,23 +400,15 @@ staticPage env { params: { pageName } } = do
               ]
         appendMosaico mosaicoString htmlTemplate
           >>= appendVars (mkWindowVariables windowVars)
-          >>= appendHead (makeTitle title <> staticPageMeta)
+          >>= appendHead (makeTitle title <> renderedMeta)
       pure $ htmlContent $ Response.ok $ StringBody $ renderTemplateHtml html
     Nothing ->
       let maybeMostRead = if null mostReadArticles then Nothing else Just mostReadArticles
           maybeLatest = if null latestArticles then Nothing else Just latestArticles
       in notFound env { type: StaticPageContent pageName, content: notFoundWithAside } maybeMostRead maybeLatest
   where
-    title = staticPageTitle pageName mosaicoPaper
-    description = staticPageDescription pageName mosaicoPaper
-    staticPageMeta = DOM.renderToStaticMarkup $
-      DOM.fragment
-        [ DOM.meta { property: "og:type", content: "website" }
-        , DOM.meta { property: "og:title", content: title }
-        , DOM.meta { property: "og:image", content: fallbackImageShare mosaicoPaper }
-        , foldMap (\content -> DOM.meta { property: "og:description", content }) description
-        , foldMap (\content -> DOM.meta { name: "description", content }) description
-        ]
+    title = Meta.pageTitle (Routes.StaticPage pageName) Nothing
+    renderedMeta = DOM.renderToStaticMarkup $ Meta.staticPageMeta pageName
 
 profilePage :: Env -> {} -> Aff (Response ResponseBody)
 profilePage env {} = do
