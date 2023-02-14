@@ -346,7 +346,7 @@ render embedsAllowed imageComponent boxComponent props =
           alt = fromMaybe "" $ _.caption =<< img
       in
         DOM.a
-          { className: "block p-3 text-black no-underline bg-advertorial"
+          { className: "block p-3 text-black no-underline bg-advertorial dark:text-white"
           , href: "/artikel/" <> article.uuid
           , onClick: props.onArticleClick article
           , children:
@@ -355,25 +355,30 @@ render embedsAllowed imageComponent boxComponent props =
                   , children: case article.articleTypeDetails of
                         Just { title: "companyName", description: Just company } ->
                           [ DOM.span
-                              { className: "mr-1 text-gray-500 font-roboto"
+                              { className: "mr-1 text-gray-500 font-roboto dark:text-white"
                               , children: [ DOM.text "ANNONS: " ]
                               }
                           , DOM.span
-                            { className: "mr-1 text-black font-duplexserif"
+                            { className: "mr-1 text-black font-duplexserif dark:text-white"
                             , children: [ DOM.text $ toUpper company ]
                             }
                           ]
                         _ ->
                           [ DOM.span
-                              { className: "mr-1 text-gray-500 font-roboto"
+                              { className: "mr-1 text-gray-500 font-roboto dark:text-white"
                               , children: [ DOM.text "ANNONS" ]
                               }
                           ]
                   }
-              , DOM.img
-                  { className: "w-auto max-w-full h-auto max-h-96"
-                  , src: imgSrc
-                  , alt
+              , DOM.div
+                  { className: "flex overflow-y-hidden items-center w-full max-h-96"
+                  , children:
+                      [ DOM.img
+                          { className: "overflow-y-hidden w-auto max-w-full h-fit"
+                          , src: imgSrc
+                          , alt
+                          }
+                      ]
                   }
               , DOM.h2
                   { className: "mt-3 text-3xl font-semibold break-words font-robotoslab"
