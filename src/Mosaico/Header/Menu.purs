@@ -19,6 +19,8 @@ import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (capture_)
 import React.Basic.Events (EventHandler)
 
+foreign import startsWith :: String -> String -> Boolean
+
 type Props =
   { changeRoute :: String -> Effect Unit
   , categoryStructure :: Array Category
@@ -134,33 +136,15 @@ render props@{ onLogin, onLogout } = DOM.div
       in acc `snoc` section
 
     bottomLinks :: Array JSX
-    bottomLinks = [ renderCategory { title: "KONTAKTA OSS"
-                    , subsections: []
-                    , url: "/sida/kontakt"
-                    , onClick: capture_ $ props.changeRoute "/sida/kontakt"
-                    }
-                  , renderCategory { title: "FÖRETAGSANNONSER"
-                    , subsections: []
-                    , url: "https://www.ksfmedia.fi/"
-                    , onClick: mempty
-                    }
+    bottomLinks = [ renderBottomLink { title: "KONTAKTA OSS" , url: "/sida/kontakt" }
+                  , renderBottomLink { title: "FÖRETAGSANNONSER" , url: "https://www.ksfmedia.fi/" }
                   , maybe mempty renderPrivateAnnonserCategory $ privatAnnonserLink mosaicoPaper
-                  , renderCategory { title: "JOBBA HOS OSS"
-                    , subsections: []
-                    , url: "https://www.ksfmedia.fi/jobba-hos-oss"
-                    , onClick: mempty
-                    }
-                  ] <> paperSpecificLinks mosaicoPaper
-                  <> [ renderCategory { title: "NYHETSAPPAR"
-                    , subsections: []
-                    , url: "/sida/app"
-                    , onClick: capture_ $ props.changeRoute "/sida/app"
-                    }
-                  , renderCategory { title: "NYHETSBREV"
-                    , subsections: []
-                    , url: "/sida/nyhetsbrev"
-                    , onClick: capture_ $ props.changeRoute "/sida/nyhetsbrev"
-                    }
+                  , renderBottomLink { title: "JOBBA HOS OSS" , url: "https://www.ksfmedia.fi/jobba-hos-oss" }
+                  ]
+                  <> paperSpecificLinks mosaicoPaper
+                  <>
+                  [ renderBottomLink { title: "NYHETSAPPAR" , url: "/sida/app" }
+                  , renderBottomLink { title: "NYHETSBREV" , url: "/sida/nyhetsbrev" }
                   ]
 
     privatAnnonserLink :: Paper -> Maybe String
@@ -170,26 +154,14 @@ render props@{ onLogin, onLogout } = DOM.div
     privatAnnonserLink _ = Nothing
 
     renderPrivateAnnonserCategory :: String -> JSX
-    renderPrivateAnnonserCategory url =
-      renderCategory
-        { title: "PRIVATANNONSER"
-        , subsections: []
-        , url
-        , onClick: mempty
-        }
+    renderPrivateAnnonserCategory url = renderBottomLink { title: "PRIVATANNONSER" , url }
 
     paperSpecificLinks :: Paper -> Array JSX
     paperSpecificLinks VN = vastranylandMenuLinks
     paperSpecificLinks _ = mempty
 
     vastranylandMenuLinks :: Array JSX
-    vastranylandMenuLinks =
-      [ renderCategory { title: "ANSLAGSTAVLAN"
-        , subsections: []
-        , url: "/sida/anslagstavlan"
-        , onClick: capture_ $ props.changeRoute "/sida/anslagstavlan"
-        }
-      ]
+    vastranylandMenuLinks = [ renderBottomLink { title: "ANSLAGSTAVLAN" , url: "/sida/anslagstavlan" } ]
 
     renderLoadingIcon :: JSX
     renderLoadingIcon = DOM.div
@@ -209,7 +181,7 @@ render props@{ onLogin, onLogout } = DOM.div
 
     renderCategoryHeader :: Array JSX -> JSX
     renderCategoryHeader children = DOM.div
-      { className: "justify-center text-sm lg:flex lg:flex-row lg:justify-around"
+      { className: "text-sm lg:flex lg:flex-row"
       , children:
           [ DOM.div
               { className: "py-4 text-sm font-semibold font-roboto"
@@ -221,21 +193,22 @@ render props@{ onLogin, onLogout } = DOM.div
     renderCategory :: Section -> JSX
     renderCategory { subsections, title, url, onClick } = DOM.div
       { className: "lg:my-8 lg:flex lg:flex-col lg:min-w-[130px] lg:px-1"
-      , children: [ renderCategoryHeader
-                      [ DOM.h2_
-                          [ DOM.a
-                              { href: url
-                              , children: [ DOM.text title ]
-                              , onClick
-                              , className: "block"
-                              }
-                          ]
-                      ]
-                  , DOM.div
-                      { className: "lg:flex lg:flex-col"
-                      , children: renderSubcategory <$> subsections
+      , children:
+          [ renderCategoryHeader
+              [ DOM.h2_
+                  [ DOM.a
+                      { href: url
+                      , children: [ DOM.text title ]
+                      , onClick
+                      , className: "block"
                       }
                   ]
+              ]
+          , DOM.div
+              { className: "lg:flex lg:flex-col"
+              , children: renderSubcategory <$> subsections
+              }
+          ]
       }
 
     renderSubcategory :: Subsection -> JSX
@@ -251,13 +224,30 @@ render props@{ onLogin, onLogout } = DOM.div
           ]
       }
 
+    renderBottomLink :: { title :: String , url :: String } -> JSX
+    renderBottomLink { title, url } = DOM.div
+      { className: "justify-center py-4 text-sm font-semibold font-roboto lg:my-8 lg:px-2 lg:flex lg:flex-row lg:justify-around"
+      , children:
+          [ DOM.h2_
+              [ DOM.a
+                  { href: url
+                  , children: [ DOM.text title ]
+                  , onClick:
+                      if startsWith "https" url
+                      then mempty
+                      else capture_ $ props.changeRoute url
+                  , className: "block"
+                  }
+              ]
+          ]
+      }
+
     themeToggler :: JSX
-    themeToggler =
-      DOM.div
-        { className: "flex py-4 lg:justify-center"
-        , children: [
-            DOM.button
-              { className: "flex flex-row-reverse items-center text-sm font-semibold lg:flex-row font-roboto"
+    themeToggler = DOM.div
+      { className: "flex py-4 lg:justify-center"
+      , children:
+          [ DOM.button
+              { className: "flex flex-row-reverse items-center text-sm font-semibold font-roboto lg:flex-row"
               , onClick: capture_ toggleMode
               , children:
                 [ DOM.i
@@ -274,5 +264,5 @@ render props@{ onLogin, onLogout } = DOM.div
                     }
                 ]
               }
-        ]
+          ]
       }
