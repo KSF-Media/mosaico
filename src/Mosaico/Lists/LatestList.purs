@@ -20,7 +20,7 @@ type Props =
 render :: Props -> JSX
 render props =
   DOM.div
-    { className: "p-2 border border-gray-100 md:mt-4 dark:border-gray-500 mosaico-asidelist mosaico-asidelist__latest"
+    { className: "p-2 border border-gray-100 dark:border-gray-500 mosaico-asidelist mosaico-asidelist__latest"
     , children:
         [ DOM.h2
             { className: "my-3 mr-0 ml-2 text-lg font-bold uppercase lg:ml-3 font-roboto text-brand"

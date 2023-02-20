@@ -220,7 +220,7 @@ render embedsAllowed imageComponent boxComponent props =
                 , children:
                     map
                         (\author -> DOM.div
-                          { className: "mb-1 text-sm font-medium text-aptoma-text-color"
+                          { className: "mb-1 text-sm font-medium text-aptoma-text-color dark:text-aptoma-white"
                           , children: [ guard (article.articleType == Opinion) $
                                         renderOpinionType article.articleTypeDetails
                                       , DOM.a
@@ -265,7 +265,7 @@ render embedsAllowed imageComponent boxComponent props =
 
     renderOpinionType detail =
       foldMap (\opiniontype -> DOM.span
-                              { className: "inline-block mr-2 text-base font-bold text-gray-900 uppercase font-duplexserif"
+                              { className: "inline-block mr-2 text-base font-bold text-gray-900 uppercase font-duplexserif dark:text-aptoma-white"
                               , children: [ DOM.text opiniontype ]
                               }) $ _.title <$> detail
 
@@ -346,7 +346,7 @@ render embedsAllowed imageComponent boxComponent props =
           alt = fromMaybe "" $ _.caption =<< img
       in
         DOM.a
-          { className: "block p-3 text-black no-underline bg-advertorial dark:text-white"
+          { className: "block p-3 text-black no-underline bg-advertorial dark:text-aptoma-white"
           , href: "/artikel/" <> article.uuid
           , onClick: props.onArticleClick article
           , children:
@@ -355,17 +355,17 @@ render embedsAllowed imageComponent boxComponent props =
                   , children: case article.articleTypeDetails of
                         Just { title: "companyName", description: Just company } ->
                           [ DOM.span
-                              { className: "mr-1 text-gray-500 font-roboto dark:text-white"
+                              { className: "mr-1 text-gray-500 font-roboto dark:text-aptoma-white"
                               , children: [ DOM.text "ANNONS: " ]
                               }
                           , DOM.span
-                            { className: "mr-1 text-black font-duplexserif dark:text-white"
+                            { className: "mr-1 text-black font-duplexserif dark:text-aptoma-white"
                             , children: [ DOM.text $ toUpper company ]
                             }
                           ]
                         _ ->
                           [ DOM.span
-                              { className: "mr-1 text-gray-500 font-roboto dark:text-white"
+                              { className: "mr-1 text-gray-500 font-roboto dark:text-aptoma-white"
                               , children: [ DOM.text "ANNONS" ]
                               }
                           ]

@@ -157,6 +157,7 @@ module.exports = {
       brand: "var(--brand-color)", // defined in _site.scss
       advertorial: "var(--color-advertorial, #fff3e6)", // defined in Aptoma's CSS
       aptoma: {
+        "white": "var(--color-white, #ffffff)",
         "group-content-bg": "var(--group-content-bg, #ffffff)",
         "text-color": "var(--text-color, #000000)",
         "site-background": "var(--site-background, #ffffff)",
