@@ -128,7 +128,7 @@ render embedsAllowed imageComponent boxComponent props =
         articleCategory = head $ getArticleCategories props.article
 
     in DOM.article
-      { className: "flex justify-center mx-3 mosaico-article" <> (guard (isErrorArticle props) $ " mosaico-article-error")
+      { className: "md:flex md:justify-center mx-3 mosaico-article" <> (guard (isErrorArticle props) $ " mosaico-article-error")
       , _data: Object.fromFoldable $ Tuple "category" <$> (articleCategory <|> Just "")
       , children:
         [ DOM.div {className: "flex flex-col items-center lg:w-240"
