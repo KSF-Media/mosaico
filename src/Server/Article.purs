@@ -43,7 +43,7 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
             case article.articleType of
               Advertorial -> renderWithComponents Advertorial.render { article }
               _ ->
-                renderWithComponents (Article.render Nothing)
+                renderWithComponents (Article.render (\_ -> mempty))
                   { paper: mosaicoPaper
                   , article: Right a
                   , onLogin: mempty
@@ -92,7 +92,7 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
 notFoundArticleContent :: MainContent
 notFoundArticleContent =
   { type: ArticleContent
-  , content: Article.render Nothing (Image.render mempty) (Box.render mempty)
+  , content: Article.render (\_ -> mempty) (Image.render mempty) (Box.render mempty)
     { paper: mosaicoPaper
     , article: Right notFoundArticle
     , onLogin: mempty

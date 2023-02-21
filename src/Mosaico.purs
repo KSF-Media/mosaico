@@ -49,7 +49,7 @@ import Mosaico.Article.Advertorial as Advertorial
 import Mosaico.Cache as Cache
 import Mosaico.Epaper as Epaper
 import Mosaico.Error as Error
-import Mosaico.Eval (ScriptTag(..), evalExternalScripts)
+import Mosaico.Eval as Eval
 import Mosaico.Feed (ArticleFeed(..), ArticleFeedType(..), JSInitialFeed, parseFeed)
 import Mosaico.Feed as Feed
 import Mosaico.Footer (footer)
@@ -70,7 +70,7 @@ import Mosaico.Search as Search
 import Mosaico.StaticPage (StaticPageResponse(..), fetchStaticPage, getInitialStaticPageContent, getInitialStaticPageScript)
 import Mosaico.Triggerbee (addToTriggerbeeObj, sendTriggerbeeEvent)
 import Mosaico.Webview as Webview
-import React.Basic (JSX)
+import React.Basic (JSX, fragment)
 import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (capture_)
 import React.Basic.Hooks (Component, Render, UseEffect, UseState, component, useEffect, useEffectOnce, useState, (/\))
@@ -119,6 +119,7 @@ type Components =
   , epaperComponent :: Epaper.Props -> JSX
   , advertorialComponent :: Advertorial.Props -> JSX
   , headerComponent :: Header.Props -> JSX
+  , nagbarComponent :: Eval.Props -> JSX
   }
 
 type Props =
@@ -313,14 +314,14 @@ mosaicoComponent initialValues props = React.do
         | Just (StaticPageResponse r) <- state.staticPage
         , r.pageName == page
         -> when (isJust state.prevRoute) do
-             foldMap (\p -> evalExternalScripts [ScriptTag $ "<script>" <> p <> "</script>"]) r.pageScript
+             foldMap (\p -> Eval.evalExternalScripts [Eval.ScriptTag $ "<script>" <> p <> "</script>"]) r.pageScript
         | otherwise ->
           Aff.launchAff_ do
             staticPage <- fetchStaticPage page
             liftEffect $ setState _  { staticPage = Just staticPage }
             case staticPage of
               StaticPageResponse r
-                | Just p <- r.pageScript -> liftEffect $ evalExternalScripts [ScriptTag $ "<script>" <> p <> "</script>"]
+                | Just p <- r.pageScript -> liftEffect $ Eval.evalExternalScripts [Eval.ScriptTag $ "<script>" <> p <> "</script>"]
               _ -> mempty
       Routes.DeployPreview -> liftEffect $ setState _  { route = Routes.Frontpage }
       _ -> pure unit
@@ -434,6 +435,7 @@ getInitialValues = do
   epaperComponent      <- Epaper.component
   advertorialComponent <- Advertorial.component
   headerComponent      <- Header.component
+  nagbarComponent      <- Eval.embedNagbar
   pure
     { state:
         { article: Nothing
@@ -462,6 +464,7 @@ getInitialValues = do
         , epaperComponent
         , advertorialComponent
         , headerComponent
+        , nagbarComponent
         }
     , catMap
     , cache
@@ -621,7 +624,10 @@ render props setState state components router onPaywallEvent =
        Routes.StaticPage _ -> mosaicoLayoutNoAside $ case state.staticPage of
          Nothing -> loadingSpinner
          Just (StaticPageResponse page)  ->
-           DOM.div { className: "mosaico--static-page", dangerouslySetInnerHTML: { __html: page.pageContent } }
+           fragment
+             [ if page.pageName == "korsord" then components.nagbarComponent { isArticle: false } else mempty
+             , DOM.div { className: "mosaico--static-page", dangerouslySetInnerHTML: { __html: page.pageContent } }
+             ]
          Just StaticPageNotFound -> Error.notFoundWithAside
          Just StaticPageOtherError -> Error.somethingWentWrong
        Routes.DebugPage _ -> frontpageNoHeader Nothing Nothing $ HashMap.lookup (CategoryFeed (CategoryLabel "debug")) state.feeds

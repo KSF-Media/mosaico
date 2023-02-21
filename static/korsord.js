@@ -1,13 +1,26 @@
-var wrapper = document.getElementById("keesing-crosswords");
+if (typeof window !== "undefined") {
+  /* Wait for the main mosaico script to be loaded, which
+   * defines the consentedToEmbeddedScripts promise */
+  const interval = setInterval(() => {
+    if (window.consentedToEmbeddedScripts) {
+      clearInterval(interval);
 
-var cwDiv = document.createElement("div");
-cwDiv.setAttribute("id", "puzzle-portal");
-cwDiv.setAttribute("data-customerid", "ksf");
-cwDiv.setAttribute("data-publicpath", "https://web.keesing.com/pub/portal/v2.20.9/dist/");
+      window.consentedToEmbeddedScripts.then((hasConsent) => {
+        if (!hasConsent) return;
+        var wrapper = document.getElementById("keesing-crosswords");
 
-var cwScript = document.createElement("script");
-cwScript.src = "https://web.keesing.com/pub/portal/v2.20.9/dist/main-bundle.js";
-cwScript.type = "text/javascript";
+        var cwDiv = document.createElement("div");
+        cwDiv.setAttribute("id", "puzzle-portal");
+        cwDiv.setAttribute("data-customerid", "ksf");
+        cwDiv.setAttribute("data-publicpath", "https://web.keesing.com/pub/portal/v2.20.9/dist/");
 
-wrapper.appendChild(cwDiv);
-wrapper.appendChild(cwScript);
+        var cwScript = document.createElement("script");
+        cwScript.src = "https://web.keesing.com/pub/portal/v2.20.9/dist/main-bundle.js";
+        cwScript.type = "text/javascript";
+
+        wrapper.appendChild(cwDiv);
+        wrapper.appendChild(cwScript);
+      });
+    }
+  });
+}

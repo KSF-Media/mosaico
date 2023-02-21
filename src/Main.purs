@@ -34,6 +34,7 @@ import Mosaico.Cache (parallelWithCommonLists)
 import Mosaico.Cache as Cache
 import Mosaico.Epaper as Epaper
 import Mosaico.Error (notFoundWithAside)
+import Mosaico.Eval as Eval
 import Mosaico.Header.Menu as Menu
 import Mosaico.Meta as Meta
 import Mosaico.Paper (mosaicoPaper)
@@ -56,6 +57,7 @@ import Payload.Server.Handlers as Handlers
 import Payload.Server.Response as Response
 import Payload.Server.Status as Status
 import Payload.Spec (type (:), GET, Guards, Spec(Spec), Nil)
+import React.Basic (fragment) as DOM
 import React.Basic.DOM (div, script) as DOM
 import React.Basic.DOM.Server (renderToStaticMarkup) as DOM
 import React.Basic.Events (handler_)
@@ -373,13 +375,16 @@ staticPage env { params: { pageName } } = do
     Just staticPageContent -> do
       let staticPageScript = HashMap.lookup (pageName <> ".js") env.staticPages
           htmlTemplate = cloneTemplate env.htmlTemplate
-          staticPageJsx =
-            DOM.div { className: "mosaico--static-page"
-                    , children:
-                        [ DOM.div { dangerouslySetInnerHTML: { __html: staticPageContent } }
-                        , foldMap (\script -> DOM.script { className: "mosaico--static-page_script", dangerouslySetInnerHTML: { __html: script } }) staticPageScript
-                        ]
-                    }
+          staticPageJsx = DOM.fragment
+            [ if pageName == "korsord" then Eval.render Nothing false else mempty
+            , DOM.div
+                { className: "mosaico--static-page"
+                , children:
+                    [ DOM.div { dangerouslySetInnerHTML: { __html: staticPageContent } }
+                    , foldMap (\script -> DOM.script { className: "mosaico--static-page_script", dangerouslySetInnerHTML: { __html: script } }) staticPageScript
+                    ]
+                }
+            ]
       let mosaicoString =
             renderToString
               { mainContent:

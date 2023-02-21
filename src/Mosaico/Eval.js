@@ -31,6 +31,7 @@ if (typeof window !== "undefined") {
       }
     });
   };
+  areAdsAllowed();
 }
 
 export const consentedToEmbeddedScripts = (typeof window !== "undefined") && new Promise(resolve => {
@@ -45,8 +46,11 @@ export const consentedToEmbeddedScripts = (typeof window !== "undefined") && new
   }
 });
 
+if (typeof window !== "undefined") {
+  window.consentedToEmbeddedScripts = consentedToEmbeddedScripts;
+}
+
 export async function evalExternalScriptsImpl(scripts) {
-  areAdsAllowed();
   if ((await consentedToEmbeddedScripts) == true) {
     if (typeof document !== "undefined") {
       // Later scripts might depend on earlier scripts being executed,
