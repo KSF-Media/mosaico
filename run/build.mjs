@@ -111,10 +111,7 @@ export async function runBuild() {
 
     const programmaticAdsScriptUrl = `https://cdn.ksfmedia.fi/assets/js/programmatic-ads-scripts/programmatic-ads-${process.env.PAPER}.js`;
 
-    // Remove conditional when HBL and VN programmatic ads are switched on
-    if (process.env.PAPER == "on") {
-      template("#programmatic-ads-js").attr("src", programmaticAdsScriptUrl);
-    }
+    template("#programmatic-ads-js").attr("src", programmaticAdsScriptUrl);
 
     template(".mosaico-asset").each((ix, elem) => {
       const src = template(elem).attr("src");
