@@ -43,7 +43,7 @@ import KSF.User.Cusno (Cusno)
 import Lettera as Lettera
 import Lettera.Models (Article, ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, MosaicoArticleType(..), articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, parseDraftArticle, readArticleType, tagToURIComponent)
 import Mosaico.Ad (ad) as Mosaico
-import Mosaico.Analytics (sendArticleAnalytics, sendPageView)
+import Mosaico.Analytics (sendArticleAnalytics, sendPageView, setUserVariable)
 import Mosaico.Article as Article
 import Mosaico.Article.Advertorial as Advertorial
 import Mosaico.Cache as Cache
@@ -216,7 +216,7 @@ mosaicoComponent initialValues props = React.do
     alreadySentInitialAnalytics <- AVar.new false
     let initialSendAnalytics u = do
           foldMap (\user -> runEffectFn1 sendTriggerbeeEvent user.email) u
-          triggerbeeUser <- case u of
+          userStatus <- case u of
                 Just user -> do
                   now <- JSDate.now
                   let isSubscriber = any (isActive) user.subs
@@ -226,7 +226,8 @@ mosaicoComponent initialValues props = React.do
                         Nothing  -> true
                   pure { isLoggedIn: true, isSubscriber }
                 Nothing -> pure { isLoggedIn: false, isSubscriber: false }
-          runEffectFn1 addToTriggerbeeObj triggerbeeUser
+          runEffectFn1 addToTriggerbeeObj userStatus
+          setUserVariable u userStatus.isSubscriber
           case props.article of
             Just a -> sendArticleAnalytics a.article u
             Nothing -> pure unit
@@ -527,6 +528,7 @@ render props setState state components router onPaywallEvent =
                      Just end -> now <= end
                      Nothing  -> true
                runEffectFn1 addToTriggerbeeObj { isLoggedIn: true, isSubscriber }
+               setUserVariable (Just u) isSubscriber
              Left _err -> do
                onPaywallEvent
                -- TODO: Handle properly
