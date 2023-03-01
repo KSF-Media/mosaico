@@ -274,6 +274,7 @@ window.googletag.cmd.push(function () {
     .getSlots()
     .map((s) => s.getSlotElementId());
   googletag.pubads().collapseEmptyDivs();
+  googletag.pubads().disableInitialLoad();
   googletag.enableServices();
   googletag.pubads().addEventListener("slotRenderEnded", (event) => {
     if (!event.isEmpty) {
