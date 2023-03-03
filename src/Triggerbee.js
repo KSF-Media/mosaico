@@ -17,6 +17,6 @@ export function addToTriggerbeeObj(user) {
   } else {
     console.log("Triggerbee loaded, adding directly to triggerbee");
     window.triggerbee.user = user;
-    window.triggerbee.widgets.api.init();
+    window.triggerbee.widgets?.api?.init();
   }
 }

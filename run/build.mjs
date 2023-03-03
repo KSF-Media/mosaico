@@ -207,12 +207,10 @@ export async function runBuild() {
                 .then(async ({ code }) => {
                   await writeFile(file, code);
                   const { entryPoints, entryNames, outdir, ...rest } = buildOpts;
-                  const postBuildTransform = { ...rest, entryPoints: [file], outfile: file, allowOverwrite: true };
+                  // NB. the 'target: "es5"' here doesn't do transpiling, it just prevents esbuild from adding es6+ features
+                  const postBuildTransform = { ...rest, entryPoints: [file], outfile: file, allowOverwrite: true, target: "es5" };
                   return esbuild.build(postBuildTransform);
                 })
-                // Transpile all modern JS features possibly imported from the polyfills.
-                // This _should_ be a no-op, but let's be sure.
-                .then(() => babel.transformFileAsync(file, babelOpts))
             : Promise.resolve(undefined)
         )
       );
