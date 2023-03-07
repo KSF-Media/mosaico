@@ -5,8 +5,7 @@ if (typeof window !== "undefined") {
     if (window.consentedToEmbeddedScripts) {
       clearInterval(interval);
 
-      window.consentedToEmbeddedScripts.then((hasConsent) => {
-        if (!hasConsent) return;
+      window.consentedToEmbeddedScripts.then(() => {
         var wrapper = document.getElementById("keesing-crosswords");
 
         var cwDiv = document.createElement("div");
