@@ -7,7 +7,11 @@ export function fetchAdImpl(contentUnit) {
             .pubads()
             .getSlots()
             .map((s) => {
-              window.googletag.display(contentUnit);
+              if (s.getSlotElementId() === contentUnit) {
+                window.googletag.pubads().refresh([s]);
+              } else {
+                window.googletag.display(contentUnit);
+              }
             });
         }
       });
