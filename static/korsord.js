@@ -11,10 +11,10 @@ if (typeof window !== "undefined") {
         var cwDiv = document.createElement("div");
         cwDiv.setAttribute("id", "puzzle-portal");
         cwDiv.setAttribute("data-customerid", "ksf");
-        cwDiv.setAttribute("data-publicpath", "https://web.keesing.com/pub/portal/v2.20.9/dist/");
+        cwDiv.setAttribute("data-publicpath", "https://web.keesing.com/pub/portal/v2.21.3/dist/");
 
         var cwScript = document.createElement("script");
-        cwScript.src = "https://web.keesing.com/pub/portal/v2.20.9/dist/main-bundle.js";
+        cwScript.src = "https://web.keesing.com/pub/portal/v2.21.3/dist/main-bundle.js";
         cwScript.type = "text/javascript";
 
         wrapper.appendChild(cwDiv);
