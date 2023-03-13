@@ -274,7 +274,12 @@ window.googletag.cmd.push(function () {
     .getSlots()
     .map((s) => s.getSlotElementId());
   googletag.pubads().collapseEmptyDivs();
+
+  // This means ads won't load on display, but only on refresh.
+  // We've done this so the ads aren't fetched twice, ie once on initial load
+  // and then again when we run loadAds to start the programmatic ads auction.
   googletag.pubads().disableInitialLoad();
+
   googletag.enableServices();
   googletag.pubads().addEventListener("slotRenderEnded", (event) => {
     if (!event.isEmpty) {

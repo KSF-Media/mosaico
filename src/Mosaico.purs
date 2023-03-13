@@ -371,8 +371,7 @@ pickRandomElement elements = do
 
 routeListener :: Categories -> ((State -> State) -> Effect Unit) -> Maybe LocationState -> LocationState -> Effect Unit
 routeListener c setState oldLoc location = do
-  runEffectFn1 refreshAdsImpl ["mosaico-ad__top-parade", "mosaico-ad__parade"]
-
+  runEffectFn1 refreshAdsImpl []
   let newRoute = getRoute location
       oldRoute = getRoute <$> oldLoc
       (locationState :: Maybe Routes.RouteState) = hush $ JSON.read location.state
