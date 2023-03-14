@@ -103,6 +103,9 @@ spec ::
          , adsTxt ::
               GET "/ads.txt"
                 { response :: File }
+         , adnamiDomainEnabler ::
+              GET "/adnami/adnm.html"
+                { response :: File }
          , assets ::
               GET "/assets/<..path>"
                 { params :: { path :: List String }
@@ -199,6 +202,7 @@ main = do
           , profilePage: profilePage env
           , menu: menu env
           , adsTxt: staticAsset AdsTXT
+          , adnamiDomainEnabler: staticAsset AdnamiDomainEnabler
           , corsProxy: corsProxyPage env
           }
         guards =
@@ -266,11 +270,12 @@ renderNotFound env = do
 assets :: { params :: { path :: List String } } -> Aff (Either Failure File)
 assets { params: { path } } = Handlers.directory "dist/assets" path
 
-data StaticAsset = AdsTXT | GoogleSiteVerification | SSOReceiver
+data StaticAsset = AdsTXT | AdnamiDomainEnabler | GoogleSiteVerification | SSOReceiver
 
 staticAsset :: forall r. StaticAsset -> { | r} -> Aff File
 staticAsset asset = Handlers.file $ case asset of
   AdsTXT -> "dist/assets/ads.txt"
+  AdnamiDomainEnabler -> "dist/assets/adnami/adnm.html"
   GoogleSiteVerification -> "dist/assets/google8c22fe93f3684c84.html"
   SSOReceiver -> "dist/assets/xd_receiver.html"
 

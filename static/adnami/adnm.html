@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Adnami On Domain Enabler</title>
+        <meta name="version" content="1.0.0">
+        <script>
+            function enableSite() {
+                try {
+                    var mainDocument = window.top.document;
+                    var script = mainDocument.createElement('script');
+                    var host = trimDomain(mainDocument.location.hostname);
+                    script.src = 'https://functions.adnami.io/api/macro/adsm.macro.' + host + '.js';
+                    mainDocument.head.appendChild(script);
+                } catch (error)
+                {
+                    console.log("call home we failed to add script: " + error);
+                }
+            }
+
+            function trimDomain(locationHost){
+                var isUkDomain = locationHost.indexOf('co.uk') !== -1;
+                var domainSplit = locationHost.split('.');
+                if (isUkDomain) {
+                    return domainSplit.slice(-3).join('.');
+                }
+                else if (domainSplit.length > 2) {
+                    return domainSplit.slice(-2).join('.');
+                }
+                else {
+                    return locationHost;
+                }
+            }
+
+            enableSite();
+        </script>
+    </head>
+    <body></body>
+</html>
