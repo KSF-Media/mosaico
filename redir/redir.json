@@ -267,5 +267,10 @@
     "route": "junior-vinterkampanj",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/vinterkampanj-hbl-junior"
+  },
+  {
+    "route": "italien-schweiz",
+    "paper": "hbl",
+    "destination": "https://matka-agentit.fi/Lukija-ja-j%C3%A4senmatkat/Sveitsi/Italia/HBL?:id=HBL"
   }
 ]
