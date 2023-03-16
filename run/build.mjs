@@ -197,8 +197,20 @@ export async function runBuild() {
         ],
       };
 
+      const babelTranspile = {
+        presets: [
+          [
+            "@babel/preset-env",
+            {
+              modules: false,
+              useBuiltIns: false,
+            },
+          ],
+        ],
+      };
+
       await Promise.all(
-        [...outfiles, ...staticFiles].map((file) =>
+        [...outfiles, ...staticFiles, ...staticFiles.map(file => file.replace("dist/static", "dist/assets"))].map((file) =>
           file.endsWith(".js")
             ? babel
                 // Add all required polyfills
@@ -211,6 +223,8 @@ export async function runBuild() {
                   const postBuildTransform = { ...rest, entryPoints: [file], outfile: file, allowOverwrite: true, target: "es5" };
                   return esbuild.build(postBuildTransform);
                 })
+                .then(() => babel.transformFileAsync(file, babelTranspile))
+                .then(({ code }) => writeFile(file, code))
             : Promise.resolve(undefined)
         )
       );

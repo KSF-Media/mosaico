@@ -37,6 +37,9 @@ stages:
     - unset PUBLIC_URL
     - yarn --cwd $CI_PROJECT_DIR build
     - yarn --cwd $CI_PROJECT_DIR test
+    - rm -rf dist
+    - NODE_ENV=production yarn build
+    - yarn --cwd $CI_PROJECT_DIR test:escheck
 
 .build-app:
   stage: trunk-build
