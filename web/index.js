@@ -60,9 +60,6 @@ console.log("starting");
 
 var startConsentCookieSetup = require("../output/Consent.Consent/index.js").startConsentCookieSetupJS();
 
-window.googletag = window.googletag || { cmd: [] };
-
-
 function getGamId(name) {
   let paper = process.env.PAPER;
   // set paper to "test" in .env.local to test ads locally
@@ -260,11 +257,15 @@ window.adSlots = {
   ],
 };
 
+window.googletag = window.googletag || { cmd: [] };
 window.googletag.cmd.push(function () {
-  /* Ad slots to use */
+  // Restrict an ad to just the sites, if key-value targeting is applied
+  // to the ad in Google Ad Manager.
+  googletag.pubads().setTargeting("sites-or-apps", "sites-only");
+
   const networkCode = "/21664538223/";
 
-  /* define gam slots */
+  /* Ad slots to use */
   const slots = window.innerWidth < 1020 ? window.adSlots.mobile : window.adSlots.desktop;
   slots.map((slot) => {
     googletag.defineSlot(networkCode + slot.gamId, slot.sizes, slot.targetId).addService(googletag.pubads());
