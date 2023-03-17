@@ -34,7 +34,7 @@ staticPageTitle page paper =
     "fragor-och-svar", _ -> "Frågor och svar"
     "insandare", _       -> "Insändare"
     "kontakt", _         -> "Kontakta oss"
-    "korsord", _         -> "Korsord"
+    "korsord", _         -> "Korsord och hjärngympa"
     "kundservice", _     -> "Kundservice"
     "nyhetsbrev", HBL    -> "Beställ HBL:s nyhetsbrev!"
     "nyhetsbrev", ON     -> "Beställ Östnylands nyhetsbrev!"
@@ -48,6 +48,9 @@ staticPageTitle page paper =
 staticPageDescription :: String -> Paper -> Maybe String
 staticPageDescription page paper =
     case page, paper of
+      "korsord",    HBL -> Just "Utmana dig själv med Hufvudstadsbladets digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
+      "korsord",    VN  -> Just "Utmana dig själv med Västra Nylands digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
+      "korsord",    ON  -> Just "Utmana dig själv med Östnylands digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
       "nyhetsbrev", HBL -> Just "Här kan du beställa HBL:s nyhetsbrev. Nyhetsbreven kostar ingenting."
       "nyhetsbrev", VN  -> Just "Här kan du beställa Västra Nylands nyhetsbrev. Nyhetsbreven kostar ingenting."
       "nyhetsbrev", ON  -> Just "Här kan du beställa Östnylands nyhetsbrev. Nyhetsbreven kostar ingenting."
