@@ -27,7 +27,7 @@ import Effect.Class (liftEffect)
 import Effect.Exception (throw)
 import KSF.Paper as Paper
 import Lettera as Lettera
-import Lettera.Models (ArticleStub, Category, articleStubToJson, correctionsCategory)
+import Lettera.Models (ArticleStub, Category, Platform(Desktop), articleStubToJson, correctionsCategory)
 import Mosaico.Cache as Cache
 import Mosaico.Cache (Stamped)
 import Mosaico.Cache.Pubsub as Pubsub
@@ -88,7 +88,7 @@ newEnv = do
             _ -> pure acc
     foldM makeMap HashMap.empty staticPageNames
   htmlTemplate <- liftEffect $ parseTemplate <$> FS.readTextFile UTF8 indexHtmlFileLocation
-  categoryStructure <- Lettera.getCategoryStructure mosaicoPaper
+  categoryStructure <- Lettera.getCategoryStructure (Just Desktop) mosaicoPaper
   cache <- liftEffect $ Cache.initServerCache $ correctionsCategory `cons` categoryStructure
   liftEffect $ Pubsub.startListen cache
   -- This is used for matching a category label from a route, such as "/nyheter" or "/norden-och-världen"

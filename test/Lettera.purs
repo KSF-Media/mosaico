@@ -12,7 +12,7 @@ import Data.UUID (UUID)
 import Data.UUID as UUID
 import KSF.Paper (Paper(..))
 import Lettera as Lettera
-import Lettera.Models (Category(..), CategoryType(..))
+import Lettera.Models (Category(..), CategoryType(..), Platform(Desktop))
 import Lettera.Models as Models
 import Mosaico.Test (Test, listArticle, log, matchTagList, site, sub, tagListWithSelector, assertNonEmpty)
 import Partial.Unsafe (unsafePartial)
@@ -66,7 +66,7 @@ testDefaultListTitle page = do
 testCategoryLists :: Test
 testCategoryLists page = do
   Chrome.goto (Chrome.URL $ site <> "meny") page
-  categories <- Lettera.getCategoryStructure HBL
+  categories <- Lettera.getCategoryStructure (Just Desktop) HBL
   traverse_ testCategory categories
   where
     testCategory (Category c)

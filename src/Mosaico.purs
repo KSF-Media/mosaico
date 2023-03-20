@@ -41,7 +41,7 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User, Subscription, logout, magicLogin)
 import KSF.User.Cusno (Cusno)
 import Lettera as Lettera
-import Lettera.Models (Article, ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, MosaicoArticleType(..), articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, parseDraftArticle, readArticleType, tagToURIComponent)
+import Lettera.Models (Article, ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, MosaicoArticleType(..), Platform(Desktop), articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, parseDraftArticle, readArticleType, tagToURIComponent)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendArticleAnalytics, sendPageView, setUserVariable)
 import Mosaico.Article as Article
@@ -246,7 +246,7 @@ mosaicoComponent initialValues props = React.do
     Aff.launchAff_ do
       when (not $ Map.isEmpty initialCatMap) $ Aff.AVar.put initialCatMap initialValues.catMap
       cats <- if null props.categoryStructure
-              then Lettera.getCategoryStructure mosaicoPaper
+              then Lettera.getCategoryStructure (Just Desktop) mosaicoPaper
               else pure props.categoryStructure
       let catMap = categoriesMap $ correctionsCategory `cons` cats
       liftEffect do
