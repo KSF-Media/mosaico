@@ -349,7 +349,7 @@ render embedNagbar imageComponent boxComponent props =
                   { className: "flex overflow-y-hidden items-center w-full max-h-96"
                   , children:
                       [ DOM.img
-                          { className: "overflow-y-hidden w-auto max-w-full h-fit"
+                          { className: "overflow-y-hidden w-auto max-w-full"
                           , src: imgSrc
                           , alt
                           }
