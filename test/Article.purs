@@ -161,7 +161,7 @@ testPaywallOpen article originalBlocks page = do
 
 testPaywallHolds :: Chrome.Selector -> Int -> Test
 testPaywallHolds article originalBlocks page = do
-  Chrome.waitFor_ (sub " h1[data-existing-account='1']" article) page
+  Chrome.waitFor_ (sub " *[data-existing-account='1']" article) page
   paywallBlocks <- Chrome.countElements article (Chrome.Selector ".mosaico-article__body .article-element") page
   Assert.assert "Login without entitlements gives displays the same content" $ paywallBlocks == originalBlocks
   Chrome.waitFor_ (sub " .mosaico-article__main .mosaico-article__body .vetrina--container" article) page

@@ -153,18 +153,7 @@ renderCategoryPage env limit (Category category@{ label, type: categoryType, url
              , latestArticles
              , breakingNews
              }
-      Link -> do
-        { mostReadArticles, latestArticles, breakingNews } <- parallelWithCommonLists env.cache $ pure unit
-        pure { feed: Nothing
-             , mainContent: mostReadArticles *> latestArticles $>
-                            { type: StaticPageContent "link"
-                            -- TODO
-                            , content: mempty
-                            }
-             , mostReadArticles
-             , latestArticles
-             , breakingNews
-             }
+      Link -> dummyPage "link"
       Webview -> do
         initialRandom <- liftEffect $ randomString 10
         { mostReadArticles, latestArticles, breakingNews } <- parallelWithCommonLists env.cache $ pure unit
@@ -189,6 +178,7 @@ renderCategoryPage env limit (Category category@{ label, type: categoryType, url
              , latestArticles
              , breakingNews
              }
+      CategoryTag -> dummyPage "tag"
 
   -- Fallback to using list feed style
   let fallbackToList = renderCategoryPage env Nothing $ Category $ category { type = Feed }
@@ -227,6 +217,20 @@ renderCategoryPage env limit (Category category@{ label, type: categoryType, url
           }
     title = if label == frontpageCategoryLabel then (Paper.paperName mosaicoPaper) else unwrap label
     startpageMeta = DOM.renderToStaticMarkup $ Meta.defaultMeta $ Just title
+    -- Used for categories which have no native renders but are used
+    -- just for links.  This code shouldn't be called ever but it's
+    -- for aligning the types.
+    dummyPage desc = do
+      { mostReadArticles, latestArticles, breakingNews } <- parallelWithCommonLists env.cache $ pure unit
+      pure { feed: Nothing
+           , mainContent: mostReadArticles *> latestArticles $>
+                          { type: StaticPageContent desc
+                          , content: mempty
+                          }
+           , mostReadArticles
+           , latestArticles
+           , breakingNews
+           }
 
 searchPage :: Env -> { query :: { search :: Maybe String, limit :: Maybe Int } } -> Aff (Response ResponseBody)
 searchPage env { query: { search, limit } } = do

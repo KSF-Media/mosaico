@@ -24,7 +24,7 @@ import Foreign.Object as Object
 import KSF.Paper (toString, paperName)
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
-import Lettera.Models (Categories, Category(..))
+import Lettera.Models (Categories, Category(..), tagToURIComponent)
 import Mosaico.Paper (mosaicoPaper)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
@@ -190,10 +190,13 @@ headerContent props =
                }
         else mempty
 
-    mkCategory category@(Category { label }) =
+    mkCategory category@(Category c@{ label }) =
         DOM.a
         { className: "px-2 h-6 no-underline"
-        , href: "/" <> show label
+        , href: case c of
+          { tag: Just tag } -> "/tagg/" <> tagToURIComponent tag
+          { url: Just url } -> url
+          _                 -> "/" <> show label
         , onClick: props.onCategoryClick category
         , children: [ DOM.text $ String.toUpper $ unwrap label ]
         }

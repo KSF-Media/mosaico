@@ -648,6 +648,7 @@ render props setState state components router onPaywallEvent =
         Link -> mempty -- TODO
         Prerendered -> maybe (mosaicoLayoutNoAside loadingSpinner) (frontpageNoHeader Nothing Nothing <<< Just) maybeFeed
         Feed -> frontpageNoHeader (Just c.label) (Just $ doCategoryLimit (unwrap c.label) $ increaseSearchLimit limit) maybeFeed
+        CategoryTag -> mempty -- Impossible case, it should go as a tag render
 
     frontpageNoHeader :: Maybe CategoryLabel -> Maybe (Effect Unit) -> Maybe ArticleFeed -> JSX
     frontpageNoHeader = frontpage Nothing <<< map unwrap
@@ -851,6 +852,8 @@ render props setState state components router onPaywallEvent =
 
     onCategoryClick (Category { type: Webview }) =
       mempty
+    onCategoryClick (Category { tag: Just tag }) =
+      onTagClick tag
     onCategoryClick cat@(Category c) =
       case state.route of
         Routes.CategoryPage category _ | category == cat -> mempty

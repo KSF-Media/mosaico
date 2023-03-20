@@ -12,7 +12,7 @@ import Effect (Effect)
 import KSF.Paper (Paper(..), toString)
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
-import Lettera.Models (Category(..), CategoryLabel)
+import Lettera.Models (Category(..), CategoryLabel, tagToURIComponent)
 import Mosaico.Paper (mosaicoPaper)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
@@ -130,7 +130,10 @@ render props@{ onLogin, onLogout } = DOM.div
             renderCategory
               { title: toUpper $ unwrap c.label
               , subsections: map mkSubsection c.subCategories
-              , url: "/" <> show c.label
+              , url: case c of
+                  { tag: Just tag } -> "/tagg/" <> tagToURIComponent tag
+                  { url: Just url } -> url
+                  _                 -> "/" <> show c.label
               , onClick: props.onCategoryClick category
               }
       in acc `snoc` section
