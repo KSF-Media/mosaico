@@ -16,11 +16,15 @@ import React.Basic.Events (handler)
 import React.Basic.Hooks (Component, useEffect, useState', (/\))
 import React.Basic.Hooks as React
 
+foreign import forceEvalExternalScriptsImpl :: EffectFn1 (Array String) Unit
 foreign import evalExternalScriptsImpl :: EffectFn1 (Array String) Unit
 foreign import consentedToEmbeddedScripts :: Promise Boolean
 
-evalExternalScripts :: Array ScriptTag -> Effect Unit
-evalExternalScripts scriptTags = runEffectFn1 evalExternalScriptsImpl $ map (\(ScriptTag scriptTag) -> scriptTag) scriptTags
+evalStaticPageScripts :: Array ScriptTag -> Effect Unit
+evalStaticPageScripts scriptTags = runEffectFn1 forceEvalExternalScriptsImpl $ map (\(ScriptTag scriptTag) -> scriptTag) scriptTags
+
+evalArticleScripts :: Array ScriptTag -> Effect Unit
+evalArticleScripts scriptTags = runEffectFn1 evalExternalScriptsImpl $ map (\(ScriptTag scriptTag) -> scriptTag) scriptTags
 
 externalScriptsAllowed :: Aff Boolean
 externalScriptsAllowed = toAff consentedToEmbeddedScripts

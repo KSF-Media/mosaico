@@ -85,7 +85,7 @@ type Props =
   }
 
 evalEmbeds :: Article -> Effect Unit
-evalEmbeds = Eval.evalExternalScripts <<< map Eval.ScriptTag <<< map unwrap <<< fold <<< _.externalScripts
+evalEmbeds = Eval.evalArticleScripts <<< map Eval.ScriptTag <<< map unwrap <<< fold <<< _.externalScripts
 
 component :: Component Props
 component = do

@@ -315,14 +315,14 @@ mosaicoComponent initialValues props = React.do
         | Just (StaticPageResponse r) <- state.staticPage
         , r.pageName == page
         -> when (isJust state.prevRoute) do
-             foldMap (\p -> Eval.evalExternalScripts [Eval.ScriptTag $ "<script>" <> p <> "</script>"]) r.pageScript
+             foldMap (\p -> Eval.evalStaticPageScripts [Eval.ScriptTag $ "<script>" <> p <> "</script>"]) r.pageScript
         | otherwise ->
           Aff.launchAff_ do
             staticPage <- fetchStaticPage page
             liftEffect $ setState _  { staticPage = Just staticPage }
             case staticPage of
               StaticPageResponse r
-                | Just p <- r.pageScript -> liftEffect $ Eval.evalExternalScripts [Eval.ScriptTag $ "<script>" <> p <> "</script>"]
+                | Just p <- r.pageScript -> liftEffect $ Eval.evalStaticPageScripts [Eval.ScriptTag $ "<script>" <> p <> "</script>"]
               _ -> mempty
       Routes.DeployPreview -> liftEffect $ setState _  { route = Routes.Frontpage }
       _ -> pure unit

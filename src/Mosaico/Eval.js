@@ -50,27 +50,31 @@ if (typeof window !== "undefined") {
   window.consentedToEmbeddedScripts = consentedToEmbeddedScripts;
 }
 
-export async function evalExternalScriptsImpl(scripts) {
-  if ((await consentedToEmbeddedScripts) == true) {
-    if (typeof document !== "undefined") {
-      // Later scripts might depend on earlier scripts being executed,
-      // so we can't parallelize this
-      for (const script of scripts) {
-        var dummy = document.createElement("div");
-        dummy.innerHTML = script.trim();
-        const scriptSrc = dummy.firstChild.getAttribute("src");
-        // Do note that if any of the remote platforms gets pwned (eg. platform shuts down
-        // and gets taken over by some domain squatter), we'll get some very nice self XSS here...
-        if (scriptSrc) {
-          const proxiedUrl = "/corsProxy?url=" + encodeURIComponent(scriptSrc);
-          await fetch(proxiedUrl)
-            .then((r) => r.text())
-            .then(evalScript);
-        } else {
-          evalScript(dummy.firstChild.innerHTML);
-        }
+export async function forceEvalExternalScriptsImpl(scripts) {
+  if (typeof document !== "undefined") {
+    // Later scripts might depend on earlier scripts being executed,
+    // so we can't parallelize this
+    for (const script of scripts) {
+      var dummy = document.createElement("div");
+      dummy.innerHTML = script.trim();
+      const scriptSrc = dummy.firstChild.getAttribute("src");
+      // Do note that if any of the remote platforms gets pwned (eg. platform shuts down
+      // and gets taken over by some domain squatter), we'll get some very nice self XSS here...
+      if (scriptSrc) {
+        const proxiedUrl = "/corsProxy?url=" + encodeURIComponent(scriptSrc);
+        await fetch(proxiedUrl)
+          .then((r) => r.text())
+          .then(evalScript);
+      } else {
+        evalScript(dummy.firstChild.innerHTML);
       }
     }
+  }
+}
+
+export async function evalExternalScriptsImpl(scripts) {
+  if ((await consentedToEmbeddedScripts) == true) {
+    forceEvalExternalScriptsImpl(scripts);
   } else {
     console.log("User has not consented to receive ads; not loading external scripts.");
   }
