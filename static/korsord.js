@@ -2,7 +2,7 @@ if (typeof window !== "undefined") {
   /* Wait for the main mosaico script to be loaded, which
    * defines the consentedToEmbeddedScripts promise */
   const interval = setInterval(() => {
-    if (window.consentedToEmbeddedScripts) {
+    if (window.consentedToEmbeddedScripts && document.getElementById("keesing-crosswords")) {
       clearInterval(interval);
 
       window.consentedToEmbeddedScripts.then(() => {
@@ -21,5 +21,5 @@ if (typeof window !== "undefined") {
         wrapper.appendChild(cwScript);
       });
     }
-  });
+  }, 500);
 }
