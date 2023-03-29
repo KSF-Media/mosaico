@@ -76,6 +76,7 @@ window.adSlots = {
     {
       gamId: getGamId("digiframmob"),
       sizes: [
+        [1, 2],
         [300, 100],
         [300, 250],
         [300, 300],
@@ -111,6 +112,7 @@ window.adSlots = {
         [300, 300],
         [300, 431],
         [300, 600],
+        [320, 320],
       ],
       targetId: "mosaico-ad__bigbox2",
       isLazy: true,
@@ -165,6 +167,7 @@ window.adSlots = {
     {
       gamId: getGamId("jattebox"),
       sizes: [
+        [1, 2],
         [468, 400],
         [468, 600],
       ],
@@ -184,6 +187,7 @@ window.adSlots = {
     {
       gamId: getGamId("maxparad"),
       sizes: [
+        [1, 2],
         [980, 120],
         [980, 400],
         [980, 480],
