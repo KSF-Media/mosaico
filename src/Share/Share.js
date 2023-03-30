@@ -4,11 +4,10 @@ export function encodeURIComponent_(s) {
 
 export const nativeShare =
   typeof window !== "undefined" && window.navigator && window.navigator.share
-    ? (data) => {
+    ? async (data) => {
         try {
-          window.navigator.share(data);
+          await window.navigator.share(data);
         } catch (e) {
-          /* cancelling share results in an exception */
         }
       }
     : null;
