@@ -36,6 +36,8 @@ import Web.Event.EventTarget (addEventListener, eventListener, removeEventListen
 import Web.HTML (window)
 import Web.HTML.Window (scrollY, toEventTarget)
 
+foreign import easterEgg :: Effect Unit
+
 type Props
   = { changeRoute :: String -> Effect Unit
     , categoryStructure :: Array Category
@@ -113,12 +115,19 @@ headerContent props =
               }
           , DOM.text "|"
           , DOM.a
-              { className: "pl-1 no-underline"
+              { className: "px-1 no-underline"
               , children: [ DOM.text "KORSORD" ]
               , href: "/sida/korsord"
               , onClick: props.onStaticPageClick "korsord"
               }
-            ]
+          , DOM.text " | "
+          , DOM.a
+              { className: "pl-1 no-underline"
+              , children: [ DOM.text "KÄÄNNÄ" ]
+              , onClick: capture_ easterEgg
+              , href: "#"
+              }
+          ]
       }
   , DOM.div
       { className: "hidden text-[13px] mosaico-header__right-links text-neutral md:block"
