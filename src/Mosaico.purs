@@ -812,7 +812,7 @@ render props setState state components router onPaywallEvent =
     showAds = not props.globalDisableAds && case state.route of
       Routes.Frontpage -> true
       Routes.TagPage _ _ -> true
-      Routes.SearchPage _ _ -> true
+      Routes.SearchPage _ _ -> false
       Routes.DraftPage -> false
       Routes.ProfilePage -> false
       Routes.ArticlePage _ -> case state.article of

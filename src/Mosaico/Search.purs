@@ -37,12 +37,13 @@ render query setQuery { doSearch, searching } =
                         [ InputField.inputField
                             { type_: InputField.Text
                             , name: "q"
-                            , placeholder: "Sök.."
+                            , placeholder: "Sök..."
                             , label: Nothing
                             , value: query
                             , onChange: setQuery
                             , validationError: Nothing
                             , disabled: searching
+                            , autoFocus: true
                             }
                         ]
                     }
@@ -51,7 +52,7 @@ render query setQuery { doSearch, searching } =
                     , children:
                         [ DOM.button
                             { type: "submit"
-                            , className: "flex justify-center items-center mr-1 w-8 h-8 bg-green-500 rounded-md border-0 mosaico-search__button hover:bg-green-300"
+                            , className: "flex justify-center items-center mr-4 w-8 h-8 bg-green-500 rounded-md border-0 mosaico-search__button hover:bg-green-300"
                             , children: [ DOM.span { className: "w-6 h-6 bg-white maskimage-search mask-size-6" } ]
                             , disabled: isNothing query || query == Just "" || searching
                             }
