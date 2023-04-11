@@ -9,34 +9,34 @@
     flex-wrap: wrap;
   }
 
-.customer-service__background-img {
-  align-self: center;
-  background-image: url("../../images/illu-kundservice.svg");
-  background-size: contain;
-  background-repeat: no-repeat;
-  width: 250px;
-  height: 200px;
-  @media (min-width: 481px) {
-    align-self: flex-start;
-  }
-  @media (min-width: @breakpoint-2col) {
-    width: 35%;
-  }
-  @media (min-width: @breakpoint-3col) {
-    width: 30%;
-  }
-}
-
-.customer-service__info {
-  @media (min-width: @breakpoint-2col) {
-    width: 65%;
+  .customer-service__background-img {
     align-self: center;
-    padding-right: 35px;
+    background-image: url("../../images/illu-kundservice.svg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 250px;
+    height: 200px;
+    @media (min-width: 481px) {
+      align-self: flex-start;
+    }
+    @media (min-width: @breakpoint-2col) {
+      width: 35%;
+    }
+    @media (min-width: @breakpoint-3col) {
+      width: 30%;
+    }
   }
-  @media (min-width: @breakpoint-3col) {
-    width: 70%;
+
+  .customer-service__info {
+    @media (min-width: @breakpoint-2col) {
+      width: 65%;
+      align-self: center;
+      padding-right: 35px;
+    }
+    @media (min-width: @breakpoint-3col) {
+      width: 70%;
+    }
   }
-}
 
   .customer-service__headline {
     font-size: 2.2rem;
@@ -76,11 +76,5 @@
       padding: 20px 0;
       font-size: 1.2rem;
     }
-  }
-
-  a:link,
-  a:visited {
-    text-decoration: none;
-    color: #333 !important;
   }
 }
