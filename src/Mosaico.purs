@@ -28,7 +28,7 @@ import Effect (Effect)
 import Effect.AVar as AVar
 import Effect.Aff as Aff
 import Effect.Aff.AVar as Aff.AVar
-import Effect.Class (liftEffect)
+import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console as Console
 import Effect.Exception as Exception
 import Effect.Random (randomInt)
@@ -155,6 +155,25 @@ app = do
 getPathFromLocationState :: LocationState -> String
 getPathFromLocationState locationState = Routes.stripFragment $ locationState.path <> locationState.search
 
+setFeed :: forall m. MonadEffect m => ((State -> State) -> Effect Unit) -> ArticleFeedType -> ArticleFeed -> m Unit
+setFeed setState feed content =
+  liftEffect $ setState $ \s -> s { feeds = HashMap.insert feed content s.feeds
+                                  , loadingFeed = false
+                                  }
+
+setFrontpage :: InitialValues -> ((State -> State) -> Effect Unit) -> ArticleFeedType -> Maybe Int -> Effect Unit
+setFrontpage initialValues setState feedName limit = Aff.launchAff_ do
+  -- In SPA mode, this may be called before catMap has been
+  -- populated to state.  Synchronize with an AVar.
+  catMap <- Aff.AVar.read initialValues.catMap
+  cache <- Aff.AVar.read initialValues.cache
+  fresh <- Cache.isFresh cache catMap feedName limit
+  when (not fresh) $ liftEffect $
+    setState $ \s -> s { feeds = HashMap.delete feedName s.feeds }
+  liftEffect $ setState _ { loadingFeed = true }
+  foldMap (Cache.parallelLoadFeeds cache (setFeed setState)) $
+    (map <<< map) (Tuple feedName) $ Cache.loadFeed cache catMap feedName limit
+
 mosaicoComponent
   :: InitialValues
   -> Props
@@ -183,17 +202,14 @@ mosaicoComponent initialValues props = React.do
                          , ssrPreview = true
                          }
 
-  let setFeed feed content =
-        liftEffect $ setState $ \s -> s { feeds = HashMap.insert feed content s.feeds
-                                        , loadingFeed = false
-                                        }
+  let setFeed' = setFeed setState
       loadArticle articleId withAnalytics = Aff.launchAff_ do
         case UUID.parseUUID articleId of
           Nothing -> liftEffect $ setState _ { article = Just $ Left unit }
           Just uuid -> do
             liftEffect $ setState _ { article = Nothing }
             cache <- Aff.AVar.read initialValues.cache
-            eitherArticle <- Cache.parallelWithCommonActions cache setFeed $
+            eitherArticle <- Cache.parallelWithCommonActions cache setFeed' $
                              Lettera.getArticleAuth uuid mosaicoPaper
             liftEffect case eitherArticle of
               Right a@{ article } -> do
@@ -254,7 +270,7 @@ mosaicoComponent initialValues props = React.do
                    , catMap = catMap
                    }
         -- Listen for route changes and set state accordingly
-        void $ locations (routeListener catMap setState) initialValues.nav
+        void $ locations (routeListener initialValues catMap setState) initialValues.nav
       when (Map.isEmpty initialCatMap) $ Aff.AVar.put catMap initialValues.catMap
       -- magicLogin doesn't actually call the callback if it fails
       magicLogin Nothing $ hush >>> \u -> Aff.launchAff_ $ withLoginLock do
@@ -272,17 +288,7 @@ mosaicoComponent initialValues props = React.do
         }
     pure $ Aff.launchAff_ giveUpLogin
 
-  let setFrontpage feedName limit = Aff.launchAff_ do
-        -- In SPA mode, this may be called before catMap has been
-        -- populated to state.  Synchronize with an AVar.
-        catMap <- Aff.AVar.read initialValues.catMap
-        cache <- Aff.AVar.read initialValues.cache
-        fresh <- Cache.isFresh cache catMap feedName limit
-        when (not fresh) $ liftEffect $
-          setState $ \s -> s { feeds = HashMap.delete feedName s.feeds }
-        liftEffect $ setState _ { loadingFeed = true }
-        foldMap (Cache.parallelLoadFeeds cache setFeed) $
-          (map <<< map) (Tuple feedName) $ Cache.loadFeed cache catMap feedName limit
+  let setFrontpage' = setFrontpage initialValues setState
       onPaywallEvent = do
         maybe (pure unit) (\u -> loadArticle u true) $ _.article.uuid <$> (join <<< map hush $ state.article)
 
@@ -294,9 +300,9 @@ mosaicoComponent initialValues props = React.do
 
   useEffect (state.route /\ map _.cusno (join state.user)) do
     case state.route of
-      Routes.Frontpage -> setFrontpage (CategoryFeed frontpageCategoryLabel) Nothing
-      Routes.TagPage tag limit -> setFrontpage (TagFeed tag) limit
-      Routes.SearchPage (Just query) limit -> setFrontpage (SearchFeed query) limit
+      Routes.Frontpage -> setFrontpage' (CategoryFeed frontpageCategoryLabel) Nothing
+      Routes.TagPage tag limit -> setFrontpage' (TagFeed tag) limit
+      Routes.SearchPage (Just query) limit -> setFrontpage' (SearchFeed query) limit
       Routes.ArticlePage articleId
         | Just article <- map _.article (join $ map hush state.article)
         , articleId == article.uuid
@@ -308,9 +314,9 @@ mosaicoComponent initialValues props = React.do
           -- We already have the article content, but we need feeds
           else Aff.launchAff_ do
             cache <- Aff.AVar.read initialValues.cache
-            Cache.parallelWithCommonActions cache setFeed mempty
+            Cache.parallelWithCommonActions cache setFeed' mempty
         | otherwise -> loadArticle articleId true
-      Routes.CategoryPage (Category c) limit -> setFrontpage (CategoryFeed c.label) limit
+      Routes.CategoryPage (Category c) limit -> setFrontpage' (CategoryFeed c.label) limit
       Routes.StaticPage page
         | Just (StaticPageResponse r) <- state.staticPage
         , r.pageName == page
@@ -369,8 +375,8 @@ pickRandomElement elements = do
   randomIndex <- randomInt 0 (length elements - 1)
   pure $ index elements randomIndex
 
-routeListener :: Categories -> ((State -> State) -> Effect Unit) -> Maybe LocationState -> LocationState -> Effect Unit
-routeListener c setState oldLoc location = do
+routeListener :: InitialValues -> Categories -> ((State -> State) -> Effect Unit) -> Maybe LocationState -> LocationState -> Effect Unit
+routeListener initialValues c setState oldLoc location = do
   runEffectFn1 refreshAdsImpl []
   let newRoute = getRoute location
       oldRoute = getRoute <$> oldLoc
@@ -397,6 +403,11 @@ routeListener c setState oldLoc location = do
                        }
       case path of
         Routes.ArticlePage _ -> pure unit
+        Routes.Frontpage     -> do
+          -- Try refreshing frontpage when clicking on the logo in the header
+          when (oldRoute == Just (Right Routes.Frontpage)) $
+            setFrontpage initialValues setState (CategoryFeed frontpageCategoryLabel) Nothing
+          sendPageView
         _                    -> sendPageView
     Left _     -> pure unit
   where
