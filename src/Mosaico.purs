@@ -178,9 +178,10 @@ mosaicoComponent
   :: InitialValues
   -> Props
   -> Render Unit
+          (UseEffect Routes.MosaicoPage
             (UseEffect (Tuple Routes.MosaicoPage (Maybe Cusno))
               (UseEffect (Tuple Routes.MosaicoPage (Maybe (Either Unit String)))
-                (UseEffect Unit (UseState State Unit))))
+                (UseEffect Unit (UseState State Unit)))))
             JSX
 mosaicoComponent initialValues props = React.do
   let initialCatMap = if null props.categoryStructure then Map.empty
@@ -203,6 +204,7 @@ mosaicoComponent initialValues props = React.do
                          }
 
   let setFeed' = setFeed setState
+      loadArticle :: String -> Boolean -> Effect Unit
       loadArticle articleId withAnalytics = Aff.launchAff_ do
         case UUID.parseUUID articleId of
           Nothing -> liftEffect $ setState _ { article = Just $ Left unit }
@@ -300,9 +302,6 @@ mosaicoComponent initialValues props = React.do
 
   useEffect (state.route /\ map _.cusno (join state.user)) do
     case state.route of
-      Routes.Frontpage -> setFrontpage' (CategoryFeed frontpageCategoryLabel) Nothing
-      Routes.TagPage tag limit -> setFrontpage' (TagFeed tag) limit
-      Routes.SearchPage (Just query) limit -> setFrontpage' (SearchFeed query) limit
       Routes.ArticlePage articleId
         | Just article <- map _.article (join $ map hush state.article)
         , articleId == article.uuid
@@ -316,6 +315,14 @@ mosaicoComponent initialValues props = React.do
             cache <- Aff.AVar.read initialValues.cache
             Cache.parallelWithCommonActions cache setFeed' mempty
         | otherwise -> loadArticle articleId true
+      _ -> pure unit
+    pure mempty
+
+  useEffect state.route do
+    case state.route of
+      Routes.Frontpage -> setFrontpage' (CategoryFeed frontpageCategoryLabel) Nothing
+      Routes.TagPage tag limit -> setFrontpage' (TagFeed tag) limit
+      Routes.SearchPage (Just query) limit -> setFrontpage' (SearchFeed query) limit
       Routes.CategoryPage (Category c) limit -> setFrontpage' (CategoryFeed c.label) limit
       Routes.StaticPage page
         | Just (StaticPageResponse r) <- state.staticPage
