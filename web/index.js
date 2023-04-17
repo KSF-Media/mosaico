@@ -177,9 +177,12 @@ window.adSlots = {
     {
       gamId: getGamId("parad"),
       sizes: [
+        [1, 1],
+        [1, 2],
         [980, 120],
         [980, 400],
         [980, 552],
+        [1600, 1150],
       ],
       targetId: "mosaico-ad__parade",
       isLazy: false,
@@ -187,6 +190,7 @@ window.adSlots = {
     {
       gamId: getGamId("maxparad"),
       sizes: [
+        [1, 1],
         [1, 2],
         [980, 120],
         [980, 400],
