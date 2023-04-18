@@ -109,8 +109,7 @@ hblContactInfo commonFooter =
 
   secondColumn =
     [ section "Erja Yläjärvi" [ DOM.text "Chefredaktör och ansvarig utgivare" ]
-    , section "Lena Skogberg" [ DOM.text "Biträdande chefredaktör och redaktionschef (Kultur och samhälle)" ]
-    , section "Gunilla Celvin" [ DOM.text "Redaktionschef (nyheter och sport)" ]
+    , section "Gunilla Celvin" [ DOM.text "Biträdande chefredaktör och redaktionschef (nyheter)" ]
     , section "Steffen Ørsted" [ DOM.text "Redaktionschef (visuellt och utveckling)" ]
     , section "Nyhetstips"
         [ tel "09 125 32 22"
