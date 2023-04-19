@@ -38,13 +38,13 @@ import Payload.Server.Response as Response
 import React.Basic.DOM (div, text) as DOM
 import React.Basic.DOM.Server (renderToStaticMarkup) as DOM
 
-frontpage :: Env -> {} -> Aff (Response ResponseBody)
+frontpage :: Env -> { guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 frontpage env {} = do
   case head env.categoryStructure of
     Just frontpageCategory -> renderCategoryPage env Nothing frontpageCategory
     _ -> pure $ Response.internalError $ StringBody "no categorystructure defined"
 
-tagList :: Env -> { params :: { tag :: String }, query :: { limit :: Maybe Int } } -> Aff (Response ResponseBody)
+tagList :: Env -> { params :: { tag :: String }, query :: { limit :: Maybe Int }, guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 tagList env { params: { tag }, query: { limit } } = do
   let tag' = uriComponentToTag tag
       htmlTemplate = cloneTemplate env.htmlTemplate
@@ -93,7 +93,7 @@ tagList env { params: { tag }, query: { limit } } = do
 categoryPage
   :: Env
   -> { params :: { categoryName :: String }
-     , guards :: { category :: Category}
+     , guards :: { category :: Category, logger :: Unit }
      , query :: { limit :: Maybe Int }
      }
   -> Aff (Response ResponseBody)
@@ -232,7 +232,7 @@ renderCategoryPage env limit (Category category@{ label, type: categoryType, url
            , breakingNews
            }
 
-searchPage :: Env -> { query :: { search :: Maybe String, limit :: Maybe Int } } -> Aff (Response ResponseBody)
+searchPage :: Env -> { query :: { search :: Maybe String, limit :: Maybe Int }, guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 searchPage env { query: { search, limit } } = do
   let query = if (trim <$> search) == Just "" then Nothing else search
   searchComponent <- liftEffect Search.searchComponent

@@ -21,7 +21,7 @@ import Mosaico.Server.Template (appendMosaico, appendVars, cloneTemplate, mkWind
 import Payload.ResponseTypes (Response, ResponseBody(..))
 import Payload.Server.Response as Response
 
-debugList :: Env -> { params :: { uuid :: String } } -> Aff (Response ResponseBody)
+debugList :: Env -> { params :: { uuid :: String }, guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 debugList env { params: { uuid } } = do
   { pageContent: article, mostReadArticles, latestArticles } <-
     parallelWithCommonLists env.cache $
@@ -56,7 +56,7 @@ debugList env { params: { uuid } } = do
         , isFullWidth: false
         }
 
-getDraftArticleTest :: Env -> {} -> Aff (Response ResponseBody)
+getDraftArticleTest :: Env -> { guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 getDraftArticleTest env _ = do
   let article =
         { articleType: DraftArticle

@@ -15,6 +15,7 @@ import Data.List (List (..), (:))
 import Data.List as List
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (unwrap)
+import Data.Nullable (toNullable)
 import Data.String as String
 import Data.String.Regex (match) as Regex
 import Data.Tuple (Tuple(..))
@@ -62,6 +63,7 @@ import React.Basic.DOM (div, script) as DOM
 import React.Basic.DOM.Server (renderToStaticMarkup) as DOM
 import React.Basic.Events (handler_)
 
+foreign import log :: forall a . a -> Effect Unit
 foreign import serverPort :: Int
 
 spec ::
@@ -144,21 +146,21 @@ spec ::
                 { response :: ResponseBody
                 , params :: { uuid :: String }
                 }
-          , categoryPage ::
+         , categoryPage ::
               GET "/<categoryName>/?c=<limit>"
                 { response :: ResponseBody
                 , params :: { categoryName :: String }
                 , guards :: Guards ("category" : Nil)
                 , query :: { limit :: Maybe Int }
                 }
-          , searchPage ::
+         , searchPage ::
               GET "/sök?q=<search>&c=<limit>"
                 { response :: ResponseBody
                 , query :: { search :: Maybe String
                            , limit :: Maybe Int
                            }
                 }
-          , notFoundPage ::
+         , notFoundPage ::
               GET "/<..path>"
                 { response :: ResponseBody
                 , params :: { path :: List String}
@@ -168,12 +170,14 @@ spec ::
                 { response :: ResponseBody
                 , query :: { url :: String }
                 }
+         , guards :: Guards ( "logger" : Nil )
          }
     , guards ::
          { category :: Category
          , clientip :: Maybe String
          , epaper :: Unit
          , triggerbee :: Maybe TriggerbeeCookies
+         , logger :: Unit
          }
     }
 spec = Spec
@@ -210,11 +214,19 @@ main = do
           , clientip: getClientIP
           , epaper: epaperGuard
           , triggerbee
+          , logger: loggerGuard
           }
     void $ Payload.startGuarded (Payload.defaultOpts { port = 8080 }) spec { handlers, guards }
     pure unit
 
-getHealthz :: {guards :: {clientip :: Maybe String}} -> Aff String
+loggerGuard :: HTTP.Request -> Aff (Either Failure Unit)
+loggerGuard req = do
+  let url = HTTP.requestURL req
+      reqId = lookup "x-request-id" $ HTTP.requestHeaders req
+  liftEffect $ log { url: url, requestId: toNullable reqId }
+  pure $ Right unit
+
+getHealthz :: {guards :: {clientip :: Maybe String, logger :: Unit}} -> Aff String
 getHealthz {guards: {clientip}} =
   pure $ "OK " <> fromMaybe "" clientip <> "\n" <> mosaicoVersion
 
@@ -226,7 +238,10 @@ getClientIP req =
 
 getDraftArticle
   :: Env
-  -> { params :: { aptomaId :: String }, query :: DraftParams }
+  -> { params :: { aptomaId :: String }
+     , query :: DraftParams
+     , guards :: { logger :: Unit }
+     }
   -> Aff (Response ResponseBody)
 getDraftArticle env { params: {aptomaId}, query } = do
   article <- Lettera.getDraftArticle aptomaId query
@@ -234,7 +249,7 @@ getDraftArticle env { params: {aptomaId}, query } = do
 
 getArticle
   :: Env
-  -> { params :: { uuidOrSlug :: List String }, guards :: { clientip :: Maybe String }, query :: { headless :: Maybe Boolean } }
+  -> { params :: { uuidOrSlug :: List String }, guards :: { clientip :: Maybe String, logger :: Unit }, query :: { headless :: Maybe Boolean } }
   -> Aff (Response ResponseBody)
 getArticle env { params: { uuidOrSlug: (uuid : _) }, guards: { clientip }, query: { headless } }
   | Just articleId <- UUID.parseUUID uuid = do
@@ -267,7 +282,7 @@ renderNotFound env = do
       maybeLatest   = if null feeds.latestArticles then Nothing else Just feeds.latestArticles
   notFound env notFoundArticleContent maybeMostRead maybeLatest
 
-assets :: { params :: { path :: List String } } -> Aff (Either Failure File)
+assets :: { params :: { path :: List String }, guards :: { logger :: Unit } } -> Aff (Either Failure File)
 assets { params: { path } } = Handlers.directory "dist/assets" path
 
 data StaticAsset = AdsTXT | AdnamiDomainEnabler | GoogleSiteVerification | SSOReceiver
@@ -292,7 +307,7 @@ triggerbee req = do
     smtruid <- Map.lookup "_smtruid" cookies
     pure { mtruid, smtruid }
 
-setTriggerbeeCookies :: { guards :: { triggerbee :: Maybe TriggerbeeCookies } } -> Aff (Response ResponseBody)
+setTriggerbeeCookies :: { guards :: { triggerbee :: Maybe TriggerbeeCookies, logger :: Unit } } -> Aff (Response ResponseBody)
 setTriggerbeeCookies { guards: { triggerbee: Nothing } } = pure $ Response.ok EmptyBody
 setTriggerbeeCookies { guards: { triggerbee: Just cookies } } = do
   let domain = fromMaybe "" $ head $ String.split (String.Pattern "/") $ String.drop 12 $ Paper.homepage mosaicoPaper
@@ -303,7 +318,7 @@ setTriggerbeeCookies { guards: { triggerbee: Just cookies } } = do
         Response $ response { headers = setMtruid $ setSmtruid $ response.headers }
   pure $ setCookies $ Response.ok EmptyBody
 
-menu :: Env -> {} -> Aff (Response ResponseBody)
+menu :: Env -> { guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 menu env _ = do
   let htmlTemplate = cloneTemplate env.htmlTemplate
       mosaicoString =
@@ -341,7 +356,7 @@ epaperGuard req = do
   pure $ if url == "/epaper/" || String.take 9 url == "/epaper/?"
          then Right unit else Left (Forward "not exact match with epaper page")
 
-epaperPage :: Env -> { params :: { path :: List String }, query :: { query :: Object (Array String) }, guards :: { epaper :: Unit } } -> Aff (Response ResponseBody)
+epaperPage :: Env -> { params :: { path :: List String }, query :: { query :: Object (Array String) }, guards :: { epaper :: Unit, logger :: Unit } } -> Aff (Response ResponseBody)
 epaperPage env {} = do
   { mostReadArticles, latestArticles } <- parallelWithCommonLists env.cache $ pure unit
   let htmlTemplate = cloneTemplate env.htmlTemplate
@@ -370,7 +385,7 @@ epaperPage env {} = do
           }
 
 
-staticPage :: Env -> { params :: { pageName :: String } } -> Aff (Response ResponseBody)
+staticPage :: Env -> { params :: { pageName :: String }, guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 staticPage env { params: { pageName } } = do
   { mostReadArticles, latestArticles } <- sequential $
     { mostReadArticles: _, latestArticles: _ }
@@ -420,7 +435,7 @@ staticPage env { params: { pageName } } = do
     title = Meta.pageTitle (Routes.StaticPage pageName) Nothing
     renderedMeta = DOM.renderToStaticMarkup $ Meta.staticPageMeta pageName
 
-profilePage :: Env -> {} -> Aff (Response ResponseBody)
+profilePage :: Env -> { guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 profilePage env {} = do
   { mostReadArticles, latestArticles } <- parallelWithCommonLists env.cache $ pure unit
   let htmlTemplate = cloneTemplate env.htmlTemplate
@@ -452,7 +467,7 @@ profilePage env {} = do
 
 notFoundPage
   :: Env
-  -> { params :: { path :: List String } }
+  -> { params :: { path :: List String }, guards :: { logger :: Unit } }
   -> Aff (Response ResponseBody)
 notFoundPage env { params: { path } } = do
   -- TODO move redirect logic behind its own guard and route
@@ -471,7 +486,7 @@ notFoundPage env { params: { path } } = do
 
 corsProxyPage
   :: Env
-  -> { query :: { url :: String } }
+  -> { query :: { url :: String }, guards :: { logger :: Unit } }
   -> Aff (Response ResponseBody)
 corsProxyPage env { query: { url } } = do
   result <- Cache.readCorsResult env.cache url
