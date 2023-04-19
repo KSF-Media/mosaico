@@ -293,7 +293,9 @@ window.googletag.cmd.push(function () {
   googletag.pubads().addEventListener("slotRenderEnded", (event) => {
     if (!event.isEmpty) {
       let elementId = event.slot.getSlotElementId();
-      document.querySelector("#" + elementId).classList.add("populated");
+      if (elementId !== "mosaico-ad__top-parade") {
+        document.querySelector("#" + elementId).classList.add("populated");
+      }
     }
   });
   window.addEventListener("message", (event) => {
