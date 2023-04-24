@@ -216,7 +216,7 @@ main = do
           , triggerbee
           , logger: loggerGuard
           }
-    void $ Payload.startGuarded (Payload.defaultOpts { port = 8080 }) spec { handlers, guards }
+    void $ Payload.startGuarded (Payload.defaultOpts { port = serverPort }) spec { handlers, guards }
     pure unit
 
 loggerGuard :: HTTP.Request -> Aff (Either Failure Unit)

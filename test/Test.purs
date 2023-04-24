@@ -22,7 +22,7 @@ sub :: String -> Chrome.Selector -> Chrome.Selector
 sub specialize = over Chrome.Selector (_ <> specialize)
 
 site :: String
-site = "http://localhost:8080/"
+site = "http://localhost:8000/"
 
 listArticle :: Chrome.Selector
 listArticle = Chrome.Selector ".mosaico--article-list article"
