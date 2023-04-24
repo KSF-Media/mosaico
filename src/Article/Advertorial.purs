@@ -81,7 +81,7 @@ render imageComponent boxComponent { article } =
                              , children:
                                  [ DOM.section
                                      { className: "article-content"
-                                     , children: map (Article.renderElement true imageComponent boxComponent Nothing) article.body
+                                     , children: map (\el -> Article.renderElement true imageComponent boxComponent Nothing $ Tuple el false) article.body
                                      }
                                  ]
                              }

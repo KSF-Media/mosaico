@@ -44,7 +44,7 @@ render onClick props =
 articleImage :: EventHandler -> Props -> JSX
 articleImage onClick props@{ image: img } =
   DOM.div
-    { className: "mosaico-article__image"
+    { className: "mosaico-article__image premium-only"
     , children:
         [ DOM.img
             { src: url props

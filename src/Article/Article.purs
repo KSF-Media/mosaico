@@ -7,6 +7,7 @@ import Control.Alt ((<|>))
 import Data.Array (cons, head, insertAt, length, null, snoc, take, (!!))
 import Data.Either (Either(..), either, hush)
 import Data.Foldable (fold, foldMap)
+import Data.List (fromFoldable, (:))
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Monoid (guard)
 import Data.Newtype (unwrap)
@@ -38,6 +39,7 @@ import React.Basic.DOM as DOM
 import React.Basic.Events (EventHandler)
 import React.Basic.Hooks (Component)
 import React.Basic.Hooks as React
+import Data.List.Types (List(..))
 
 isPremium :: Either ArticleStub FullArticle -> Boolean
 isPremium = either _.premium _.article.premium
@@ -95,20 +97,38 @@ component = do
   React.component "Article" $ \props -> React.do
     pure $ render nagbarComponent imageComponent boxComponent props
 
+type BodyElement' = Tuple BodyElement Boolean
+
 render :: (Eval.Props -> JSX) -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
 render embedNagbar imageComponent boxComponent props =
     let title = getTitle props.article
         tags = getTags props.article
         mainImage = getMainImage props.article
         renderElem = renderElement hideAds imageComponent boxComponent (Just props.onArticleClick)
+
+        markPremiumElements :: Boolean -> Array BodyElement -> Array BodyElement'
+        markPremiumElements premium elements =
+            if premium
+            then run [] elementCount (fromFoldable elements)
+            else map (\el -> Tuple el false) elements
+          where
+            -- These rules should be kept in sync with Lettera's preview rendering.
+            elementCount = if length elements < 5 then length elements / 2 else 3
+            run :: Array BodyElement' -> Int -> List BodyElement -> Array BodyElement'
+            run arr _ Nil = arr
+            run arr 0 (x:xs) = run (snoc arr $ Tuple x true) 0 xs
+            run arr n (x@(Html _):xs) = run (snoc arr $ Tuple x false) (n-1) xs
+            --XXX: Paragraph is an enum variant in Lettera but not in Mosaico?
+            --run arr n (x@(Paragraph _):xs) = run (snoc arr $ Tuple x false) (n-1) xs
+            run arr n (x:xs) = run (snoc arr $ Tuple x true) n xs
         body = getBody props.article
         hideAds = getRemoveAds props.article
-        bodyWithoutAd = map renderElem body
+        bodyWithoutAd = map renderElem (markPremiumElements false body)
         bodyWithAd =
           [ Mosaico.ad { contentUnit: "mosaico-ad__mobparad", inBody: false, hideAds }
           , DOM.section
             { className: "article-content"
-            , children: map renderElem $ insertAdsIntoBodyText "mosaico-ad__bigbox1" "mosaico-ad__bigbox2" body
+            , children: map renderElem $ insertAdsIntoBodyText "mosaico-ad__bigbox1" "mosaico-ad__bigbox2" $ markPremiumElements (isPremium props.article) body
             }
           ]
         advertorial = if hideAds then mempty else foldMap renderAdvertorialTeaser props.advertorial
@@ -159,10 +179,10 @@ render embedNagbar imageComponent boxComponent props =
                                   <>
                                   case _.articleType <$> props.article of
                                     Right PreviewArticle ->
-                                      renderElem (Ad { contentUnit: "mosaico-ad__mobparad", inBody: false })
+                                      renderElem (Tuple (Ad { contentUnit: "mosaico-ad__mobparad", inBody: false }) false)
                                       `cons` bodyWithoutAd
                                       `snoc` (if isNothing props.user then loadingSpinner else vetrina)
-                                      `snoc` renderElem (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false })
+                                      `snoc` renderElem (Tuple (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false }) false)
                                       `snoc` advertorial
                                       `snoc` mostRead
                                     Right DraftArticle ->
@@ -363,22 +383,22 @@ render embedNagbar imageComponent boxComponent props =
           }
 
 
-    insertAdsIntoBodyText :: String -> String -> Array BodyElement -> Array BodyElement
+    insertAdsIntoBodyText :: String -> String -> Array BodyElement' -> Array BodyElement'
     insertAdsIntoBodyText cu1 cu2 body =
       if elements > 15
         then fromMaybe body $ do
-          bodyWithAd <- insertAt (findAdSpace body $ elements/3) (Ad { contentUnit: cu1, inBody: true }) body
-          insertAt (findAdSpace bodyWithAd $ 2 * elements/3) (Ad { contentUnit: cu2, inBody: true }) bodyWithAd
+          bodyWithAd <- insertAt (findAdSpace body $ elements/3) (Tuple (Ad { contentUnit: cu1, inBody: true }) false) body
+          insertAt (findAdSpace bodyWithAd $ 2 * elements/3) (Tuple (Ad { contentUnit: cu2, inBody: true }) false) bodyWithAd
         else if elements > 6
-          then fromMaybe body $ insertAt (findAdSpace body $ elements/2) (Ad { contentUnit: cu1, inBody: true }) body
-          else body `snoc` (Ad { contentUnit: cu1, inBody: false })
+          then fromMaybe body $ insertAt (findAdSpace body $ elements/2) (Tuple (Ad { contentUnit: cu1, inBody: true }) false) body
+          else body `snoc` (Tuple (Ad { contentUnit: cu1, inBody: false }) false)
       where
         elements = length body
-        findAdSpace :: Array BodyElement -> Int -> Int
+        findAdSpace :: Array BodyElement' -> Int -> Int
         findAdSpace body' i
           | i > elements = elements
-          | Just (Html _) <- body' !! (i-1)
-          , Just (Html _) <- body' !! (i)
+          | Just (Tuple (Html _) _) <- body' !! (i-1)
+          , Just (Tuple (Html _) _) <- body' !! i
           = i
           | otherwise = findAdSpace body' (i+1)
 
@@ -417,16 +437,16 @@ tagAndShareButtons tags onTagClick premium title shareUrl =
 
 -- TODO: maybe we don't want to deal at all with the error cases
 -- and we want to throw them away?
-renderElement :: Boolean -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Maybe (ArticleStub -> EventHandler) -> BodyElement -> JSX
-renderElement hideAds imageComponent boxComponent onArticleClick el = case el of
+renderElement :: Boolean -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Maybe (ArticleStub -> EventHandler) -> (Tuple BodyElement Boolean) -> JSX
+renderElement hideAds imageComponent boxComponent onArticleClick (Tuple el premiumOnly) = case el of
   -- Can't place div's or blockquotes under p's, so place them under div.
   -- This is usually case with embeds
   Html content -> DOM.div
     { dangerouslySetInnerHTML: { __html: content }
-    , className: block <> " " <> block <> "__html"
+    , className: "article-element article-element__html" <> premiumClass
     }
   Headline str -> DOM.h2
-    { className: block <> " " <> block <> "__subheadline"
+    { className: "article-element article-element__subheadline" <> premiumClass
     , children: [ DOM.text str ]
     }
   Image image -> imageComponent
@@ -438,7 +458,7 @@ renderElement hideAds imageComponent boxComponent onArticleClick el = case el of
       }
   Box boxData ->
     DOM.div
-      { className: block <> " " <> block <> "__" <> boxCSSType
+      { className: "article-element" <> boxCSSType <> premiumClass
       , children:
           [ boxComponent
               { headline: boxData.headline
@@ -450,32 +470,34 @@ renderElement hideAds imageComponent boxComponent onArticleClick el = case el of
       }
     where
       boxCSSType = case boxData.type of
-        "review" -> "reviewbox"
-        _        -> "factbox"
+        "review" -> " article-element__reviewbox"
+        _        -> " article-element__factbox"
   Footnote footnote -> DOM.p
-      { className: block <> " " <> block <> "__footnote"
+      { className: "article-element article-element__footnote" <> premiumClass
       , dangerouslySetInnerHTML: { __html: footnote }
       }
   Quote { body, author } -> DOM.figure
-      { className: block <> " " <> block <> "__quote"
+      { className: "article-element article-element__quote" <> premiumClass
       , children:
           [ DOM.blockquote_ [ DOM.text body ]
           , foldMap (DOM.figcaption_ <<< pure <<< DOM.text) author
           ]
       }
   Question question -> DOM.p
-      { className: block <> " " <> block <> "__question"
+      { className: "article-element article-element__question" <> premiumClass
       , dangerouslySetInnerHTML: { __html: question }
       }
   Related related -> DOM.figure
-      { className: block <> " " <> block <> "__related"
+      { className: "article-element article-element__related" <> premiumClass
       , children:
           [ DOM.ul_ $ map renderRelatedArticle related
           ]
       }
   Ad { contentUnit, inBody} -> Mosaico.ad { contentUnit, inBody, hideAds }
   where
-    block = "article-element"
+    -- This class is used to tell Google that these elements can only
+    -- be viewed with an active subscription. It doesn't apply any styling.
+    premiumClass = if premiumOnly then " premium-only" else ""
     renderRelatedArticle article =
       DOM.li_
         [ DOM.a
