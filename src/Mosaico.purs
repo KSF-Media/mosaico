@@ -443,7 +443,7 @@ getInitialValues = do
   staticPageContent <- toMaybe <$> getInitialStaticPageContent
   staticPageScript <- toMaybe <$> getInitialStaticPageScript
   sentryDsn <- sentryDsn_
-  logger <- Sentry.mkLogger sentryDsn Nothing "mosaico"
+  logger <- Sentry.mkLoggerWithSR sentryDsn 0.03 Nothing "mosaico"
   logger.setTag "paper" _mosaicoPaper
 
   loginModalComponent  <- LoginModal.loginModal
