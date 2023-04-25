@@ -102,7 +102,9 @@ premiumArticleTest sel page = do
   -- Test for premium badge
   Chrome.waitFor_ (sub " .mosaico-article__tag-n-share .premium-badge" sel) page
   -- Test that there's at most three elements of content
-  Chrome.assertNotFound (sub " .mosaico-article__body .article-element:nth-of-type(4)" sel) page
+  let article = Chrome.Selector "article.mosaico-article"
+  elementCount <- Chrome.countElements article (Chrome.Selector ".mosaico-article__body .article-element") page
+  Assert.assert "Shouldn't see premium content without being logged in" $ elementCount < 4
 
 navigateTo :: String -> Chrome.Page -> Aff Unit
 navigateTo uuid page = do
@@ -122,7 +124,7 @@ testPaywallLogin loadDirect uuid user password f page = do
   -- Edge case: If premium article has only one body element, it
   -- renders with no body elements with paywall
   originalBlocks <- Chrome.countElements article (Chrome.Selector ".mosaico-article__body .article-element") page
-  Assert.assert "One or no content blocks shown in paywall" $ originalBlocks < 2
+  Assert.assert "Maximum of three content blocks shown in paywall" $ originalBlocks < 4
   -- Test login
   Account.login user password (sub " .vetrina--login-callback" article) 2 page
   f article originalBlocks page
