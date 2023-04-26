@@ -796,7 +796,11 @@ render props setState state components router onPaywallEvent =
              [ jumpToMainContent
              , Mosaico.ad { contentUnit: "mosaico-ad__top-parade", inBody: false, hideAds }
              , DOM.div
-                 { className: "grid mosaico text-aptoma-text-color bg-aptoma-site-background" <> (if menuOpen then " menu-open" else mempty)
+                 { className: "grid mosaico text-aptoma-text-color bg-aptoma-site-background" <>
+                   (if menuOpen then " menu-open" else mempty) <>
+                   (case state.user of
+                       (Just (Just user')) | not (null user'.subs) -> " subscriber-view"
+                       _ -> mempty)
                  , children:
                      [ guard (not props.headless) Header.topLine
                      , guard (not props.headless) header
