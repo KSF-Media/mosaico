@@ -94,6 +94,41 @@ substitutions if the JS files have matches with those.
 If you go "wait, `process` is undefined in this context" (like in
 `Mosaico.js`) you are not wrong, but the build has a trick for it.
 
+## Testing ads and consent popups
+
+The ads and consent modals don't work in localhost. In order to get them
+working for local development, you need something like mitmproxy for
+connections:
+
+1) Install mitmproxy:
+    - OS X: `$ brew install mitmproxy`
+    - Linux: open browser & go to https://mitmproxy.org/, click download and move binaries to somewhere in `$PATH`
+2) Add `127.0.0.1 mosaico-hbl.staging.ksfmedia.fi` to /etc/hosts
+    - Or `127.0.0.1 www.hbl.fi` if you want to fake prod
+3) Clear HSTS cache, otherwise you get HSTS errors:
+    - Firefox: Open history, find the stage/prod hbl site, right click -> forget about this site
+    - Chrome: navigate to `chrome://net-internals/#hsts`, enter the domain and click 'delete domain'
+4) Start mosaico (if not running already)
+5) `sudo mitmproxy -s scripts/cors.py --mode reverse:http://localhost:8000 -p 443`
+6) Navigate to mosaico-hbl.staging.ksfmedia.fi and accept the self-signed certificate
+
+## Testing local Mosaico with a phone
+
+Ensure that your phone and laptop are in the same wifi.
+
+1) Install mitmproxy (see above)
+2) `yarn build`
+3) Find out your local ip address (eg. 192.168.1.126)
+4) Create a file called `proxy.pac` in `dist/`:
+    - Content: `function FindProxyForURL(url, host) { return "SOCKS 192.168.1.126:8080"; }`
+    - Replace the IP with your local ip
+5) `yarn start`
+6) `mitmproxy --mode socks5 -s scripts/proxy.py`
+7) Configure your phone to use a automatic proxy script, and set that to `http://192.168.1.126:8080/proxy.pac` (replacing your IP again)
+8) Open browser in your phone and go to `http://mitm.it`
+9) Install certificate to your phone
+10) `http://192.168.1.126:8000` should be your local mosaico
+
 ## Tests
 
 Launch site as described in the Development sections.  The tests may
