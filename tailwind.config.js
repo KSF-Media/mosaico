@@ -43,6 +43,7 @@ const listOfIcons = {
   kundservice: `url("../images/icon-mosaico-kundservice.svg")`,
   logout: `url("../images/icon-mosaico-logout.svg")`,
   login: `url("../images/icon-mosaico-login.svg")`,
+  print: `url("../images/icon-print.svg")`,
 };
 
 const maskImagePlugin = plugin(

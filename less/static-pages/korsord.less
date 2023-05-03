@@ -1,0 +1,88 @@
+@media print {
+  @page {
+    margin: 0.2cm;
+    padding: 0;
+  }
+  html.korsord-print {
+    width: 100%;
+
+    :not(.body-print-area *) {
+      display: none;
+    }
+
+    body,
+    .body-print-area,
+    .body-print-area * {
+      background-color: transparent !important;
+    }
+    html,
+    body,
+    .body-print-area {
+      display: block !important;
+    }
+
+    .game-header,
+    .carousel-bar,
+    .result-word,
+    .action-bar,
+    .player__close,
+    .modal,
+    #puzzle-side > .keyboard,
+    .codebar__button-row {
+      display: none !important;
+    }
+    .crossword .clues__scroll-container {
+      overflow: visible;
+    }
+
+    body,
+    .body-print-area {
+      width: 100%;
+    }
+
+    #puzzle-side {
+      height: unset;
+      max-height: unset;
+      margin-top: 0;
+    }
+
+    .crossword {
+      #puzzle-side {
+        display: inline;
+
+        * {
+          display: inline;
+        }
+
+        .clues__title {
+          padding-left: 0;
+          display: block;
+        }
+
+        .clues__item {
+          word-break: break-word;
+        }
+      }
+
+      .puzzle-player {
+        display: block;
+
+        .main {
+          width: auto !important;
+        }
+      }
+    }
+
+    .main,
+    .portal-main,
+    .fullscreen-area,
+    .puzzle-player {
+      max-width: unset !important;
+      width: 100% !important;
+    }
+
+    * {
+      print-color-adjust: exact;
+    }
+  }
+}
