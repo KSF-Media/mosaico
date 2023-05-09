@@ -26,7 +26,7 @@ import Mosaico.BreakingNews as BreakingNews
 import Mosaico.FallbackImage (fallbackImage)
 import Mosaico.Frontpage.Models (Hook, toHookRep)
 import Mosaico.Paper (mosaicoPaper)
-import Mosaico.Tag (renderTag)
+import Mosaico.Tag (TagType(..), renderTag)
 import Mosaico.Timestamp (timestamp)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
@@ -73,7 +73,7 @@ render (List props) =
         addCrop url =
           if contains (Pattern "smooth-storage") url then url
           else url <> "&function=hardcrop&width=200&height=200&q=90"
-        tagLink a = foldMap (renderTag props.onTagClick) $ head a.tags
+        tagLink a = foldMap (renderTag Main props.onTagClick) $ head a.tags
 
         articleTitle a = [ DOM.h3
                              { className: "text-xl leading-tight text-aptoma-text-color font-duplexserif"

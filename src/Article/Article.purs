@@ -8,6 +8,7 @@ import Data.Array (cons, head, insertAt, length, null, snoc, take, (!!))
 import Data.Either (Either(..), either, hush)
 import Data.Foldable (fold, foldMap)
 import Data.List (fromFoldable, (:))
+import Data.List.Types (List(..))
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Monoid (guard)
 import Data.Newtype (unwrap)
@@ -23,7 +24,7 @@ import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import KSF.Vetrina as Vetrina
 import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
-import Lettera.Models (Article, ArticleStub, ArticleType(..), Author, BodyElement(..), ExternalScript, Image, MosaicoArticleType(..), Tag, FullArticle)
+import Lettera.Models (Article, ArticleStub, ArticleType(..), Author, BodyElement(..), ExternalScript, FullArticle, Image, MosaicoArticleType(..), Tag(Tag))
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
@@ -33,13 +34,12 @@ import Mosaico.FallbackImage (fallbackImage)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
 import Mosaico.LatestList as LatestList
 import Mosaico.Share as Share
-import Mosaico.Tag (renderTag)
+import Mosaico.Tag (TagType(..), renderTag)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.Events (EventHandler)
 import React.Basic.Hooks (Component)
 import React.Basic.Hooks as React
-import Data.List.Types (List(..))
 
 isPremium :: Either ArticleStub FullArticle -> Boolean
 isPremium = either _.premium _.article.premium
@@ -182,6 +182,7 @@ render embedNagbar imageComponent boxComponent props =
                                       renderElem (Tuple (Ad { contentUnit: "mosaico-ad__mobparad", inBody: false }) false)
                                       `cons` bodyWithoutAd
                                       `snoc` (if isNothing props.user then loadingSpinner else vetrina)
+                                      `snoc` tagsListing tags props.onTagClick
                                       `snoc` renderElem (Tuple (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false }) false)
                                       `snoc` advertorial
                                       `snoc` mostRead
@@ -190,6 +191,7 @@ render embedNagbar imageComponent boxComponent props =
                                     Right FullArticle ->
                                       bodyWithAd
                                       `snoc` DOM.div { id: "tb-embed" }
+                                      `snoc` tagsListing tags props.onTagClick
                                       `snoc` advertorial
                                       `snoc` mostRead
                                     Left _ -> [ loadingSpinner ]
@@ -424,7 +426,7 @@ tagAndShareButtons tags onTagClick premium title shareUrl =
         [ DOM.div
             { className: "mosaico-article__tag-n-premium"
             , children:
-                [ foldMap (renderTag onTagClick) $ head tags
+                [ foldMap (renderTag Main onTagClick) $ head tags
                 , guard premium $ DOM.div
                     { className: "premium-badge"
                     , children: [ DOM.span_ [ DOM.text "Premium" ]]
@@ -434,6 +436,13 @@ tagAndShareButtons tags onTagClick premium title shareUrl =
         , Share.articleShareButtons title shareUrl
         ]
     }
+
+tagsListing :: Array Tag -> (Tag -> EventHandler) -> JSX
+tagsListing tags onClick =
+  DOM.ul_ (map (\tag -> DOM.li { className: "inline-block"
+                               , children: [renderTag Listing onClick tag]
+                               })
+           tags)
 
 -- TODO: maybe we don't want to deal at all with the error cases
 -- and we want to throw them away?
