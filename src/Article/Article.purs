@@ -151,7 +151,7 @@ render embedNagbar imageComponent boxComponent props =
                 [ headline title
                 , preamble $ getPreamble props.article
                 -- We don't want to be able to share error articles
-                , guard (maybe true ((_ /= ErrorArticle) <<< _.articleType) $ hush props.article)
+                , guard (not $ isErrorArticle props)
                     tagAndShareButtons tags props.onTagClick (isPremium props.article) title shareUrl
                 ]
               }
