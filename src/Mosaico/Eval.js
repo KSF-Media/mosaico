@@ -60,7 +60,12 @@ export async function forceEvalExternalScriptsImpl(scripts) {
       const scriptSrc = dummy.firstChild.getAttribute("src");
       // Do note that if any of the remote platforms gets pwned (eg. platform shuts down
       // and gets taken over by some domain squatter), we'll get some very nice self XSS here...
-      if (scriptSrc) {
+      if (scriptSrc?.indexOf("instagram.com") >= 0) {
+        const script = document.createElement("script");
+        script.src = scriptSrc;
+        script.async = true;
+        document.body.appendChild(script);
+      } else if (scriptSrc) {
         const proxiedUrl = "/corsProxy?url=" + encodeURIComponent(scriptSrc);
         await fetch(proxiedUrl)
           .then((r) => r.text())
