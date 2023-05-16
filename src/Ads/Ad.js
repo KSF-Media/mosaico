@@ -3,12 +3,7 @@ export function fetchAdImpl(contentUnit) {
     try {
       window.googletag.cmd.push(function () {
         if (window.definedSlots.includes(contentUnit)) {
-          window.googletag
-            .pubads()
-            .getSlots()
-            .map((s) => {
-              window.googletag.display(contentUnit);
-            });
+          window.googletag.display(contentUnit);
         }
       });
     } catch (err) {
