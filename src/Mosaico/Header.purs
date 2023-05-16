@@ -160,7 +160,7 @@ headerContent props =
       }
   , renderLoginLink props.user
   , DOM.nav
-      { className: "hidden overflow-y-hidden flex-wrap justify-center items-center h-8 mosaico-header__center-links md:flex"
+      { className: "hidden overflow-y-hidden flex-wrap justify-center items-center h-8 mosaico-header__center-links md:flex md:h-6"
       , children: map mkCategory headerCategories
       }
   , DOM.div
