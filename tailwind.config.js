@@ -110,7 +110,7 @@ const maskRepeatPlugin = plugin(function ({ addUtilities, matchUtilities }) {
 
 module.exports = {
   content: {
-    files: ["./src/**/*", "./static/**/*"],
+    files: ["./src/**/*", "./static/**/*", "./affresco/packages/vetrina/src/**/*"],
     transform: {
       // We have to use \\_ instead of \_ in purs files
       purs: (content) => content.replace(/\\\\/g, "\\"),
