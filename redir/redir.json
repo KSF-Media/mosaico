@@ -5,10 +5,6 @@
     "destination": "https://www.hbl.fi/sida/abi"
   },
   {
-    "route": "sommar",
-    "destination": "https://www.ksfmedia.fi/sommar"
-  },
-  {
     "route": "shop",
     "destination": "https://shop.hbl.fi/"
   },
@@ -272,5 +268,20 @@
     "route": "italien-schweiz",
     "paper": "hbl",
     "destination": "https://matka-agentit.fi/Lukija-ja-j%C3%A4senmatkat/Sveitsi/Italia/HBL?:id=HBL"
+  },
+  {
+    "route": "sommar",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-lite-battre-sommar"
+  },
+  {
+    "route": "sommar",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-sommar-2023"
+  },
+  {
+    "route": "sommar",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/ostnyland-sommar"
   }
 ]
