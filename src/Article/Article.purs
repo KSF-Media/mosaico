@@ -439,10 +439,14 @@ tagAndShareButtons tags onTagClick premium title shareUrl =
 
 tagsListing :: Array Tag -> (Tag -> EventHandler) -> JSX
 tagsListing tags onClick =
-  DOM.ul_ (map (\tag -> DOM.li { className: "inline-block"
-                               , children: [renderTag Listing onClick tag]
-                               })
-           tags)
+  DOM.ul
+    { className: "my-8"
+    , children: map (\tag -> DOM.li
+                                { className: "inline-block"
+                                , children: [renderTag Listing onClick tag]
+                                }
+                    ) tags
+    }
 
 -- TODO: maybe we don't want to deal at all with the error cases
 -- and we want to throw them away?
