@@ -1,20 +1,22 @@
-/* This function will block until the funding choices API is loaded
-   -- meaning that it will never resolve if the FC loading is blocked! */
 function areAdsAllowed() {
-  window.googlefc = window.googlefc || {};
-  window.googlefc.ccpa = window.googlefc.ccpa || {};
-  window.googlefc.callbackQueue = window.googlefc.callbackQueue || [];
+  const interval = setInterval(() => {
+    if (window.Cookiebot !== undefined) {
+      setConsent();
+      clearInterval(interval);
+    } else {
+      console.log("Could not find Cookiebot, trying again")
+    }
+  }, 500);
 
-  window.googlefc.callbackQueue.push({
-    AD_BLOCK_DATA_READY: () => {
-      if (window.googlefc.getAllowAdsStatus() === googlefc.AllowAdsStatusEnum.ADS_ALLOWED) {
-        console.log("User has consented to ads; allowing external scripts.");
-        window.consentToEmbeddedScripts(true);
-      } else {
-        window.consentToEmbeddedScripts(false);
-      }
-    },
-  });
+  function setConsent() {
+    if (window.Cookiebot.consent.marketing) {
+      window.consentToEmbeddedScripts(true);
+      console.log("User has consented to ads cookies; allowing external scripts.");
+    } else {
+      window.consentToEmbeddedScripts(false);
+      console.log("User has not consented to ads cookie; external scripts blocked.");
+    }
+  }
 }
 
 if (typeof window !== "undefined") {
@@ -34,17 +36,19 @@ if (typeof window !== "undefined") {
   areAdsAllowed();
 }
 
-export const consentedToEmbeddedScripts = (typeof window !== "undefined") && new Promise(resolve => {
-  window.consentToEmbeddedScriptsResolve = resolve;
-  if(document && document.location.pathname.startsWith("/artikel/draft/")) {
-    // We're in Aptoma's preview window, load embeds
-    window.consentToEmbeddedScripts(true);
-  }
-  if(window.location.hostname === "localhost") {
-    // We're on localhost, load embeds
-    window.consentToEmbeddedScripts(true);
-  }
-});
+export const consentedToEmbeddedScripts =
+  typeof window !== "undefined" &&
+  new Promise((resolve) => {
+    window.consentToEmbeddedScriptsResolve = resolve;
+    if (document && document.location.pathname.startsWith("/artikel/draft/")) {
+      // We're in Aptoma's preview window, load embeds
+      window.consentToEmbeddedScripts(true);
+    }
+    if (window.location.hostname === "localhost") {
+      // We're on localhost, load embeds
+      window.consentToEmbeddedScripts(true);
+    }
+  });
 
 if (typeof window !== "undefined") {
   window.consentedToEmbeddedScripts = consentedToEmbeddedScripts;

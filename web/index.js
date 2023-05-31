@@ -21,6 +21,8 @@ import "../src/_site.scss";
 import "../less/mosaico.less";
 import "../affresco/less/Vetrina.less";
 import "../affresco/less/Login.less";
+import { refreshAdsImpl } from "../src/Mosaico";
+import "data-layer-helper/dist/data-layer-helper.js";
 
 // yup, welcome to react 16
 import createReactClass from "create-react-class";
@@ -55,10 +57,6 @@ if (module.hot) {
     main();
   });
 }
-
-console.log("starting");
-
-var startConsentCookieSetup = require("../output/Consent.Consent/index.js").startConsentCookieSetupJS();
 
 function getGamId(name) {
   let paper = process.env.PAPER;
@@ -265,6 +263,25 @@ window.adSlots = {
   ],
 };
 
+window.helper = new DataLayerHelper(window.dataLayer, listener, true);
+
+function listener(model, message) {
+  if (message.event=="cookie_consent_update") {
+    if (Cookiebot.consent.marketing) {
+      window.userHasSelectedConsent = true;
+      window.googletag.cmd.push(function () {
+        googletag.pubads().setPrivacySettings({limitedAds: false});
+      })
+    } else {
+      window.userHasSelectedConsent = false;
+      window.googletag.cmd.push(function () {
+        googletag.pubads().setPrivacySettings({limitedAds: true});
+      })
+    }
+    refreshAdsImpl([]);
+  }
+}
+
 window.googletag = window.googletag || { cmd: [] };
 window.googletag.cmd.push(function () {
   // Restrict an ad to just the sites, if key-value targeting is applied
@@ -298,6 +315,7 @@ window.googletag.cmd.push(function () {
       }
     }
   });
+
   window.addEventListener("message", (event) => {
     let message = event.data;
     if (["BIGMAX", "BIGMOB", "WALLPAPER"].indexOf(message.cmd) != -1) {

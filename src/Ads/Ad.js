@@ -43,5 +43,9 @@ export function getIsLazy(contentUnit) {
 }
 
 export function showConsentRevocationMessage() {
-  window.googlefc && window.googlefc.showRevocationMessage();
+  if (window.Cookiebot !== undefined) {
+    window.Cookiebot.show();
+  } else {
+    console.error("Cookiebot not loaded!")
+  }
 }

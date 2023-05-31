@@ -9,7 +9,7 @@ import Data.Newtype (unwrap)
 import Data.String (Pattern(..), Replacement(..), replaceAll)
 import KSF.Paper (Paper(..), homepage, paperName)
 import Lettera.Models (Category(..), correctionsCategory)
-import Mosaico.Ad (openConsentAndSetCookie)
+import Mosaico.Ad (openConsentRevocationMessage)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (preventDefault)
@@ -359,7 +359,7 @@ thirdColumn =
   , section "Dataskydd: "
       [ DOM.a
           { href: "#"
-          , onClick: handler preventDefault openConsentAndSetCookie
+          , onClick: handler preventDefault openConsentRevocationMessage
           , children: [ DOM.text "Hantera dataskydd" ]
           , className: "text-aptoma-link-color"
           }

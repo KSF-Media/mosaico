@@ -2,7 +2,6 @@ module Mosaico.Ad where
 
 import Prelude
 
-import Consent.Consent (startConsentCookieSetup)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Nullable (Nullable, toMaybe)
@@ -74,8 +73,3 @@ ad props = make component
 
 openConsentRevocationMessage :: forall a. a -> Effect Unit
 openConsentRevocationMessage = runEffectFn1 showConsentRevocationMessage
-
-openConsentAndSetCookie :: forall a. a -> Effect Unit
-openConsentAndSetCookie a = do
-  openConsentRevocationMessage a
-  startConsentCookieSetup

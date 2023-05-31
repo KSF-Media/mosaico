@@ -113,6 +113,13 @@ export async function runBuild() {
 
     template("#programmatic-ads-js").attr("src", programmaticAdsScriptUrl);
 
+    const cookiebotDataId = {
+      hbl: "e3464008-80f1-479f-99f2-dc8b41cd79a7",
+      vn: "9aea18f0-286d-4988-af88-351c5bf83a2c",
+      on: "c7d5e93e-e01c-417d-a1e8-f0ee495e0182",
+    };
+    template("#Cookiebot").attr("data-cbid", cookiebotDataId[process.env.PAPER]);
+
     template(".mosaico-asset").each((ix, elem) => {
       const src = template(elem).attr("src");
       const href = template(elem).attr("href");

@@ -1,8 +1,10 @@
 export function refreshAdsImpl(slotArray) {
-  setTimeout(() => {
-    window.loadAds?.();
-    console.log("loadAds from Mosaico.js: ", window.loadAds);
-  }, 500);
+  if (window.userHasSelectedConsent !== undefined) {
+    setTimeout(() => {
+      window.loadAds?.();
+      console.log("loadAds from Mosaico.js: ", window.loadAds);
+    }, 500);
+  }
 }
 
 export function sentryDsn_() {

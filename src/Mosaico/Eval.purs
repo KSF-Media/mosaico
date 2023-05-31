@@ -8,7 +8,7 @@ import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1, runEffectFn1)
-import Mosaico.Ad (openConsentAndSetCookie)
+import Mosaico.Ad (openConsentRevocationMessage)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (preventDefault)
@@ -58,7 +58,7 @@ render (Just false) isArticle = DOM.div
              \ eller genom att klicka "
       , DOM.a
           { href: "#"
-          , onClick: handler preventDefault openConsentAndSetCookie
+          , onClick: handler preventDefault openConsentRevocationMessage
           , children: [ DOM.text "här för att hantera dataskydd." ]
           , className: "italic underline decoration-2"
           }

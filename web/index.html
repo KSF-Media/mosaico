@@ -11,15 +11,32 @@
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap"
       rel="stylesheet"
     />
-    <script class="mosaico-asset" src="darkmode.js"></script>
-    <script id="relevant-js"></script>
-    <script id="programmatic-ads-js"></script>
 
-    <script defer src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
-    <script src="https://d1v9u0bgi1uimx.cloudfront.net/static/sso_lite.js"></script>
+    <script data-cookieconsent="ignore">
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+          dataLayer.push(arguments);
+      }
+      gtag("consent", "default", {
+          ad_storage: "denied",
+          analytics_storage: "denied",
+          functionality_storage: "denied",
+          personalization_storage: "denied",
+          security_storage: "granted",
+          wait_for_update: 500,
+      });
+      gtag("set", "ads_data_redaction", true);
+      gtag("set", "url_passthrough", true);
+  </script>
+
+    <!-- Cookiebot -->
+    <script defer id="Cookiebot" src="https://consent.cookiebot.com/uc.js"
+      data-blockingmode="auto" type="text/javascript">
+    </script>
+    <!-- End Cookiebot -->
 
     <!-- Google Tag Manager -->
-    <script>
+    <script data-cookieconsent="ignore">
       (function (w, d, s, l, i) {
         w[l] = w[l] || [];
         w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
@@ -32,6 +49,14 @@
       })(window, document, "script", "dataLayer", "GTM-KB4TVP");
     </script>
     <!-- End Google Tag Manager -->
+
+    <script class="mosaico-asset" src="darkmode.js" data-cookieconsent="ignore"></script>
+    <script id="relevant-js" data-cookieconsent="ignore"></script>
+    <script id="programmatic-ads-js" data-cookieconsent="ignore"></script>
+
+    <script defer src="https://pagead2.googlesyndication.com/tag/js/gpt.js" data-cookieconsent="ignore"></script>
+    <script src="https://d1v9u0bgi1uimx.cloudfront.net/static/sso_lite.js" data-cookieconsent="ignore"></script>
+
     <script>
       var global = window.global || {};
     </script>
@@ -39,8 +64,8 @@
 
   <body>
     <div id="app"></div>
-    <script src="https://vjs.zencdn.net/7.17.0/video.min.js"></script>
+    <script src="https://vjs.zencdn.net/7.17.0/video.min.js" data-cookieconsent="ignore"></script>
     <div id="app-vars"></div>
-    <script defer class="mosaico-asset" src="index.js"></script>
+    <script defer class="mosaico-asset" src="index.js" data-cookieconsent="ignore"></script>
   </body>
 </html>
