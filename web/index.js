@@ -265,18 +265,23 @@ window.adSlots = {
 
 window.helper = new DataLayerHelper(window.dataLayer, listener, true);
 
-function listener(model, message) {
+function listener(_model, message) {
   if (message.event=="cookie_consent_update") {
     if (Cookiebot.consent.marketing) {
       window.userHasSelectedConsent = true;
-      window.googletag.cmd.push(function () {
-        googletag.pubads().setPrivacySettings({limitedAds: false});
-      })
+      // googletag may not exist if user has an ad blocker
+      if (window.googletag) {
+        window.googletag.cmd.push(function () {
+          googletag.pubads().setPrivacySettings({limitedAds: false});
+        })
+      }
     } else {
       window.userHasSelectedConsent = false;
-      window.googletag.cmd.push(function () {
-        googletag.pubads().setPrivacySettings({limitedAds: true});
-      })
+      if (window.googletag) {
+        window.googletag.cmd.push(function () {
+          googletag.pubads().setPrivacySettings({limitedAds: true});
+        })
+      }
     }
     refreshAdsImpl([]);
   }
