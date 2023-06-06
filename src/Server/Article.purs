@@ -46,9 +46,7 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
                 renderWithComponents (Article.render (\_ -> mempty))
                   { paper: mosaicoPaper
                   , article: Right a
-                  , onLogin: mempty
                   , user: Nothing
-                  , onPaywallEvent: pure unit
                   , onTagClick: const mempty
                   , onArticleClick: const mempty
                   , onAuthorClick: const mempty
@@ -56,6 +54,9 @@ renderArticle env fullArticle mostReadArticles latestArticles headless = do
                   , latestArticles
                   , advertorial: Nothing
                   , breakingNews: mempty
+                    -- Just the loading spinner when user is also
+                    -- Nothing
+                  , paywall: mempty
                   }
           renderWithComponents :: forall a. ((Image.Props -> JSX) -> (Box.Props -> JSX) -> a -> JSX) -> a -> JSX
           renderWithComponents f = f (Image.render mempty) (Box.render mempty)
@@ -95,9 +96,7 @@ notFoundArticleContent =
   , content: Article.render (\_ -> mempty) (Image.render mempty) (Box.render mempty)
     { paper: mosaicoPaper
     , article: Right notFoundArticle
-    , onLogin: mempty
     , user: Nothing
-    , onPaywallEvent: pure unit
     , onTagClick: const mempty
     , onArticleClick: const mempty
     , onAuthorClick: const mempty
@@ -105,6 +104,7 @@ notFoundArticleContent =
     , latestArticles: mempty
     , advertorial: Nothing
     , breakingNews: mempty
+    , paywall: mempty
     }
   }
 

@@ -40,12 +40,14 @@ import KSF.Sentry as Sentry
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User, Subscription, logout, magicLogin)
 import KSF.User.Cusno (Cusno)
+import KSF.Vetrina as Vetrina
 import Lettera as Lettera
 import Lettera.Models (Article, ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, MosaicoArticleType(..), Platform(Desktop), articleToArticleStub, categoriesMap, correctionsCategory, frontpageCategoryLabel, notFoundArticle, parseArticleStubWithoutLocalizing, parseArticleWithoutLocalizing, parseDraftArticle, readArticleType, tagToURIComponent)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendArticleAnalytics, sendPageView, setUserVariable)
 import Mosaico.Article as Article
 import Mosaico.Article.Advertorial as Advertorial
+import Mosaico.Article.Paywall (paywall)
 import Mosaico.Cache as Cache
 import Mosaico.Epaper as Epaper
 import Mosaico.Error as Error
@@ -120,6 +122,7 @@ type Components =
   , advertorialComponent :: Advertorial.Props -> JSX
   , headerComponent :: Header.Props -> JSX
   , nagbarComponent :: Eval.Props -> JSX
+  , paywallComponent :: Vetrina.Props -> JSX
   }
 
 type Props =
@@ -454,6 +457,7 @@ getInitialValues = do
   advertorialComponent <- Advertorial.component
   headerComponent      <- Header.component
   nagbarComponent      <- Eval.embedNagbar
+  paywallComponent     <- Vetrina.component
   pure
     { state:
         { article: Nothing
@@ -483,6 +487,7 @@ getInitialValues = do
         , advertorialComponent
         , headerComponent
         , nagbarComponent
+        , paywallComponent
         }
     , catMap
     , cache
@@ -856,9 +861,7 @@ render props setState state components router onPaywallEvent =
       components.articleComponent
         { paper: mosaicoPaper
         , article
-        , onLogin
         , user: state.user
-        , onPaywallEvent
         , onTagClick
         , onArticleClick
         , onAuthorClick
@@ -866,6 +869,13 @@ render props setState state components router onPaywallEvent =
         , latestArticles
         , advertorial: state.singleAdvertorial
         , breakingNews
+        , paywall: paywall components.paywallComponent
+            { onLogin
+            , onPaywallEvent
+            , user: join state.user
+            , setUser: \user -> setState _ { user = Just $ Just user }
+            , paper: mosaicoPaper
+            }
         }
 
     onClickHandler articleStub = capture_ do

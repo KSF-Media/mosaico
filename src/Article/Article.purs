@@ -2,7 +2,6 @@ module Mosaico.Article where
 
 import Prelude
 
-import Bottega.Models.Order (OrderSource(..))
 import Control.Alt ((<|>))
 import Data.Array (cons, head, insertAt, length, null, snoc, take, (!!))
 import Data.Either (Either(..), either, hush)
@@ -12,19 +11,15 @@ import Data.List.Types (List(..))
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Monoid (guard)
 import Data.Newtype (unwrap)
-import Data.Set as Set
 import Data.String (toUpper)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Foreign.Object as Object
 import KSF.LocalDateTime (formatArticleTime)
-import KSF.Paper (Paper(..))
-import KSF.Paper as Paper
+import KSF.Paper (Paper)
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
-import KSF.Vetrina as Vetrina
-import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
-import Lettera.Models (Article, ArticleStub, ArticleType(..), Author, BodyElement(..), ExternalScript, FullArticle, Image, MosaicoArticleType(..), Tag(Tag))
+import Lettera.Models (Article, ArticleStub, ArticleType(..), Author, BodyElement(..), ExternalScript, FullArticle, Image, MosaicoArticleType(..), Tag)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
@@ -74,8 +69,6 @@ getArticleCategories = either (const mempty) _.article.categories
 type Props =
   { paper :: Paper
   , article :: Either ArticleStub FullArticle
-  , onLogin :: EventHandler
-  , onPaywallEvent :: Effect Unit
   , onTagClick :: Tag -> EventHandler
   , onArticleClick :: ArticleStub -> EventHandler
   , onAuthorClick :: Author -> EventHandler
@@ -84,6 +77,7 @@ type Props =
   , latestArticles :: Array ArticleStub
   , advertorial :: Maybe ArticleStub
   , breakingNews :: String
+  , paywall :: JSX
   }
 
 evalEmbeds :: Article -> Effect Unit
@@ -181,7 +175,7 @@ render embedNagbar imageComponent boxComponent props =
                                     Right PreviewArticle ->
                                       renderElem (Tuple (Ad { contentUnit: "mosaico-ad__mobparad", inBody: false }) false)
                                       `cons` bodyWithoutAd
-                                      `snoc` (if isNothing props.user then loadingSpinner else vetrina)
+                                      `snoc` (if isNothing props.user then loadingSpinner else props.paywall)
                                       `snoc` tagsListing tags props.onTagClick
                                       `snoc` renderElem (Tuple (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false }) false)
                                       `snoc` advertorial
@@ -281,46 +275,6 @@ render embedNagbar imageComponent boxComponent props =
                               { className: "inline-block mr-2 text-base font-bold text-gray-900 uppercase font-duplexserif dark:text-aptoma-white"
                               , children: [ DOM.text opiniontype ]
                               }) $ _.title <$> detail
-
-    vetrina =
-      Vetrina.vetrina
-        { onClose: Just props.onPaywallEvent
-        , onLogin: props.onLogin
-        , user: join props.user
-        , products: Right case props.paper of
-            HBL -> [ hblPremium ]
-            ON -> [ onPremium ]
-            VN -> [ vnPremium ]
-            _ -> []
-        , unexpectedError: mempty
-        , headline: Just paperHeadline
-        , paper: Just props.paper
-        , paymentMethods: []
-        , customNewPurchase: Nothing
-        , subscriptionExists: mempty
-        , loadingContainer: Nothing
-        , accessEntitlements: Set.fromFoldable case props.paper of
-            HBL -> ["hbl-365", "hbl-web"]
-            ON -> ["on-365", "on-web"]
-            VN -> ["vn-365", "vn-web"]
-            _ -> []
-        , orderSource: PaywallSource
-        , askAccountAlways: false
-        }
-
-    paperName = case props.paper of
-      HBL -> "HBL"
-      p -> Paper.paperName p
-
-    paperHeadline = case props.paper of
-      HBL -> DOM.div_
-              [ DOM.text $ "HBL digitalt "
-              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "nu 0 €" ] }
-              ]
-      _   -> DOM.div_
-              [ DOM.text $ "Läs " <> paperName <> " digitalt för "
-              , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "endast 1 €" ] }
-              ]
 
     renderMostReadArticles articles =
       DOM.div
