@@ -133,9 +133,20 @@ articleMeta article =
                   $ renderAsJsonLd article
             }
         }
+    , foldMap canonical articleStem
     ]
   where
     description = if null article.preamble then fold (Paper.paperDescription mosaicoPaper) else fold article.preamble
+    canonical stem =
+      DOM.link
+        { rel: "canonical"
+        , href: stem <> article.uuid
+        }
+    articleStem = case article.paper of
+      HBL -> Just "https://www.hbl.fi/artikel/"
+      VN -> Just "https://www.vastranyland.fi/artikel/"
+      ON -> Just "https://www.ostnyland.fi/artikel/"
+      _ -> Nothing
 
 updateMeta :: JSX -> Effect Unit
 updateMeta tags = do
