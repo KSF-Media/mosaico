@@ -190,8 +190,12 @@ mosaicoComponent initialValues props = React.do
   let initialCatMap = if null props.categoryStructure then Map.empty
                       else categoriesMap $ correctionsCategory `cons` props.categoryStructure
       initialPath = getPathFromLocationState initialValues.locationState
+      initialRoute = fromMaybe Routes.Frontpage $ hush $
+                     match (Routes.routes initialCatMap) initialPath
   state /\ setState <- useState initialValues.state
-                         { article = Right <$> props.article
+                         { article = case _.articleType <$> props.article of
+                              Just ErrorArticle -> Just $ Left unit
+                              _ -> Right <$> props.article
                          , clickedArticle = articleToArticleStub <<< _.article <$> props.article
                          , staticPage = map StaticPageResponse $
                                         { pageName:_, pageContent:_, pageScript: initialValues.staticPageScript }
@@ -200,8 +204,7 @@ mosaicoComponent initialValues props = React.do
                          , categoryStructure = props.categoryStructure
                          , catMap = initialCatMap
                          , feeds = HashMap.fromArray props.initialFeeds
-                         , route = fromMaybe Routes.Frontpage $ hush $
-                                   match (Routes.routes initialCatMap) initialPath
+                         , route = initialRoute
                          , user = Nothing
                          , ssrPreview = true
                          }
@@ -317,6 +320,11 @@ mosaicoComponent initialValues props = React.do
           else Aff.launchAff_ do
             cache <- Aff.AVar.read initialValues.cache
             Cache.parallelWithCommonActions cache setFeed' mempty
+        -- If it was already missing in SSR it's not going to be there
+        -- now
+        | state.route == initialRoute
+        , (_.articleType <$> props.article) == Just ErrorArticle
+        -> setState _ { article = Just $ Left unit }
         | otherwise -> loadArticle articleId true
       _ -> pure unit
     pure mempty
@@ -504,6 +512,7 @@ fromJSProps jsProps =
                 <$> articleType
                 <*> (hush $ (case articleType of
                                 Just DraftArticle -> parseDraftArticle
+                                Just ErrorArticle -> const $ pure notFoundArticle.article
                                 _                 -> parseArticleWithoutLocalizing
                             ) jsProps.article)
       initialFeeds =

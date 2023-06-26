@@ -133,7 +133,7 @@ notFound env mainContent maybeMostReadArticles maybeLatestArticles = do
           <> foldMap (pure <<< Tuple "mostReadArticles" <<< JSON.fromArray <<< map articleStubToJson) maybeMostReadArticles
           <> foldMap (pure <<< Tuple "latestArticles" <<< JSON.fromArray <<< map articleStubToJson) maybeLatestArticles
           <> (case mainContent.type of
-                 ArticleContent -> [ "article" /\ (encodeJson $ articleToJson notFoundArticle.article) ]
+                 ArticleContent -> [ "articleType" /\ JSON.fromString "ErrorArticle" ]
                  TagListContent tag -> mkArticleFeed (TagFeed tag) (ArticleList [])
                  StaticPageContent pageName -> [ "staticPageName" /\ JSON.fromString pageName ]
                  _ -> mempty
