@@ -29,7 +29,6 @@ import Effect.Now (nowDateTime)
 import Foreign.Object (Object, lookup)
 import JSURI as URI
 import KSF.Paper as Paper
-import KSF.Spinner (loadingSpinner)
 import Lettera as Lettera
 import Lettera.Models (Category(..), CategoryLabel(..), DraftParams, correctionsCategory)
 import Mosaico.Cache (parallelWithCommonLists)
@@ -403,7 +402,7 @@ korsordPage env {} = do
               { type: Korsord
               , content: DOM.div
                   { className: "mosaico--static-page"
-                  , children: [ Korsord.spinner ]
+                  , children: [ Korsord.render mosaicoPaper mempty Nothing ]
                   }
               }
           , mostReadArticles

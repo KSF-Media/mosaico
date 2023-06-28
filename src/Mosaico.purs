@@ -665,7 +665,7 @@ render props setState state components router onPaywallEvent =
                  { className: "mosaico--static-page"
                  , children:
                      [ case state.user of
-                          Nothing -> Korsord.spinner
+                          Nothing -> Korsord.render mosaicoPaper paywall Nothing
                           Just user ->
                             components.korsordComponent
                               { user

@@ -2,22 +2,21 @@ module Mosaico.Korsord where
 
 import Prelude
 
-import Data.Either (Either(Right), hush)
+import Data.Either (hush)
 import Data.Foldable (any)
-import Data.Maybe (Maybe(..), isJust, isNothing, fromMaybe,  maybe)
+import Data.Maybe (Maybe(..), isJust, fromMaybe,  maybe)
 import Data.Set as Set
 import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class (liftEffect)
 import KSF.Auth (loadToken)
 import KSF.Paper (Paper(..))
-import KSF.Paper as Paper
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import KSF.User as User
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
-import React.Basic.Events (EventHandler, handler_)
+import React.Basic.Events (handler_)
 import React.Basic.Hooks (Component, useEffect, useState', (/\))
 import React.Basic.Hooks as React
 import Web.HTML as HTML
@@ -63,7 +62,8 @@ render paper paywall entitlement =
   DOM.div
     { className: "flex flex-col justify-center"
     , children:
-        [ case entitlement of
+        [ korsordContent paper
+        , case entitlement of
              Nothing ->
                DOM.div
                  { className: "flex justify-center"
@@ -75,11 +75,12 @@ render paper paywall entitlement =
                  , children:
                      [ DOM.div
                          { className: "max-w-xl"
-                         , children: [ paywall ]
+                         , children:
+                             [ paywall ]
                          }
                      ]
                  }
-             Just true -> korsordContent paper
+             _ -> mempty
         ]
     }
 
@@ -164,11 +165,4 @@ korsordContent paper =
           ]
         }
       ]
-    }
-
-spinner :: JSX
-spinner =
-  DOM.div
-    { className: "flex justify-center"
-    , children: [ loadingSpinner ]
     }
