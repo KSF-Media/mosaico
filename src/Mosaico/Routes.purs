@@ -31,6 +31,7 @@ data MosaicoPage
   | ProfilePage
   | ArticlePage String
   | NotFoundPage String
+  | KorsordPage
   | StaticPage String
   | CategoryPage Category (Maybe Int)
   | TagPage Tag (Maybe Int)
@@ -49,6 +50,7 @@ routes :: Categories -> Match MosaicoPage
 routes categories = root *> oneOf
   [ DraftPage <$ (lit "artikel" *> lit "draft" *> str)
   , ArticlePage <$> (lit "artikel" *> str)
+  , KorsordPage <$ (lit "sida" *> lit "korsord" *> end)
   , StaticPage <$> (lit "sida" *> str)
   , EpaperPage <$ (lit "epaper" *> optionalMatch params *> end)
   , ProfilePage <$ (lit "konto" *> end)

@@ -70,6 +70,7 @@ pageTitle route maybeArticle =
       Routes.NotFoundPage _ -> "Oj... 404"
       Routes.CategoryPage (Category c) _ -> unwrap c.label
       Routes.EpaperPage -> "E-Tidningen"
+      Routes.KorsordPage -> staticPageTitle "korsord" mosaicoPaper
       Routes.StaticPage page -> staticPageTitle page mosaicoPaper
       Routes.ArticlePage _ -> case maybeArticle of
         Just (Right article) -> article.article.title

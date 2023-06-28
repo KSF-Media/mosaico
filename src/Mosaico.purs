@@ -47,7 +47,7 @@ import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendArticleAnalytics, sendPageView, setUserVariable)
 import Mosaico.Article as Article
 import Mosaico.Article.Advertorial as Advertorial
-import Mosaico.Article.Paywall (paywall)
+import Mosaico.Article.Paywall as Paywall
 import Mosaico.Cache as Cache
 import Mosaico.Epaper as Epaper
 import Mosaico.Error as Error
@@ -60,6 +60,7 @@ import Mosaico.Frontpage.Events (onFrontpageClick)
 import Mosaico.Frontpage.Models (Hook(..)) as Frontpage
 import Mosaico.Header as Header
 import Mosaico.Header.Menu as Menu
+import Mosaico.Korsord as Korsord
 import Mosaico.LatestList as LatestList
 import Mosaico.LoginModal as LoginModal
 import Mosaico.MainContent (jumpToMainContent, mainContent)
@@ -123,6 +124,7 @@ type Components =
   , headerComponent :: Header.Props -> JSX
   , nagbarComponent :: Eval.Props -> JSX
   , paywallComponent :: Vetrina.Props -> JSX
+  , korsordComponent :: Korsord.Props -> JSX
   }
 
 type Props =
@@ -466,6 +468,7 @@ getInitialValues = do
   headerComponent      <- Header.component
   nagbarComponent      <- Eval.embedNagbar
   paywallComponent     <- Vetrina.component
+  korsordComponent     <- Korsord.component
   pure
     { state:
         { article: Nothing
@@ -496,6 +499,7 @@ getInitialValues = do
         , headerComponent
         , nagbarComponent
         , paywallComponent
+        , korsordComponent
         }
     , catMap
     , cache
@@ -654,6 +658,23 @@ render props setState state components router onPaywallEvent =
            (mosaicoLayoutNoAside $ renderArticle $ Right notFoundArticle)
            (renderRouteContent <<< Routes.ArticlePage <<< _.uuid <<< _.article)
            $ join <<< map hush $ state.article
+       Routes.KorsordPage -> mosaicoLayoutNoAside $
+           fragment
+             [ components.nagbarComponent { isArticle: false }
+             , DOM.div
+                 { className: "mosaico--static-page"
+                 , children:
+                     [ case state.user of
+                          Nothing -> Korsord.spinner
+                          Just user ->
+                            components.korsordComponent
+                              { user
+                              , paper: mosaicoPaper
+                              , paywall
+                              }
+                     ]
+                 }
+             ]
        Routes.StaticPage _ -> mosaicoLayoutNoAside $ case state.staticPage of
          Nothing -> loadingSpinner
          Just (StaticPageResponse page)  ->
@@ -801,6 +822,7 @@ render props setState state components router onPaywallEvent =
             Routes.ArticlePage _ -> true
             Routes.NotFoundPage _ -> true
             Routes.StaticPage _ -> true
+            Routes.KorsordPage -> true
             Routes.EpaperPage -> true
             _ -> false
 
@@ -861,6 +883,7 @@ render props setState state components router onPaywallEvent =
       Routes.NotFoundPage _ -> false
       Routes.CategoryPage _ _ -> true
       Routes.EpaperPage -> true
+      Routes.KorsordPage -> false
       Routes.StaticPage _ -> false
       Routes.DebugPage _ -> false
       Routes.DeployPreview -> false
@@ -878,13 +901,7 @@ render props setState state components router onPaywallEvent =
         , latestArticles
         , advertorial: state.singleAdvertorial
         , breakingNews
-        , paywall: paywall components.paywallComponent
-            { onLogin
-            , onPaywallEvent
-            , user: join state.user
-            , setUser: \user -> setState _ { user = Just $ Just user }
-            , paper: mosaicoPaper
-            }
+        , paywall
         }
 
     onClickHandler articleStub = capture_ do
@@ -947,3 +964,11 @@ render props setState state components router onPaywallEvent =
     mostReadArticles = foldMap Feed.toList $ HashMap.lookup MostReadFeed state.feeds
 
     breakingNews = foldMap Feed.toHtml $ HashMap.lookup BreakingNewsFeed state.feeds
+
+    paywall = Paywall.paywall components.paywallComponent
+      { onLogin
+      , onPaywallEvent
+      , user: join state.user
+      , setUser: \user -> setState _ { user = Just $ Just user }
+      , paper: mosaicoPaper
+      }

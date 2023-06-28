@@ -1,4 +1,4 @@
-if (typeof window !== "undefined") {
+export function loadKorsord() {
   const cwStyleClass = "korsord-print";
   /* Wait for the keesing script to be loaded */
   const interval = setInterval(() => {

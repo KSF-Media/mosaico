@@ -29,14 +29,15 @@ import Effect.Now (nowDateTime)
 import Foreign.Object (Object, lookup)
 import JSURI as URI
 import KSF.Paper as Paper
+import KSF.Spinner (loadingSpinner)
 import Lettera as Lettera
 import Lettera.Models (Category(..), CategoryLabel(..), DraftParams, correctionsCategory)
 import Mosaico.Cache (parallelWithCommonLists)
 import Mosaico.Cache as Cache
 import Mosaico.Epaper as Epaper
 import Mosaico.Error (notFoundWithAside)
-import Mosaico.Eval as Eval
 import Mosaico.Header.Menu as Menu
+import Mosaico.Korsord as Korsord
 import Mosaico.Meta as Meta
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.Profile as Profile
@@ -129,6 +130,10 @@ spec ::
               GET "/konto"
                 { response :: ResponseBody
                 }
+         , korsordPage ::
+              GET "/sida/korsord"
+                { response :: ResponseBody
+                }
          , staticPage ::
               GET "/sida/<pageName>"
                 { response :: ResponseBody
@@ -197,6 +202,7 @@ main = do
           , assets
           , frontpage: Server.Feed.frontpage env
           , tagList: Server.Feed.tagList env
+          , korsordPage: korsordPage env
           , staticPage: staticPage env
           , epaperPage: epaperPage env
           , debugList: Server.Test.debugList env
@@ -384,6 +390,42 @@ epaperPage env {} = do
           , isFullWidth: true
           }
 
+korsordPage :: Env -> { guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
+korsordPage env {} = do
+  { mostReadArticles, latestArticles } <- sequential $
+    { mostReadArticles: _, latestArticles: _ }
+    <$> parallel (Cache.getContent <$> Cache.getMostRead env.cache)
+    <*> parallel (Cache.getContent <$> Cache.getLatest env.cache)
+  let htmlTemplate = cloneTemplate env.htmlTemplate
+      mosaicoString =
+        renderToString
+          { mainContent:
+              { type: Korsord
+              , content: DOM.div
+                  { className: "mosaico--static-page"
+                  , children: [ Korsord.spinner ]
+                  }
+              }
+          , mostReadArticles
+          , latestArticles
+          , categoryStructure: env.categoryStructure
+          , headless: false
+          , article: Nothing
+          , isFullWidth: true
+          }
+  html <- liftEffect do
+    let windowVars =
+          [ "staticPageName" /\ JSON.fromString "korsord"
+          , "categoryStructure" /\ encodeJson env.categoryStructure
+          ]
+    appendMosaico mosaicoString htmlTemplate
+      >>= appendVars (mkWindowVariables windowVars)
+      >>= appendHead (makeTitle title <> renderedMeta)
+  pure $ htmlContent $ Response.ok $ StringBody $ renderTemplateHtml html
+  where
+    title = Meta.pageTitle Routes.KorsordPage Nothing
+
+    renderedMeta = DOM.renderToStaticMarkup $ Meta.staticPageMeta "korsord"
 
 staticPage :: Env -> { params :: { pageName :: String }, guards :: { logger :: Unit } } -> Aff (Response ResponseBody)
 staticPage env { params: { pageName } } = do
@@ -396,8 +438,7 @@ staticPage env { params: { pageName } } = do
       let staticPageScript = HashMap.lookup (pageName <> ".js") env.staticPages
           htmlTemplate = cloneTemplate env.htmlTemplate
           staticPageJsx = DOM.fragment
-            [ if pageName == "korsord" then Eval.render Nothing false else mempty
-            , DOM.div
+            [ DOM.div
                 { className: "mosaico--static-page"
                 , children:
                     [ DOM.div { dangerouslySetInnerHTML: { __html: staticPageContent } }

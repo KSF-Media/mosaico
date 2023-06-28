@@ -43,6 +43,7 @@ data MainContentType
   | WebviewContent
   | TagListContent Tag
   | EpaperContent
+  | Korsord
   | StaticPageContent String
   | ProfileContent
   | MenuContent
