@@ -153,6 +153,5 @@ updateMeta :: JSX -> Effect Unit
 updateMeta tags = do
     let deleteMetaByProperty prop = deleteBySelector ("[property='" <> prop <> "']")
     traverse_ deleteMetaByProperty ["og:type", "og:title", "og:url", "og:description", "og:image"]
-    deleteBySelector "[name='description']"
-    deleteBySelector "[type='application/ld+json']"
+    traverse_ deleteBySelector ["[rel='canonical']", "[name='description']", "[type='application/ld+json']"]
     appendToHead $ renderToStaticMarkup tags
