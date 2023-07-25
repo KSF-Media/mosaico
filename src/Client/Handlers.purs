@@ -34,6 +34,7 @@ type Handlers =
   , setUser :: Maybe User -> Effect Unit
   , onMenuClick :: Effect Unit
   , onLogout :: EventHandler
+  -- Don't start with a slash
   , onStaticPageClick :: String -> EventHandler
   , onAuthorClick :: Author -> EventHandler
   -- May choose to not capture the event

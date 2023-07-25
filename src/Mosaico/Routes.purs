@@ -35,6 +35,7 @@ data MosaicoPage
   | ArticlePage UUID.UUID
   | NotFoundPage String
   | KorsordPage
+  -- TODO Use a newtype wrapper that prohibits slashes in it?
   | StaticPage String
   | CategoryPage Category (Maybe Int)
   | TagPage Tag (Maybe Int)

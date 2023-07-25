@@ -96,8 +96,8 @@ render props@{ handlers: { onLogin, onLogout, onMainClick, onStaticPageClick } }
       , children:
         [ renderIcon "maskimage-search w-9 h-7" "SÖK" "/sök" $ onMainClick "/sök"
         , renderIcon "maskimage-epaper w-9 h-9" "E-TIDNINGEN" "/epaper" $ onMainClick $ "/epaper"
-        , renderIcon "maskimage-crosswords w-9 h-7" "KORSORD" "/sida/korsord" $ onStaticPageClick "/korsord"
-        , renderIcon "maskimage-kundservice w-9 h-9" "KUNDSERVICE" "/sida/kundservice" $ onStaticPageClick "/kundservice"
+        , renderIcon "maskimage-crosswords w-9 h-7" "KORSORD" "/korsord" $ onMainClick "/korsord"
+        , renderIcon "maskimage-kundservice w-9 h-9" "KUNDSERVICE" "/sida/kundservice" $ onStaticPageClick "kundservice"
         , case props.user of
             Nothing -> renderLoadingIcon
             Just (Just _) -> renderIcon "maskimage-logout w-9 h-7" "LOGGA UT" "" onLogout

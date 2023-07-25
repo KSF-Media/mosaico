@@ -105,8 +105,8 @@ headerContent props =
           , DOM.a
               { className: "pl-1 no-underline"
               , children: [ DOM.text "KORSORD" ]
-              , href: "/sida/korsord"
-              , onClick: props.handlers.onStaticPageClick "korsord"
+              , href: "/korsord"
+              , onClick: props.handlers.onMainClick "/korsord"
               }
             ]
       }
