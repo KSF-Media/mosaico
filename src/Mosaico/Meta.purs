@@ -4,12 +4,11 @@ import Prelude
 
 import Mosaico.Routes as Routes
 import Data.Argonaut.Core as JSON
-import Data.Tuple.Nested ((/\))
 import Data.Array (null)
 import Data.Foldable (fold, foldMap, traverse_)
-import Data.Either (Either(..))
 import Data.Maybe (maybe, fromMaybe, Maybe(..))
 import Data.String as String
+import Data.UUID as UUID
 import Effect (Effect)
 import React.Basic (JSX, fragment)
 import React.Basic.DOM as DOM
@@ -19,7 +18,7 @@ import Mosaico.Paper (mosaicoPaper)
 import Data.Newtype (unwrap)
 import KSF.Paper (Paper(..))
 import KSF.Paper as Paper
-import Lettera.Models (Article, FullArticle, Category(..))
+import Lettera.Models (ArticleStub, Category(..))
 import Lettera.ArticleSchema (renderAsJsonLd)
 
 foreign import deleteBySelector :: String -> Effect Unit
@@ -34,7 +33,6 @@ staticPageTitle page paper =
     "fragor-och-svar", _ -> "Frågor och svar"
     "insandare", _       -> "Insändare"
     "kontakt", _         -> "Kontakta oss"
-    "korsord", _         -> "Korsord och hjärngympa"
     "kundservice", _     -> "Kundservice"
     "nyhetsbrev", HBL    -> "Beställ HBL:s nyhetsbrev!"
     "nyhetsbrev", ON     -> "Beställ Östnylands nyhetsbrev!"
@@ -48,9 +46,6 @@ staticPageTitle page paper =
 staticPageDescription :: String -> Paper -> Maybe String
 staticPageDescription page paper =
     case page, paper of
-      "korsord",    HBL -> Just "Utmana dig själv med Hufvudstadsbladets digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
-      "korsord",    VN  -> Just "Utmana dig själv med Västra Nylands digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
-      "korsord",    ON  -> Just "Utmana dig själv med Östnylands digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
       "nyhetsbrev", HBL -> Just "Här kan du beställa HBL:s nyhetsbrev. Nyhetsbreven kostar ingenting."
       "nyhetsbrev", VN  -> Just "Här kan du beställa Västra Nylands nyhetsbrev. Nyhetsbreven kostar ingenting."
       "nyhetsbrev", ON  -> Just "Här kan du beställa Östnylands nyhetsbrev. Nyhetsbreven kostar ingenting."
@@ -59,7 +54,7 @@ staticPageDescription page paper =
       "app",        ON  -> Just "Med Östnylands appar har du tillgång till de senaste nyheterna dygnet runt. Alltid smidigt direkt i din mobil eller pekplatta."
       _, _ -> Nothing
 
-pageTitle :: forall a. Routes.MosaicoPage -> Maybe (Either a FullArticle) -> String
+pageTitle :: Routes.MosaicoPage -> Maybe ArticleStub -> String
 pageTitle route maybeArticle =
     case route of
       Routes.Frontpage -> Paper.paperName mosaicoPaper
@@ -70,27 +65,24 @@ pageTitle route maybeArticle =
       Routes.NotFoundPage _ -> "Oj... 404"
       Routes.CategoryPage (Category c) _ -> unwrap c.label
       Routes.EpaperPage -> "E-Tidningen"
-      Routes.KorsordPage -> staticPageTitle "korsord" mosaicoPaper
+      Routes.KorsordPage -> "Korsord och hjärngympa"
       Routes.StaticPage page -> staticPageTitle page mosaicoPaper
-      Routes.ArticlePage _ -> case maybeArticle of
-        Just (Right article) -> article.article.title
-        Just (Left _) -> "Något gick fel"
-        Nothing -> "Laddar..."
+      Routes.ArticlePage articleId
+        | Just article <- maybeArticle
+        , UUID.parseUUID article.uuid == Just articleId -> article.title
+      -- This should never happen TODO model better
+      Routes.ArticlePage _ -> "Laddar..."
 
       -- TODO: are these good?
-      Routes.DraftPage -> Paper.paperName mosaicoPaper
+      Routes.DraftPage _ -> Paper.paperName mosaicoPaper
       Routes.DebugPage _ -> Paper.paperName mosaicoPaper
       Routes.DeployPreview -> Paper.paperName mosaicoPaper
 
-getMeta :: forall a. Routes.MosaicoPage -> Maybe (Either a FullArticle) -> JSX
-getMeta route maybeArticle =
-    case route /\ maybeArticle of
-      Routes.StaticPage page /\ _ -> staticPageMeta page
-      Routes.ArticlePage _ /\ (Just (Right article)) -> articleMeta article.article
-      _ -> defaultMeta Nothing
-
-defaultMeta :: Maybe String -> JSX
-defaultMeta overrideTitle =
+getMeta :: Routes.MosaicoPage -> Maybe ArticleStub -> JSX
+getMeta (Routes.StaticPage page) _ = staticPageMeta page
+getMeta (Routes.ArticlePage articleId) (Just article)
+  | UUID.parseUUID article.uuid == Just articleId = articleMeta article
+getMeta route _ =
   fragment
     [ DOM.meta { property: "og:type", content: "website" }
     , DOM.meta { property: "og:title", content: title }
@@ -99,8 +91,12 @@ defaultMeta overrideTitle =
     , foldMap (\content -> DOM.meta { name: "description", content }) description
     ]
   where
-    title = fromMaybe (Paper.paperName mosaicoPaper) overrideTitle
-    description = Paper.paperDescription mosaicoPaper
+    title = pageTitle route Nothing
+    description = case route of
+      Routes.KorsordPage | mosaicoPaper == HBL -> Just "Utmana dig själv med Hufvudstadsbladets digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
+      Routes.KorsordPage | mosaicoPaper == VN -> Just "Utmana dig själv med Västra Nylands digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
+      Routes.KorsordPage | mosaicoPaper == ON -> Just "Utmana dig själv med Östnylands digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
+      _ -> Paper.paperDescription mosaicoPaper
 
 staticPageMeta :: String -> JSX
 staticPageMeta pageName =
@@ -115,7 +111,7 @@ staticPageMeta pageName =
         title = staticPageTitle pageName mosaicoPaper
         description = staticPageDescription pageName mosaicoPaper
 
-articleMeta :: Article -> JSX
+articleMeta :: ArticleStub -> JSX
 articleMeta article =
   fragment
     [ DOM.meta { property: "og:type", content: "article" }
@@ -143,7 +139,7 @@ articleMeta article =
         { rel: "canonical"
         , href: stem <> article.uuid
         }
-    articleStem = case article.paper of
+    articleStem = case mosaicoPaper of
       HBL -> Just "https://www.hbl.fi/artikel/"
       VN -> Just "https://www.vastranyland.fi/artikel/"
       ON -> Just "https://www.ostnyland.fi/artikel/"

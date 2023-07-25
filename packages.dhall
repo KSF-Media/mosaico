@@ -20,6 +20,33 @@ let additions =
         , version = "844f2ababa2c7a0482bf871e1e6bf970b7e51313"
         , dependencies = [ "arrays", "assert", "bifunctors", "console", "control", "effect", "either", "exceptions", "foldable-traversable", "foreign", "foreign-object", "identity", "lists", "maybe", "newtype", "partial", "prelude", "record", "strings", "transformers", "tuples", "typelevel-prelude", "unsafe-coerce"]
         }
+      , js-promise =
+        { dependencies =
+          [ "effect"
+          ]
+        , repo = "https://github.com/purescript-contrib/purescript-js-promise.git"
+        , version = "ff731bceb7f22827322d5cabdb50f4427dbe9940"
+        }
+      , js-promise-aff =
+        { dependencies =
+	  [ "aff"
+          , "assert"
+          , "console"
+          , "control"
+          , "datetime"
+          , "effect"
+          , "either"
+          , "exceptions"
+          , "foreign"
+          , "integers"
+          , "js-promise"
+          , "maybe"
+          , "prelude"
+          , "transformers"
+          ]
+        , repo = "https://github.com/purescript-contrib/purescript-js-promise-aff.git"
+        , version = "2fc7136d731da1c9e878debba57b16f2dd16f674"
+        }
       , payload =
         { dependencies =
           [ "aff"

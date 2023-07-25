@@ -1,4 +1,4 @@
-module Mosaico.Paper where
+module Mosaico.Paper (mosaicoPaper) where
 
 import Data.Maybe (Maybe(..))
 import KSF.Paper (Paper(..), fromString)

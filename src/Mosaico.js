@@ -7,10 +7,6 @@ export function refreshAdsImpl(slotArray) {
   }
 }
 
-export function sentryDsn_() {
-  return process.env.SENTRY_DSN;
-}
-
 export function setManualScrollRestoration() {
   history.scrollRestoration = "manual";
 }

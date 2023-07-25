@@ -10,13 +10,14 @@ import Data.String (Pattern(..), Replacement(..), replaceAll)
 import KSF.Paper (Paper(..), homepage, paperName)
 import Lettera.Models (Category(..), correctionsCategory)
 import Mosaico.Ad (openConsentRevocationMessage)
+import Mosaico.Client.Handlers (Handlers)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (preventDefault)
 import React.Basic.Events (handler, EventHandler)
 
-footer :: Paper -> (Category -> EventHandler) -> (String -> EventHandler) -> JSX
-footer mosaicoPaper onCategoryClick onStaticPageClick =
+footer :: Paper -> Handlers -> JSX
+footer mosaicoPaper { onCategoryClick, onStaticPageClick } =
   DOM.footer
     { className: "flex flex-col items-center py-12 px-0 m-0 bg-aptoma-footer-color lg:px-2 font-roboto [grid-area:foot]"
     , children:

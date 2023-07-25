@@ -2,27 +2,21 @@ module Test.Main where
 
 import Prelude
 
-import Data.Either (Either (..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Effect (Effect)
 import Effect.Aff (Aff, bracket, launchAff_)
 import Effect.Class.Console (log)
-import Effect.Class (liftEffect)
-import Effect.Exception (throw)
-import Mosaico.Server.Env (Redirect)
 import Mosaico.Test.Account as Account
 import Mosaico.Test.Article as Article
 import Mosaico.Test.Embeds as Embeds
 import Mosaico.Test.Frontpage as Frontpage
 import Mosaico.Test.Layout as Layout
 import Mosaico.Test.Lettera as Lettera
+import Mosaico.Test.Redir as Redir
 import Mosaico.Test.Search as Search
 import Mosaico.Test.Static as Static
 import Mosaico.Test.Tags as Tags
 import KSF.Puppeteer as Chrome
-import Node.Encoding (Encoding(..))
-import Node.FS.Sync (readTextFile) as FS
-import Simple.JSON (readJSON)
 
 foreign import testUser :: String
 foreign import testPassword :: String
@@ -37,12 +31,8 @@ defaultPremiumArticleId = "cf100445-d2d8-418a-b190-79d0937bf7fe"
 
 main :: Effect Unit
 main = launchAff_ do
-  log "Validate redir.json file"
-  liftEffect $ void do
-    redirJson <- FS.readTextFile UTF8 "./dist/redir.json"
-    case readJSON redirJson of
-      Right (_ :: Array Redirect) -> pure []
-      Left err -> throw ("Could not parse redir.json! Please fix. Error: " <> show err)
+  log "Test redirect"
+  withBrowserPage Redir.testRedir
 
   log "Test draft article"
   withBrowserPage $ Article.testDraftArticle

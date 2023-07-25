@@ -27,24 +27,21 @@ import "data-layer-helper/dist/data-layer-helper.js";
 // yup, welcome to react 16
 import createReactClass from "create-react-class";
 React.createClass = createReactClass;
-var Mosaico = require("../output/Mosaico/index.js").jsApp();
+var Mosaico = require("../output/Mosaico/index.js").app();
+const loadMosaicoVars = require("../output/Mosaico.Client.Loader/index.js").loadMosaicoVars;
+var mosaicoVars;
+
+if (window.mosaicoVars !== undefined) {
+  mosaicoVars = Promise.resolve(window.mosaicoVars);
+} else {
+  mosaicoVars = loadMosaicoVars();
+}
 
 function main() {
-  rehydrateMarks().then(() => {
+  Promise.all([mosaicoVars, rehydrateMarks()]).then((res) => {
     const mosaico = (
       <Mosaico
-        article={window.article || null}
-        articleType={window.articleType || null}
-        mostReadArticles={window.mostReadArticles || null}
-        staticPageName={window.staticPageName || null}
-        categoryStructure={window.categoryStructure || null}
-        globalDisableAds={window.globalDisableAds || null}
-        initialFrontpageFeed={window.frontpageFeed || null}
-        initialBreakingNews={window.breakingNews || null}
-        latestArticles={window.latestArticles || null}
-        user={window.user || null}
-        entitlements={window.entitlements || null}
-        headless={window.headless || null}
+        mosaicoVars={res[0]}
       />
     );
     ReactDOM.hydrate(mosaico, document.getElementById("app"));

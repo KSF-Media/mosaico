@@ -24,17 +24,16 @@ import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
 import Mosaico.BreakingNews as BreakingNews
+import Mosaico.Client.Handlers (Handlers)
 import Mosaico.Eval as Eval
 import Mosaico.FallbackImage (fallbackImage)
 import Mosaico.Frontpage (Frontpage(..), render) as Frontpage
-import Mosaico.LatestList as LatestList
+import Mosaico.Lists.LatestList as LatestList
 import Mosaico.Share as Share
 import Mosaico.Tag (TagType(..), renderTag)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.Events (EventHandler)
-import React.Basic.Hooks (Component)
-import React.Basic.Hooks as React
 
 isPremium :: Either ArticleStub FullArticle -> Boolean
 isPremium = either _.premium _.article.premium
@@ -69,9 +68,7 @@ getArticleCategories = either (const mempty) _.article.categories
 type Props =
   { paper :: Paper
   , article :: Either ArticleStub FullArticle
-  , onTagClick :: Tag -> EventHandler
-  , onArticleClick :: ArticleStub -> EventHandler
-  , onAuthorClick :: Author -> EventHandler
+  , handlers :: Handlers
   , user :: Maybe (Maybe User)
   , mostReadArticles :: Array ArticleStub
   , latestArticles :: Array ArticleStub
@@ -83,14 +80,6 @@ type Props =
 evalEmbeds :: Article -> Effect Unit
 evalEmbeds = Eval.evalArticleScripts <<< map Eval.ScriptTag <<< map unwrap <<< fold <<< _.externalScripts
 
-component :: Component Props
-component = do
-  imageComponent <- Image.component
-  boxComponent <- Box.component
-  nagbarComponent <- Eval.embedNagbar
-  React.component "Article" $ \props -> React.do
-    pure $ render nagbarComponent imageComponent boxComponent props
-
 type BodyElement' = Tuple BodyElement Boolean
 
 render :: (Eval.Props -> JSX) -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
@@ -98,7 +87,7 @@ render embedNagbar imageComponent boxComponent props =
     let title = getTitle props.article
         tags = getTags props.article
         mainImage = getMainImage props.article
-        renderElem = renderElement hideAds imageComponent boxComponent (Just props.onArticleClick)
+        renderElem = renderElement hideAds imageComponent boxComponent (Just props.handlers.onArticleClick)
 
         markPremiumElements :: Boolean -> Array BodyElement -> Array BodyElement'
         markPremiumElements premium elements =
@@ -146,7 +135,7 @@ render embedNagbar imageComponent boxComponent props =
                 , preamble $ getPreamble props.article
                 -- We don't want to be able to share error articles
                 , guard (not $ isErrorArticle props)
-                    tagAndShareButtons tags props.onTagClick (isPremium props.article) title shareUrl
+                    tagAndShareButtons tags props.handlers.onTagClick (isPremium props.article) title shareUrl
                 ]
               }
           , foldMap
@@ -165,7 +154,7 @@ render embedNagbar imageComponent boxComponent props =
                     [ DOM.div
                         { className: "flex flex-col p-1 max-w-full mosaico-article__main"
                         , children:
-                            [ foldMap (renderMetabyline props.onAuthorClick <<< _.article) $ hush props.article
+                            [ foldMap (renderMetabyline props.handlers.onAuthorClick <<< _.article) $ hush props.article
                             , DOM.div
                                 { className: "mosaico-article__body"
                                 , children:
@@ -176,7 +165,7 @@ render embedNagbar imageComponent boxComponent props =
                                       renderElem (Tuple (Ad { contentUnit: "mosaico-ad__mobparad", inBody: false }) false)
                                       `cons` bodyWithoutAd
                                       `snoc` (if isNothing props.user then loadingSpinner else props.paywall)
-                                      `snoc` tagsListing tags props.onTagClick
+                                      `snoc` tagsListing tags props.handlers.onTagClick
                                       `snoc` renderElem (Tuple (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false }) false)
                                       `snoc` advertorial
                                       `snoc` mostRead
@@ -185,7 +174,7 @@ render embedNagbar imageComponent boxComponent props =
                                     Right FullArticle ->
                                       bodyWithAd
                                       `snoc` DOM.div { id: "tb-embed" }
-                                      `snoc` tagsListing tags props.onTagClick
+                                      `snoc` tagsListing tags props.handlers.onTagClick
                                       `snoc` advertorial
                                       `snoc` mostRead
                                     Left _ -> [ loadingSpinner ]
@@ -202,7 +191,7 @@ render embedNagbar imageComponent boxComponent props =
                           , Mosaico.ad { contentUnit: "mosaico-ad__box1", inBody: false, hideAds }
                           , LatestList.render
                                      { latestArticles: props.latestArticles
-                                     , onClickHandler: props.onArticleClick
+                                     , onArticleClick: props.handlers.onArticleClick
                                      }
                           , Mosaico.ad { contentUnit: "mosaico-ad__mobbox2", inBody: false, hideAds }
                           , Mosaico.ad { contentUnit: "mosaico-ad__box2", inBody: false, hideAds }
@@ -284,10 +273,8 @@ render embedNagbar imageComponent boxComponent props =
       (Frontpage.render $ Frontpage.List
         { label: mempty
         , content: Just articles
-        , loadMore: mempty
         , loading: false
-        , onArticleClick: props.onArticleClick
-        , onTagClick: props.onTagClick
+        , handlers: props.handlers
         })
 
     renderAdvertorialTeaser :: ArticleStub -> JSX
@@ -299,7 +286,7 @@ render embedNagbar imageComponent boxComponent props =
         DOM.a
           { className: "block p-3 text-black no-underline bg-advertorial dark:text-aptoma-white"
           , href: "/artikel/" <> article.uuid
-          , onClick: props.onArticleClick article
+          , onClick: props.handlers.onArticleClick article
           , children:
               [ DOM.div
                   { className: "pt-1 pb-2 text-xs font-bold font-duplexserif"
@@ -473,3 +460,9 @@ renderElement hideAds imageComponent boxComponent onArticleClick (Tuple el premi
             , onClick: foldMap (\f -> f article) onArticleClick
             }
         ]
+
+adsAllowed :: FullArticle -> Boolean
+adsAllowed { articleType: ErrorArticle } = false
+adsAllowed { article: { articleType: Advertorial } } = false
+adsAllowed { article: { removeAds: true } } = false
+adsAllowed _ = true

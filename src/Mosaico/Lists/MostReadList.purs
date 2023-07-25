@@ -1,10 +1,9 @@
-module Mosaico.MostReadList where
+module Mosaico.Lists.MostReadList where
 
 import Prelude
 
 import Data.Maybe (fromMaybe)
 import Data.Monoid (guard)
-import Data.String (joinWith)
 import Lettera.Models (ArticleStub)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
@@ -13,7 +12,7 @@ import React.Basic.Events (EventHandler)
 
 type Props =
   { mostReadArticles :: Array ArticleStub
-  , onClickHandler :: ArticleStub -> EventHandler
+  , onArticleClick :: ArticleStub -> EventHandler
   }
 
 render :: Props -> JSX
@@ -33,7 +32,7 @@ render props =
     renderMostreadArticle a =
       DOM.li_
         [ DOM.a
-            { onClick: props.onClickHandler a
+            { onClick: props.onArticleClick a
             , href: "/artikel/" <> a.uuid
             , children:
                 [ DOM.div

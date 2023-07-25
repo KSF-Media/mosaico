@@ -1,4 +1,4 @@
-module Mosaico.Webview where
+module Mosaico.Component.Webview where
 
 import Prelude
 

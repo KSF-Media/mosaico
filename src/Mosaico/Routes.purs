@@ -4,6 +4,7 @@ import Prelude
 
 import Effect (Effect)
 import Foreign (Foreign)
+import Data.Either (Either(..))
 import Data.Foldable (oneOf)
 import Data.Int as Int
 import Data.List (List(..))
@@ -14,8 +15,10 @@ import Data.String as String
 import Data.String.CodePoints (codePointFromChar)
 import Data.Tuple (Tuple(..))
 import Data.Validation.Semiring (invalid)
-import Lettera.Models (Categories, Category, CategoryLabel(..), Tag, uriComponentToTag)
-import Routing.Match (Match(..), end, lit, optionalMatch, param, params, root, str)
+import Data.UUID as UUID
+import Lettera.Models (Categories, Category, CategoryLabel(..), DraftParams, Tag, uriComponentToTag)
+import Routing as Routing
+import Routing.Match (Match(..), end, int, lit, optionalMatch, param, params, root, str)
 import Routing.PushState (PushStateInterface)
 import Routing.Match.Error (MatchError(..))
 import Routing.Types (RoutePart(..))
@@ -26,17 +29,17 @@ import Simple.JSON (write)
 
 data MosaicoPage
   = Frontpage -- Should take Paper as parameter
-  | DraftPage -- Ignore parameters on client side and just show server side content
+  | DraftPage (Either Unit (Tuple Int DraftParams))
   | EpaperPage
   | ProfilePage
-  | ArticlePage String
+  | ArticlePage UUID.UUID
   | NotFoundPage String
   | KorsordPage
   | StaticPage String
   | CategoryPage Category (Maybe Int)
   | TagPage Tag (Maybe Int)
   | SearchPage (Maybe String) (Maybe Int)
-  | DebugPage String -- Used for testing
+  | DebugPage UUID.UUID -- Used for testing
   | DeployPreview -- Used for deploy previews only
   | MenuPage
 derive instance eqMosaicoPage :: Eq MosaicoPage
@@ -48,9 +51,18 @@ stripFragment = String.takeWhile (_ /= codePointFromChar '#')
 
 routes :: Categories -> Match MosaicoPage
 routes categories = root *> oneOf
-  [ DraftPage <$ (lit "artikel" *> lit "draft" *> str)
-  , ArticlePage <$> (lit "artikel" *> str)
-  , KorsordPage <$ (lit "sida" *> lit "korsord" *> end)
+  [ DraftPage (Left unit) <$ (lit "artikel" *> lit "draft" *> lit "test" *> end)
+  , DraftPage <<< Right <$> (lit "artikel" *> lit "draft" *>
+                             (Tuple
+                              <$> int
+                              <*> ({time:_, publication:_, user:_, hash:_}
+                                   <$> param "time"
+                                   <*> param "publication"
+                                   <*> param "user"
+                                   <*> param "hash")
+                            ))
+  , ArticlePage <$> (lit "artikel" *> uuid)
+  , KorsordPage <$ (lit "korsord" *> end)
   , StaticPage <$> (lit "sida" *> str)
   , EpaperPage <$ (lit "epaper" *> optionalMatch params *> end)
   , ProfilePage <$ (lit "konto" *> end)
@@ -58,10 +70,12 @@ routes categories = root *> oneOf
   , Frontpage <$ end
   , MenuPage <$ lit "meny"
   , SearchPage <$> (lit "sök" *> optionalMatch (param "q")) <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
-  , DebugPage <$> (lit "debug" *> str)
+  , DebugPage <$> (lit "debug" *> uuid)
   , DeployPreview <$ str <* lit "mosaico" <* lit "index.html" <* end
   , CategoryPage <$> categoryRoute <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
-  , NotFoundPage <$> str
+  -- Since Routing has no way to match with the rest of the URL (all
+  -- path components included) leave NotFoundPage to caller and the
+  -- Left response.
   ]
   where
     categoryRoute =
@@ -72,8 +86,15 @@ routes categories = root *> oneOf
             | otherwise = invalid $ free $ Fail "Not a category"
       in Match matchRoute
 
+match :: Categories -> String -> MosaicoPage
+match catMap path = case Routing.match (routes catMap) path of
+  Right x -> x
+  Left _ -> NotFoundPage path
+
 type RouteState = { yPositionOnLeave :: Maybe Number }
 
+-- TODO change route param to MosaicoPage.  It'd be an error to link
+-- to a page that'd resolve to NotFoundPage.
 changeRoute :: PushStateInterface -> String -> Effect Unit
 changeRoute router route = do
   currentRoute <- (\l -> l.pathname <> l.search) <$> router.locationState
@@ -85,3 +106,11 @@ changeRoute router route = do
 
 runRouteEffect :: (Foreign -> String -> Effect Unit) -> RouteState -> String -> Effect Unit
 runRouteEffect f state route = f (write state) route
+
+uuid :: Match UUID.UUID
+uuid = Match \route ->
+  case route of
+    Cons (Path input) rs | Just u <- UUID.parseUUID input ->
+      pure $ Tuple rs u
+    _ ->
+      invalid $ free $ Fail "Expected UUID"

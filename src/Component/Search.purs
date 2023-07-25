@@ -1,8 +1,9 @@
-module Mosaico.Search where
+module Mosaico.Component.Search where
 
 import Prelude
 
-import Data.Maybe (Maybe(..), isNothing)
+import Control.Alt ((<|>))
+import Data.Maybe (Maybe(..), isNothing, maybe)
 import Effect (Effect)
 import KSF.InputField as InputField
 import React.Basic (JSX)
@@ -10,21 +11,27 @@ import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (capture_)
 import React.Basic.Hooks (Component, component, useState', (/\))
 import React.Basic.Hooks as React
+import Mosaico.Client.Handlers (Handlers)
 
 type Props =
   { query :: Maybe String
-  , doSearch :: String -> Effect Unit
+  , handlers :: Handlers
   , searching :: Boolean
+  }
+
+type State =
+  { query :: Maybe String
+  , setQuery :: Maybe String -> Effect Unit
   }
 
 searchComponent :: Component Props
 searchComponent = do
   component "SearchComponent" \props -> React.do
     query /\ setQuery <- useState' props.query
-    pure $ render query setQuery props
+    pure $ render (Just {query, setQuery}) props
 
-render :: Maybe String -> (Maybe String -> Effect Unit) -> Props -> JSX
-render query setQuery { doSearch, searching } =
+render :: Maybe State -> Props -> JSX
+render state props =
   DOM.div
     { className: "pb-3 max-w-xl mb-3 mosaico-search md:pb-5 [grid-area:search]"
     , children:
@@ -39,10 +46,10 @@ render query setQuery { doSearch, searching } =
                             , name: "q"
                             , placeholder: "Sök..."
                             , label: Nothing
-                            , value: query
-                            , onChange: setQuery
+                            , value: maybe props.query _.query state
+                            , onChange: maybe (const mempty) _.setQuery state
                             , validationError: Nothing
-                            , disabled: searching
+                            , disabled: props.searching
                             , autoFocus: true
                             }
                         ]
@@ -54,16 +61,16 @@ render query setQuery { doSearch, searching } =
                             { type: "submit"
                             , className: "flex justify-center items-center mr-4 w-8 h-8 bg-green-500 rounded-md border-0 mosaico-search__button hover:bg-green-300"
                             , children: [ DOM.span { className: "w-6 h-6 bg-white maskimage-search mask-size-6" } ]
-                            , disabled: isNothing query || query == Just "" || searching
+                            , disabled: let query = (state >>= _.query) <|> props.query
+                                        in isNothing query || query == Just "" || props.searching
                             }
                         ]
                     }
                 ]
             , onSubmit: capture_
-                case query of
-                  Nothing -> pure unit
-                  Just "" -> pure unit
-                  Just q -> doSearch q
+                case _.query =<< state of
+                  Just q | q /= "" -> props.handlers.doSearch q
+                  _ -> pure unit
             }
         ]
     }

@@ -1,4 +1,4 @@
-module Mosaico.LatestList where
+module Mosaico.Lists.LatestList where
 
 import Prelude
 
@@ -14,7 +14,7 @@ import React.Basic.Events (EventHandler)
 
 type Props =
   { latestArticles :: Array ArticleStub
-  , onClickHandler :: ArticleStub -> EventHandler
+  , onArticleClick :: ArticleStub -> EventHandler
   }
 
 render :: Props -> JSX
@@ -36,7 +36,7 @@ render props =
         { className: "py-2 my-0 mx-2 border-t border-dotted lg:mx-3 border-t-gray-100 first:border-t-0"
         , children:
           [ DOM.a
-              { onClick: props.onClickHandler a
+              { onClick: props.onArticleClick a
               , href: "/artikel/" <> a.uuid
               , className: "no-underline cursor-pointer"
               , children:

@@ -6,21 +6,21 @@ import Control.Alternative (guard)
 import Control.Monad.Rec.Class (untilJust)
 import Control.Parallel.Class (parallel, sequential)
 import Control.Plus (class Plus, empty)
-import Data.Array (filter, fromFoldable, length, mapMaybe, take)
+import Data.Array (cons, filter, fromFoldable, length, mapMaybe, take)
 import Data.DateTime (DateTime, adjust, diff)
 import Data.Either (Either(..), hush)
-import Data.Foldable (foldMap)
+import Data.Foldable (foldr)
 import Data.Formatter.DateTime (formatDateTime)
 import Data.Int (toNumber, floor)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Newtype (un, unwrap)
+import Data.Newtype (un)
 import Data.Profunctor (class Profunctor, rmap)
 import Data.String (null)
 import Data.Time.Duration (Seconds(..))
-import Data.Traversable (traverse)
-import Data.Tuple (Tuple(..), uncurry)
+import Data.Traversable (class Foldable, class Traversable, foldMap, sequence, traverse)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as Aff
@@ -33,9 +33,9 @@ import Effect.Exception as Exception
 import Effect.Now (nowDateTime)
 import Lettera (LetteraResponse(..))
 import Lettera as Lettera
-import Lettera.Models (ArticleStub, Category(..), CategoryLabel, CategoryType(..), Categories, Tag)
+import Lettera.Models (ArticleStub, Category(..), CategoryLabel(..), CategoryType(Feed, Prerendered), Tag)
 import Mosaico.Cors as Cors
-import Mosaico.Feed (ArticleFeedType(..), ArticleFeed(..))
+import Mosaico.Feed (ArticleFeedType(..), ArticleFeed(..), RouteFeed, Feeds)
 import Mosaico.Paper (mosaicoPaper)
 import Payload.Headers as Headers
 import Payload.ResponseTypes (Response(..))
@@ -63,6 +63,15 @@ instance functorStamped :: Functor Stamped where
 instance applyStamped :: Apply Stamped where
   apply (Stamped { validUntil: t1, age: a1, content: f}) (Stamped { validUntil: t2, age: a2, content: x}) =
     Stamped { validUntil: min t1 t2, age: max a1 a2, content: f x }
+
+instance foldableStamped :: Foldable Stamped where
+  foldMap f (Stamped { content }) = f content
+  foldr f x (Stamped { content }) = content `f` x
+  foldl f x (Stamped { content }) = x `f` content
+
+instance traversableStamped :: Traversable Stamped where
+  traverse f (Stamped s@{ content }) = Stamped <<< (s { content = _ }) <$> f content
+  sequence (Stamped s@{ content }) = Stamped <<< (s { content = _ }) <$> content
 
 getContent :: forall a. Stamped a -> a
 getContent (Stamped { content }) = content
@@ -96,9 +105,12 @@ type Cache =
   , mainCategoryFeed :: Map CategoryLabel (UpdateWatch (Array ArticleStub))
   , mostRead :: Aff (Stamped (Array ArticleStub))
   , latest :: Aff (Stamped (Array ArticleStub))
+  -- Only used by server
+  , advertorials :: Aff (Stamped (Array ArticleStub))
   , feedList :: AVar (Map ArticleFeedType (Stamped (Array ArticleStub)))
   , feedString :: AVar (Map ArticleFeedType (Stamped String))
   , mode :: CacheMode
+  , setFeeds :: AVar ((Feeds -> Feeds) -> Effect Unit)
   -- Not using UpdateWatch for this, this is controlled by Main.
   , storedCategoryRender :: AVar (Map CategoryLabel (Stamped String))
   , corsProxyCache :: AVar (Map String (Stamped String))
@@ -172,28 +184,40 @@ withCat :: forall a m. Monad m => (String -> m a) -> Category -> m (Tuple Catego
 withCat f (Category cat) =
   Tuple cat.label <$> f (show cat.label)
 
-initClientCache :: Array (Tuple ArticleFeedType ArticleFeed) -> Effect Cache
-initClientCache initial = do
+setClientFeeds :: Cache -> Array (Tuple ArticleFeedType ArticleFeed) -> ((Feeds -> Feeds) -> Effect Unit) -> Effect Unit
+setClientFeeds cache initial sf = do
   now <- nowDateTime
   let validUntil = fromMaybe now $ toValidUntil now (Just 60)
       getList (ArticleList content) = Just $ Stamped { validUntil, age: now, content }
       getList _ = Nothing
       getHtml (Html _ content) = Just $ Stamped {validUntil, age: now, content }
       getHtml _ = Nothing
-      initFeed :: forall a. (ArticleFeed -> Maybe a) -> Effect (AVar (Map ArticleFeedType a))
-      initFeed f = Effect.AVar.new $ Map.fromFoldable $ mapMaybe (traverse f) initial
-  feedList <- initFeed getList
-  feedString <- initFeed getHtml
+      initFeed :: forall a. (ArticleFeed -> Maybe a) -> AVar (Map ArticleFeedType a) -> Effect Unit
+      initFeed f v = void $ Effect.AVar.tryPut (Map.fromFoldable $ mapMaybe (traverse f) initial) v
+  void $ Effect.AVar.tryTake cache.feedList
+  void $ Effect.AVar.tryTake cache.feedString
+  void $ Effect.AVar.tryTake cache.setFeeds
+  initFeed getList cache.feedList
+  initFeed getHtml cache.feedString
+  void $ Effect.AVar.tryPut sf cache.setFeeds
+
+initClientCache :: Effect Cache
+initClientCache = do
   storedCategoryRender <- Effect.AVar.new Map.empty
   corsProxyCache <- Effect.AVar.new Map.empty
+  feedList <- Effect.AVar.new Map.empty
+  feedString <- Effect.AVar.new Map.empty
+  sf <- Effect.AVar.new $ const $ pure unit
   let static = pure emptyStamp
-  pure $
+  pure
     { prerendered: Map.empty
     , mainCategoryFeed: Map.empty
     , mostRead: static
     , latest: static
+    , advertorials: static
     , feedList
     , feedString
+    , setFeeds: sf
     , mode: Client
     , storedCategoryRender
     , corsProxyCache
@@ -201,7 +225,7 @@ initClientCache initial = do
 
 initServerCache :: Array Category -> Effect Cache
 initServerCache categoryStructure = do
-  cache <- initClientCache []
+  cache <- initClientCache
   let prerenderedCategories = filter (\(Category c) -> c.type == Prerendered) categoryStructure
   mainCategoryFeed <-
     (map <<< map <<< rmap) (join <<< fromFoldable)
@@ -219,11 +243,17 @@ initServerCache categoryStructure = do
               map (\(Controls x) -> x.content) $
               startUpdates $ const $ Lettera.getLatest 0 10 mosaicoPaper
 
+  advertorials <-
+    (map <<< map <<< map) (join <<< fromFoldable) $
+    map (\(Controls x) -> x.content) $
+    startUpdates $ const $ Lettera.getAdvertorials mosaicoPaper
+
   pure $ cache
     { prerendered = prerendered
     , mainCategoryFeed = mainCategoryFeed
     , mostRead = mostRead
     , latest = latest
+    , advertorials = advertorials
     , mode = Server
     }
 
@@ -301,12 +331,12 @@ search cache query limit = getListUsingCache cache.feedList (SearchFeed query) l
 -- Only main category prerendered contents are actively cached, others
 -- will be fetched on demand.
 getFrontpageHtml :: Cache -> CategoryLabel -> Aff (Stamped (Maybe String))
-getFrontpageHtml cache category =
+getFrontpageHtml cache category = do
   maybe useFeed (\(Controls c) -> c.content) $ Map.lookup category cache.prerendered
   where
     useFeed =
       (map <<< map) (\h -> if null h then Nothing else Just h) $
-      getUsingCache cache.feedString (CategoryFeed category) $
+      getUsingCache cache.feedString (CategoryFeed Prerendered category) $
       Lettera.getFrontpageHtml mosaicoPaper (show category) Nothing
 
 getBreakingNewsHtml :: Cache -> Aff (Stamped String)
@@ -329,7 +359,7 @@ getFrontpage cache count category = do
 
   where
     useFeed =
-      getListUsingCache cache.feedList (CategoryFeed category) count $
+      getListUsingCache cache.feedList (CategoryFeed Feed category) count $
         \s l -> Lettera.getFrontpage mosaicoPaper (Just s) (Just l) (Just $ show category) Nothing
 
 getMostRead :: Cache -> Aff (Stamped (Array ArticleStub))
@@ -344,6 +374,10 @@ getLatest cache@{ mode: Client } =
   Lettera.getLatest 0 10 mosaicoPaper
 getLatest cache = cache.latest
 
+getAdvertorials :: Cache -> Aff (Stamped (Array ArticleStub))
+getAdvertorials { mode: Client } = pure eotStamp
+getAdvertorials cache = cache.advertorials
+
 getByTag :: Cache -> Tag -> Maybe Int -> Aff (Stamped (Array ArticleStub))
 getByTag cache tag count =
   getListUsingCache cache.feedList (TagFeed tag) count $
@@ -353,14 +387,14 @@ resetCategory :: Cache -> CategoryLabel -> Aff Unit
 resetCategory cache category = do
   removeFromActive cache.prerendered
   removeFromActive cache.mainCategoryFeed
-  removeFromPassive cache.feedString
-  removeFromPassive cache.feedList
+  removeFromPassive Prerendered cache.feedString
+  removeFromPassive Feed cache.feedList
   where
     removeFromActive :: forall a b. Map CategoryLabel (Controls a b) -> Aff Unit
     removeFromActive = Map.lookup category >>> maybe (pure unit) (\(Controls c) -> c.reset)
-    removeFromPassive :: forall a. (AVar (Map ArticleFeedType a)) -> Aff Unit
-    removeFromPassive c =
-      flip AVar.put c =<< Map.delete (CategoryFeed category) <$> AVar.take c
+    removeFromPassive :: forall a. CategoryType -> (AVar (Map ArticleFeedType a)) -> Aff Unit
+    removeFromPassive feedType c =
+      flip AVar.put c =<< Map.delete (CategoryFeed feedType category) <$> AVar.take c
 
 saveCategoryRender :: Cache -> CategoryLabel -> Stamped String -> Aff Unit
 saveCategoryRender cache category content = do
@@ -426,28 +460,6 @@ addHeaderAge maxAge (Response response) =
   where
     control = "max-age=" <> show maxAge
 
--- Only used in client context
-isFresh :: Cache -> Categories -> ArticleFeedType -> Maybe Int -> Aff Boolean
-isFresh cache catMap feed limit = do
-  now <- liftEffect nowDateTime
-  let stampValid :: forall a. Stamped a -> Boolean
-      stampValid (Stamped {validUntil}) = validUntil >= now
-      isValid :: forall a. AVar (Map ArticleFeedType (Stamped a)) -> Aff Boolean
-      isValid = AVar.read >=> Map.lookup feed >>> maybe false stampValid >>> pure
-  case feed of
-    CategoryFeed c
-      | Just cat <- unwrap <$> Map.lookup c catMap
-      , Prerendered <- cat.type -> isValid cache.feedString
-    BreakingNewsFeed -> isValid cache.feedString
-    -- Return true if search exists to show old results while loading more.
-    SearchFeed _ -> do
-      store <- AVar.read cache.feedList
-      case Map.lookup feed store of
-        Nothing -> pure false
-        Just (Stamped {content}) ->
-          maybe (isValid cache.feedList) (\l -> pure (length content < l)) limit
-    _ -> isValid cache.feedList
-
 type CommonLists a =
   { pageContent :: a
   , breakingNews :: Stamped String
@@ -463,46 +475,102 @@ parallelWithCommonLists cache f =
   <*> parallel (getMostRead cache)
   <*> parallel (getLatest cache)
 
-parallelWithCommonActions
-  :: forall a. Cache
-  -> (ArticleFeedType -> ArticleFeed -> Aff Unit)
-  -> Aff a
-  -> Aff a
-parallelWithCommonActions cache f action = do
-  { pageContent, breakingNews, mostReadArticles, latestArticles } <- parallelWithCommonLists cache action
-  f BreakingNewsFeed $ Html [] $ getContent breakingNews
-  f MostReadFeed $ ArticleList $ getContent mostReadArticles
-  f LatestFeed $ ArticleList $ getContent latestArticles
-  pure pageContent
+setFeeds :: Cache -> (Feeds -> Feeds) -> Aff Unit
+setFeeds cache feeds = do
+  setter <- AVar.take cache.setFeeds
+  liftEffect $ setter feeds
+  AVar.put setter cache.setFeeds
 
-parallelLoadFeeds
-  :: Cache
-  -> (ArticleFeedType -> ArticleFeed -> Aff Unit)
-  -> Aff (Tuple ArticleFeedType ArticleFeed)
-  -> Aff Unit
-parallelLoadFeeds cache f action = do
-  parallelWithCommonActions cache f action >>= uncurry f
+setCommonFeeds :: forall a. CommonLists a -> Feeds -> Feeds
+setCommonFeeds { breakingNews, mostReadArticles, latestArticles } s =
+  s { mostReadArticles = getContent mostReadArticles
+    , latestArticles = getContent latestArticles
+    , breakingNews = getContent breakingNews
+    , loading = s.loading - 1
+    }
 
-loadFeed :: Cache -> Categories -> ArticleFeedType -> Maybe Int -> Maybe (Aff ArticleFeed)
-loadFeed cache catMap feedName limit = do
-  case feedName of
-    TagFeed t -> do
-      Just $ ArticleList <<< getContent <$> getByTag cache t limit
-    CategoryFeed c
-      | Just cat <- unwrap <$> Map.lookup c catMap ->
-        case cat.type of
-          Prerendered -> Just do
-            {list, html} <- sequential $
-              {list: _, html: _}
-              <$> parallel (getContent <$> getFrontpage cache limit cat.label)
-              <*> parallel (getContent <$> getFrontpageHtml cache cat.label)
-            pure $ maybe (ArticleList list) (Html list) html
-          Feed -> do
-            Just $ ArticleList <<< getContent <$> getFrontpage cache limit cat.label
-          _ -> Nothing
-    CategoryFeed _ -> Nothing
-    SearchFeed q -> Just $ ArticleList <<< getContent <$> search cache q limit
-  -- loadFeed isn't called for these values but for completeness' sake
-    LatestFeed -> Just $ ArticleList <<< getContent <$> getLatest cache
-    MostReadFeed -> Just $ ArticleList <<< getContent <$> getMostRead cache
-    BreakingNewsFeed -> Just $ Html [] <<< getContent <$> getBreakingNewsHtml cache
+-- Client side feed fetching.
+requestFeed :: Cache -> RouteFeed -> Aff Unit
+requestFeed cache {limit, feedType: (TagFeed t)} = do
+  setFeeds cache \s -> s { loading = s.loading + 1 }
+  cl <- parallelWithCommonLists cache $ getContent <$> getByTag cache t limit
+  setFeeds cache $ setCommonFeeds cl <<<
+    \s -> s { tag = Map.insert t cl.pageContent s.tag }
+requestFeed cache {feedType: (CategoryFeed Prerendered c)} = do
+  setFeeds cache \s -> s { loading = s.loading + 1 }
+  cl@{pageContent: {list, html}} <-
+    parallelWithCommonLists cache $ sequential $
+    {list: _, html: _}
+    <$> parallel (getContent <$> getFrontpage cache Nothing c)
+    <*> parallel (getContent <$> getFrontpageHtml cache c)
+  let prerendered = Html list <$> html
+  setFeeds cache $ setCommonFeeds cl <<<
+    \s -> s { category = Map.insert c (fromMaybe (ArticleList list) prerendered) s.category }
+requestFeed cache {limit, feedType: (CategoryFeed Feed c)} = do
+  setFeeds cache \s -> s { loading = s.loading + 1 }
+  cl <- parallelWithCommonLists cache $ getContent <$> getFrontpage cache limit c
+  setFeeds cache $ setCommonFeeds cl <<<
+    \s -> s { category = Map.insert c (ArticleList cl.pageContent) s.category }
+requestFeed _ {feedType: (CategoryFeed _ _)} = pure unit
+requestFeed cache {limit, feedType: (SearchFeed query)} = do
+  setFeeds cache \s -> s { loading = s.loading + 1 }
+  cl <- parallelWithCommonLists cache $ getContent <$> search cache query limit
+  setFeeds cache $ setCommonFeeds cl <<< \s -> s { search = Map.insert query cl.pageContent s.search }
+requestFeed cache {feedType: (DebugFeed uuid)} = do
+  setFeeds cache \s -> s { loading = s.loading + 1 }
+  cl <- parallelWithCommonLists cache $ Lettera.getArticleStub uuid
+  case cl.pageContent of
+    Right article ->
+      setFeeds cache $ setCommonFeeds cl <<< \s -> s { category = Map.insert (CategoryLabel "debug") (ArticleList [article]) s.category }
+    Left _ -> pure unit
+requestFeed _ _ = pure unit
+
+-- Client side.  Doesn't trigger immediate loads but marks the
+-- resource stale so that it will be reloaded.
+invalidateFeed :: Cache -> ArticleFeedType -> Aff Unit
+invalidateFeed cache feed =
+  let invalidate :: forall a. AVar (Map ArticleFeedType (Stamped a)) -> Aff Unit
+      invalidate feedVar = do
+        store <- AVar.take feedVar
+        flip AVar.put feedVar $
+          Map.update (\v -> Just $ (emptyStamp :: Stamped (Array Unit)) *> v) feed store
+  in case feed of
+    (CategoryFeed Prerendered _) -> do
+      invalidate cache.feedList
+      invalidate cache.feedString
+    BreakingNewsFeed -> invalidate cache.feedString
+    _ -> invalidate cache.feedList
+
+-- Server side feed fetching.  Limit param is unused in this context
+-- and every feed just uses the default length.
+loadFeeds :: Cache -> Maybe ArticleFeedType -> Aff (Stamped (Array (Tuple ArticleFeedType ArticleFeed)))
+loadFeeds cache feedType = do
+  { breakingNews, mostReadArticles, latestArticles, pageContent } <-
+    parallelWithCommonLists cache $ case feedType of
+      Just (TagFeed tag) ->
+        Just <<< map ArticleList <$> getByTag cache tag Nothing
+      Just (CategoryFeed Feed c) ->
+        Just <<< map ArticleList <$> getFrontpage cache Nothing c
+      Just (CategoryFeed Prerendered c) -> do
+        {list, html} <- {list: _, html: _}
+          <$> getFrontpage cache Nothing c
+          <*> getFrontpageHtml cache c
+        pure $ Just $ maybe (ArticleList <$> list) (Html <$> list <*> _) $ sequence html
+      Just (SearchFeed q) ->
+        Just <<< map ArticleList <$> search cache q Nothing
+      -- Used for testing only
+      Just (DebugFeed uuid) -> do
+        map ((_ <$ (eotStamp :: Stamped (Array Unit))) <<< ArticleList <<< pure) <<< hush
+        <$> Lettera.getArticleStub uuid
+      _ -> pure Nothing
+  advertorials <- getAdvertorials cache
+
+  pure $ foldr mergeStamps eotStamp $
+    [ Tuple BreakingNewsFeed <<< Html [] <$> breakingNews
+    , Tuple MostReadFeed <<< ArticleList <$> mostReadArticles
+    , Tuple LatestFeed <<< ArticleList <$> latestArticles
+    , Tuple AdvertorialsFeed <<< ArticleList <$> advertorials
+    ] <> maybe [] (pure <<< sequenceStamp) (Tuple <$> feedType <*> pageContent)
+  where
+    mergeStamps a@(Stamped {content}) b = cons content <$> (a *> b)
+    sequenceStamp (Tuple t s@(Stamped {content})) = s $> Tuple t content

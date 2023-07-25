@@ -12,7 +12,7 @@ import Web.DOM.Element as Element
 import Web.DOM.Node as Node
 import Web.Event.Event as Event
 
-onFrontpageClick :: (String -> Effect Unit) -> EventHandler
+onFrontpageClick :: (String -> Effect Boolean) -> EventHandler
 onFrontpageClick setRoute = handler nativeEvent $ \event -> do
   let findAnchor :: Node -> Effect (Maybe String)
       findAnchor node = do
@@ -27,7 +27,8 @@ onFrontpageClick setRoute = handler nativeEvent $ \event -> do
   maybeHref <- maybe (pure Nothing) findAnchor $ Node.fromEventTarget =<< tgt
   case maybeHref of
     Just href | String.take 1 href == "/" -> do
-      Event.preventDefault event
-      Event.stopPropagation event
-      setRoute href
+      accepted <- setRoute href
+      when accepted do
+        Event.preventDefault event
+        Event.stopPropagation event
     _ -> pure unit

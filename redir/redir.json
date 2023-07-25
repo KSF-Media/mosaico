@@ -1,5 +1,9 @@
 [
   {
+    "route": "sida/korsord",
+    "destination": "/korsord"
+  },
+  {
     "route": "abi",
     "paper": "hbl",
     "destination": "https://www.hbl.fi/sida/abi"

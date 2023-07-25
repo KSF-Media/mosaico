@@ -1,7 +1,10 @@
 module Mosaico.Frontpage
   ( Frontpage(..)
   , ListFrontpageProps(..)
+  , MosaicoHooks
   , PrerenderedFrontpageProps(..)
+  , clientHooks
+  , serverHooks
   , render
   ) where
 
@@ -23,8 +26,9 @@ import KSF.HtmlRenderer (render) as HtmlRenderer
 import KSF.Spinner (loadingSpinner)
 import Lettera.Models (ArticleStub, Tag(..))
 import Mosaico.BreakingNews as BreakingNews
+import Mosaico.Client.Handlers (Handlers)
 import Mosaico.FallbackImage (fallbackImage)
-import Mosaico.Frontpage.Models (Hook, toHookRep)
+import Mosaico.Frontpage.Models (Hook(..), toHookRep)
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.Tag (TagType(..), renderTag)
 import Mosaico.Timestamp (timestamp)
@@ -40,15 +44,15 @@ type ListFrontpageProps =
   { label :: Maybe String
   , content :: Maybe (Array ArticleStub)
   , loading :: Boolean
-  , loadMore :: Maybe (Effect Unit)
-  , onArticleClick :: ArticleStub -> EventHandler
-  , onTagClick :: Tag -> EventHandler
+  , handlers :: Handlers
   }
 
 type PrerenderedFrontpageProps =
   { content :: Maybe String
   , breakingNews :: String
   , hooks   :: Array Hook
+  -- The Handlers data has this handler as well but it needs the list
+  -- of articles from the caller.
   , onClick :: EventHandler
   }
 
@@ -64,8 +68,12 @@ render (List props) =
           , genericRender (\list ->
               map renderListArticle list
               <> [if props.loading then loadingSpinner else mempty]
-              <> [maybe mempty moreButton props.loadMore]
-              ) mempty props.content
+              <> [if not $ null list then moreButton props.handlers.getMore else mempty]
+              )
+            -- No need for top level click handler for this mode since
+            -- we can easily put it on the individual article link.
+            mempty
+            props.content
           ]
         }
       where
@@ -73,7 +81,7 @@ render (List props) =
         addCrop url =
           if contains (Pattern "smooth-storage") url then url
           else url <> "&function=hardcrop&width=200&height=200&q=90"
-        tagLink a = foldMap (renderTag Main props.onTagClick) $ head a.tags
+        tagLink a = foldMap (renderTag Main props.handlers.onTagClick) $ head a.tags
 
         articleTitle a = [ DOM.h3
                              { className: "text-xl leading-tight text-aptoma-text-color font-duplexserif"
@@ -121,7 +129,7 @@ render (List props) =
                         [ tagLink a
                         , DOM.a
                             { href: "/artikel/" <> a.uuid
-                            , onClick: props.onArticleClick a
+                            , onClick: props.handlers.onArticleClick a
                             , children: articleTitle a
                             -- these ::after styles will be on top of everything except the tag links,
                             -- making everything clickable
@@ -168,3 +176,30 @@ genericRender f onClick content = DOM.div
   , children: maybe [loadingSpinner] f content
   , onClick
   }
+
+type MosaicoHooks = (ArticleStub -> EventHandler) -> Array ArticleStub -> Array ArticleStub -> Array Hook
+
+clientHooks :: MosaicoHooks
+clientHooks onArticleClick mostRead latest =
+  serverHooks onArticleClick mostRead latest <>
+  [ Ad "Box Ad 1 DESKTOP"     "mosaico-ad__box1"
+  , Ad "Box Ad 2 DESKTOP"     "mosaico-ad__box2"
+  , Ad "Box Ad 3 DESKTOP"     "mosaico-ad__box3"
+  , Ad "Box Ad 4 DESKTOP"     "mosaico-ad__box4"
+  , Ad "Box Ad 5 DESKTOP"     "mosaico-ad__box5"
+  , Ad "Ad 1"                 "mosaico-ad__bigbox1"
+  , Ad "Ad 2"                 "mosaico-ad__bigbox2"
+  , Ad "Ad MOBILE - mobparad" "mosaico-ad__mobparad"
+  , Ad "Box Ad 1 MOBILE"      "mosaico-ad__mobbox1"
+  , Ad "Box Ad 2 MOBILE"      "mosaico-ad__mobbox2"
+  , Ad "Box Ad 3 MOBILE"      "mosaico-ad__mobbox3"
+  ]
+
+serverHooks :: MosaicoHooks
+serverHooks onArticleClick mostRead latest =
+  [ RemoveTooltips
+  , MostRead mostRead onArticleClick
+  , Latest latest onArticleClick
+  , ArticleUrltoRelative
+  , EpaperBanner
+  ]

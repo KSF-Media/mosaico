@@ -4,7 +4,6 @@ module Mosaico.Cache.Pubsub where
 
 import Prelude
 
-import Control.Promise (Promise, toAffE)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as Aff
@@ -20,6 +19,7 @@ import Mosaico.Cache as Cache
 import Mosaico.Cache.Purge as Purge
 import Node.Buffer (Buffer, toString)
 import Node.Encoding (Encoding(..))
+import Promise.Aff (Promise, toAffE)
 
 foreign import data Message :: Type
 

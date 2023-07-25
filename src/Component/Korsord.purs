@@ -1,4 +1,4 @@
-module Mosaico.Korsord where
+module Mosaico.Component.Korsord where
 
 import Prelude
 
@@ -25,18 +25,18 @@ import Web.HTML.Window as Window
 foreign import loadKorsord :: Effect Unit
 
 type Props =
-  { user :: Maybe User
+  { user :: Maybe (Maybe User)
   , paper :: Paper
   , paywall :: JSX
   }
 
 component :: Component Props
 component = do
-  React.component "Korsord" $ \{user, paper, paywall} -> React.do
+  React.component "Korsord" $ \props@{user, paper} -> React.do
     entitlements /\ setEntitlements <- useState' Nothing
-    useEffect (isJust user) do
+    useEffect {l1: isJust user, l2: isJust <$> user} do
       case user of
-        Nothing -> Aff.launchAff_ do
+        Just Nothing -> Aff.launchAff_ do
           tokens <- User.loginIP paper
           liftEffect case (hush tokens) of
             Nothing -> setEntitlements $ Just mempty
@@ -50,15 +50,16 @@ component = do
             (setEntitlements $ Just mempty)
             (Aff.launchAff_ <<< (liftEffect <<< setEntitlements <<< Just
                                  <<< fromMaybe Set.empty <<< hush <=< User.getUserEntitlements)) tokens
+        _ -> pure unit
       pure $ pure unit
     let isEntitled = (\entitlement -> any (flip Set.member $ entitlement) ["hbl-web", "vn-web", "on-web"]) <$> entitlements
     useEffect isEntitled $ do
         when (isEntitled == Just true) loadKorsord
         pure $ pure unit
-    pure $ render paper paywall isEntitled
+    pure $ render isEntitled props
 
-render :: Paper -> JSX -> Maybe Boolean -> JSX
-render paper paywall entitlement =
+render :: Maybe Boolean -> Props -> JSX
+render entitlement { paper, paywall } =
   DOM.div
     { className: "flex flex-col justify-center"
     , children:

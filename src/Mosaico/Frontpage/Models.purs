@@ -10,8 +10,8 @@ import KSF.Paper (homepage)
 import Lettera.Models (ArticleStub)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.EpaperBanner as EpaperBanner
-import Mosaico.LatestList as LatestList
-import Mosaico.MostReadList as MostReadList
+import Mosaico.Lists.LatestList as LatestList
+import Mosaico.Lists.MostReadList as MostReadList
 import Mosaico.Paper (mosaicoPaper)
 import React.Basic.Events (EventHandler)
 
@@ -24,8 +24,8 @@ data Hook
   | RemoveTooltips
 
 toHookRep :: Hook -> HtmlRenderer.HookRep
-toHookRep (MostRead articles onClickHandler) = mostReadHook { articles, onClickHandler }
-toHookRep (Latest articles onClickHandler)   = latestHook { articles, onClickHandler }
+toHookRep (MostRead articles onArticleClick) = mostReadHook { articles, onArticleClick }
+toHookRep (Latest articles onArticleClick)   = latestHook { articles, onArticleClick }
 toHookRep ArticleUrltoRelative               = articleUrltoRelativeHook
 toHookRep RemoveTooltips                     = removeTooltipsHook
 toHookRep EpaperBanner                       = epaperBannerHook
@@ -33,10 +33,10 @@ toHookRep (Ad placeholderText targetId)      = adHook { placeholderText, targetI
 
 mostReadHook
   :: { articles :: Array ArticleStub
-     , onClickHandler :: ArticleStub -> EventHandler
+     , onArticleClick :: ArticleStub -> EventHandler
      }
      -> HtmlRenderer.HookRep
-mostReadHook { articles, onClickHandler } = HtmlRenderer.replacingHook
+mostReadHook { articles, onArticleClick } = HtmlRenderer.replacingHook
   { shouldProcessNode: (\n ->
                           let info = do
                                 name      <- HtmlRenderer.getName n
@@ -54,17 +54,17 @@ mostReadHook { articles, onClickHandler } = HtmlRenderer.replacingHook
                        )
   , processNode: (\_ _ _ -> pure $ MostReadList.render
                                      { mostReadArticles: articles
-                                     , onClickHandler
+                                     , onArticleClick
                                      }
                  )
   }
 
 latestHook
   :: { articles :: Array ArticleStub
-     , onClickHandler :: ArticleStub -> EventHandler
+     , onArticleClick :: ArticleStub -> EventHandler
      }
      -> HtmlRenderer.HookRep
-latestHook { articles, onClickHandler } = HtmlRenderer.replacingHook
+latestHook { articles, onArticleClick } = HtmlRenderer.replacingHook
   { shouldProcessNode: (\n ->
                           let info = do
                                 name      <- HtmlRenderer.getName n
@@ -82,7 +82,7 @@ latestHook { articles, onClickHandler } = HtmlRenderer.replacingHook
                        )
   , processNode: (\_ _ _ -> pure $ LatestList.render
                                      { latestArticles: articles
-                                     , onClickHandler
+                                     , onArticleClick
                                      }
                  )
   }

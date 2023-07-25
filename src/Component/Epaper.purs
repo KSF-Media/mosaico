@@ -1,4 +1,4 @@
-module Mosaico.Epaper where
+module Mosaico.Component.Epaper where
 
 import Prelude
 
@@ -29,10 +29,15 @@ type Props =
   , onLogin :: EventHandler
   }
 
+type State =
+  { userAuth :: Maybe UserAuth
+  , entitlements :: Maybe (Set String)
+  }
+
 component :: Component Props
 component = do
   initialTokens <- loadToken
-  React.component "Epaper" $ \{user, paper, onLogin} -> React.do
+  React.component "Epaper" $ \props@{user, paper} -> React.do
     entitlements /\ setEntitlements <- useState' Nothing
     userAuth /\ setUserAuth <- useState' initialTokens
     useEffect (_.uuid <$> join user) do
@@ -54,10 +59,10 @@ component = do
           (Aff.launchAff_ <<< (liftEffect <<< setEntitlements <<< Just
                                <<< fromMaybe Set.empty <<< hush <=< User.getUserEntitlements)) tokens
       pure $ pure unit
-    pure $ render onLogin paper (isNothing user) userAuth entitlements
+    pure $ render (Just { userAuth, entitlements }) props
 
-render :: EventHandler -> Paper -> Boolean -> Maybe UserAuth -> Maybe (Set String) -> JSX
-render onLogin paper loadingUser userAuth entitlements =
+render :: Maybe State -> Props -> JSX
+render state props =
   DOM.div
     { className: "flex justify-center"
     , children:
@@ -72,15 +77,19 @@ render onLogin paper loadingUser userAuth entitlements =
           }]
     }
   where
-    entitled = isEntitledTo paper
-    loading = loadingUser || isJust userAuth && isNothing entitlements
+    paper = props.paper
+    onLogin = props.onLogin
+    userAuth = _.userAuth =<< state
+    entitled = isEntitledTo props.paper
+    entitlements = _.entitlements =<< state
+    loading = isNothing props.user || isJust userAuth && isNothing entitlements
     entitlementNeeded = [ HBL /\ "hbl-epaper"
                         , VN /\ "vn-epaper"
                         , ON /\ "on-epaper"
                         , JUNIOR /\ "junior-epaper"
                         ]
     isEntitledTo p = fromMaybe false $
-                     Set.member <$> lookup p entitlementNeeded <*> entitlements
+                     Set.member <$> lookup p entitlementNeeded <*> (_.entitlements =<< state)
 
 renderPaper :: Paper -> EventHandler -> Boolean -> Maybe UserAuth -> Boolean -> JSX
 renderPaper paper onLogin loading userAuth entitled =

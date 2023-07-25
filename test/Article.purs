@@ -5,7 +5,8 @@ import Prelude hiding (sub)
 import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (runMaybeT, lift)
 import Data.Maybe (Maybe(..), maybe)
-import Effect.Aff (Aff)
+import Data.Time.Duration (Milliseconds(..))
+import Effect.Aff (Aff, delay)
 import KSF.Paper (Paper(..))
 import KSF.Puppeteer as Chrome
 import Mosaico.Paper (mosaicoPaper)
@@ -133,6 +134,8 @@ testPaywallOpen :: Chrome.Selector -> Int -> Test
 testPaywallOpen article originalBlocks page = do
   log "Check article has more content after login"
   Chrome.waitFor_ (sub (" .mosaico-article__body *:nth-of-type("<> show (originalBlocks+1) <>")") article) page
+  -- TODO Find a waitFor for this
+  delay $ Milliseconds 100.0
   log "Check that Vetrina is gone"
   Chrome.assertNotFound (sub " .mosaico-article__main .mosaico-article__body .vetrina--container" article) page
   log "Test that opening premium article with the same session via a list shows content"
@@ -163,8 +166,9 @@ testPaywallOpen article originalBlocks page = do
 
 testPaywallHolds :: Chrome.Selector -> Int -> Test
 testPaywallHolds article originalBlocks page = do
-  Chrome.waitFor_ (sub " *[data-existing-account='1']" article) page
+  Chrome.waitFor_ (Chrome.Selector ".mosaico-article__body .article-element") page
   paywallBlocks <- Chrome.countElements article (Chrome.Selector ".mosaico-article__body .article-element") page
+  log $ show paywallBlocks <> " " <> show originalBlocks
   Assert.assert "Login without entitlements gives displays the same content" $ paywallBlocks == originalBlocks
   Chrome.waitFor_ (sub " .mosaico-article__main .mosaico-article__body .vetrina--container" article) page
 

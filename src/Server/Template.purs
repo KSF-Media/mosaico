@@ -55,11 +55,11 @@ appendVars = runEffectFn2 appendVarsImpl
 
 mkWindowVariables :: Array (Tuple String Json) -> String
 mkWindowVariables vars =
-  let jsVars = map (\(name /\ value) -> "window." <> name <> "=" <> stringify value <> ";") $
+  let jsVars = map (\(name /\ value) -> "v." <> name <> "=" <> stringify value <> ";") $
                cons ("globalDisableAds" /\ JSON.fromBoolean globalDisableAds) vars
       stringify =
         String.replaceAll (String.Pattern "<") (String.Replacement "\\u003c") <<< JSON.stringify
-  in "<script>" <> intercalate "" jsVars <> "</script>"
+  in "<script>{let v={};" <> intercalate "" jsVars <> "window.mosaicoVars=v}</script>"
 
 makeTitle :: String -> String
 makeTitle title =

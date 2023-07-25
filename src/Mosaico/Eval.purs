@@ -2,13 +2,13 @@ module Mosaico.Eval where
 
 import Prelude
 
-import Control.Promise (Promise, toAff)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1, runEffectFn1)
 import Mosaico.Ad (openConsentRevocationMessage)
+import Promise.Aff (Promise, toAff)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (preventDefault)

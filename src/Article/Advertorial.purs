@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..))
 import Data.String as String
 import Data.Tuple (Tuple(..))
 import Foreign.Object as Object
-import Lettera.Models (Article, Image, ArticleTypeDetails)
+import Lettera.Models (Article, ArticleStub, Image, ArticleTypeDetails)
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
 import Mosaico.Article as Article
@@ -28,7 +28,7 @@ component = do
   React.component "Advertorial" $ \props -> React.do
     pure $ render imageComponent boxComponent props
 
-advertorialTopBanner :: Article ->  JSX
+advertorialTopBanner :: ArticleStub ->  JSX
 advertorialTopBanner article =
   let getCompanyName :: ArticleTypeDetails -> Maybe String
       getCompanyName details

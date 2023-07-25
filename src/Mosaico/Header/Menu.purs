@@ -5,7 +5,7 @@ import Prelude
 import Data.Array (intersperse, foldl, snoc)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (unwrap)
-import Data.String (toUpper)
+import Data.String (take, toUpper)
 import Foreign.Object (singleton)
 import Data.String as String
 import Effect (Effect)
@@ -13,22 +13,18 @@ import KSF.Paper (Paper(..), toString)
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import Lettera.Models (Category(..), CategoryLabel, tagToURIComponent)
+import Mosaico.Client.Handlers (Handlers)
 import Mosaico.Paper (mosaicoPaper)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.DOM.Events (capture_)
 import React.Basic.Events (EventHandler)
 
-foreign import startsWith :: String -> String -> Boolean
-
 type Props =
-  { changeRoute :: String -> Effect Unit
-  , categoryStructure :: Array Category
-  , onCategoryClick :: Category -> EventHandler
+  { categoryStructure :: Array Category
+  , handlers :: Handlers
     -- Nothing for loading state, Just Nothing for no user
   , user :: Maybe (Maybe User)
-  , onLogin :: EventHandler
-  , onLogout :: EventHandler
   }
 
 type Section =
@@ -46,7 +42,7 @@ type Subsection =
 foreign import toggleMode :: Effect Unit
 
 render :: Props -> JSX
-render props@{ onLogin, onLogout } = DOM.div
+render props@{ handlers: { onLogin, onLogout, onMainClick, onStaticPageClick } } = DOM.div
   { className: "flex mx-6 lg:mx-0 [grid-area:full-width] md:[grid-column:1/span_2] lg:[grid-column:2/span_3] mosaico-menu"
   , children: [ menuContent ]
   }
@@ -79,18 +75,6 @@ render props@{ onLogin, onLogout } = DOM.div
     renderSeparator :: JSX
     renderSeparator = DOM.hr { className: "w-full h-0 border-t border-gray-300 border-solid"}
 
-    onSearch :: EventHandler
-    onSearch = capture_ $ props.changeRoute "/sök"
-
-    onEpaper :: EventHandler
-    onEpaper = capture_ $ props.changeRoute "/epaper/"
-
-    onCrosswords :: EventHandler
-    onCrosswords = capture_ $ props.changeRoute "/sida/korsord/"
-
-    onKundservice :: EventHandler
-    onKundservice = capture_ $ props.changeRoute "/sida/kundservice/"
-
     prenumereraBlock :: JSX
     prenumereraBlock = DOM.div
           { className: "lg:hidden"
@@ -110,10 +94,10 @@ render props@{ onLogin, onLogout } = DOM.div
     topButtons = DOM.div
       { className: "flex flex-col justify-around mb-4 lg:flex-row lg:flex-nowrap lg:justify-center"
       , children:
-        [ renderIcon "maskimage-search w-9 h-7" "SÖK" "/sök" onSearch
-        , renderIcon "maskimage-epaper w-9 h-9" "E-TIDNINGEN" "/epaper" onEpaper
-        , renderIcon "maskimage-crosswords w-9 h-7" "KORSORD" "/sida/korsord" onCrosswords
-        , renderIcon "maskimage-kundservice w-9 h-9" "KUNDSERVICE" "/sida/kundservice" onKundservice
+        [ renderIcon "maskimage-search w-9 h-7" "SÖK" "/sök" $ onMainClick "/sök"
+        , renderIcon "maskimage-epaper w-9 h-9" "E-TIDNINGEN" "/epaper" $ onMainClick $ "/epaper"
+        , renderIcon "maskimage-crosswords w-9 h-7" "KORSORD" "/sida/korsord" $ onStaticPageClick "/korsord"
+        , renderIcon "maskimage-kundservice w-9 h-9" "KUNDSERVICE" "/sida/kundservice" $ onStaticPageClick "/kundservice"
         , case props.user of
             Nothing -> renderLoadingIcon
             Just (Just _) -> renderIcon "maskimage-logout w-9 h-7" "LOGGA UT" "" onLogout
@@ -124,7 +108,7 @@ render props@{ onLogin, onLogout } = DOM.div
     mkCategory acc category@(Category c) =
       let mkSubsection subCategory@(Category { label }) =
             { title: label
-            , onClick: props.onCategoryClick subCategory
+            , onClick: props.handlers.onCategoryClick subCategory
             }
           section =
             renderCategory
@@ -134,7 +118,7 @@ render props@{ onLogin, onLogout } = DOM.div
                   { tag: Just tag } -> "/tagg/" <> tagToURIComponent tag
                   { url: Just url } -> url
                   _                 -> "/" <> show c.label
-              , onClick: props.onCategoryClick category
+              , onClick: props.handlers.onCategoryClick category
               }
       in acc `snoc` section
 
@@ -238,9 +222,9 @@ render props@{ onLogin, onLogout } = DOM.div
                   { href: url
                   , children: [ DOM.text title ]
                   , onClick:
-                      if startsWith "https" url
+                      if take 5 url == "https"
                       then mempty
-                      else capture_ $ props.changeRoute url
+                      else props.handlers.onMainClick url
                   , className: "block"
                   }
               ]
