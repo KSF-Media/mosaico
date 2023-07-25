@@ -39,6 +39,7 @@ type Handlers =
   , onAuthorClick :: Author -> EventHandler
   -- May choose to not capture the event
   , onPrerenderedClick :: Array ArticleStub -> EventHandler
+  -- This needs to be called on any login that's not in Vetrina.
   , onPaywallEvent :: Effect Unit
   , onLogoClick :: EventHandler
   , onCategoryClick :: Category -> EventHandler

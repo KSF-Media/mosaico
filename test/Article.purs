@@ -134,8 +134,7 @@ testPaywallOpen :: Chrome.Selector -> Int -> Test
 testPaywallOpen article originalBlocks page = do
   log "Check article has more content after login"
   Chrome.waitFor_ (sub (" .mosaico-article__body *:nth-of-type("<> show (originalBlocks+1) <>")") article) page
-  -- TODO Find a waitFor for this
-  delay $ Milliseconds 100.0
+  Chrome.waitFor_ (sub (" .premium-only") article) page
   log "Check that Vetrina is gone"
   Chrome.assertNotFound (sub " .mosaico-article__main .mosaico-article__body .vetrina--container" article) page
   log "Test that opening premium article with the same session via a list shows content"
@@ -168,7 +167,6 @@ testPaywallHolds :: Chrome.Selector -> Int -> Test
 testPaywallHolds article originalBlocks page = do
   Chrome.waitFor_ (Chrome.Selector ".mosaico-article__body .article-element") page
   paywallBlocks <- Chrome.countElements article (Chrome.Selector ".mosaico-article__body .article-element") page
-  log $ show paywallBlocks <> " " <> show originalBlocks
   Assert.assert "Login without entitlements gives displays the same content" $ paywallBlocks == originalBlocks
   Chrome.waitFor_ (sub " .mosaico-article__main .mosaico-article__body .vetrina--container" article) page
 

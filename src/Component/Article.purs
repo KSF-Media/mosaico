@@ -89,17 +89,22 @@ component cache = do
     let articleId = fromMaybe emptyUUID $ parseUUID $ either _.uuid _.article.uuid props.article
     advertorial /\ setAdvertorial <- useState' Nothing
     -- Load article if uuid changed or there's a chance that user has
-    -- signed in or gone through paywall
+    -- signed in or gone through paywall.  This can't depend on cusno
+    -- since user gets set during Vetrina flow before it's completed
+    -- and triggering an update for Article component would then reset
+    -- Vetrina.
     useEffect { articleId
-              , cusno: map _.cusno $ join props.user
               , paywallCounter: props.paywallCounter
               } do
       -- Only initial render has props.article Right
       foldMap (Article.evalEmbeds <<< _.article) $ hush props.article
+      -- Needs to not be a special article
       if not $ articleId /= emptyUUID &&
+         -- Either it's somehow a different article than what it's supposed to be ...
          ((Just articleId /= (parseUUID <<< _.article.uuid =<< article) && isLeft props.article) ||
-          isJust (join props.user) &&
-          (_.articleType <$> article) == Just PreviewArticle) then pure $ pure unit else do
+          -- or logged in and it's a preview
+          (isJust (join props.user) &&
+           (_.articleType <$> article) == Just PreviewArticle)) then pure $ pure unit else do
         setArticle Nothing
         Aff.launchAff_ do
           -- Refresh latest & co if needed
