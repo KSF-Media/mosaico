@@ -55,9 +55,6 @@ import Web.HTML.Window (document, scroll) as Web
 foreign import refreshAdsImpl :: EffectFn1 (Array String) Unit
 foreign import setManualScrollRestoration :: Effect Unit
 
-getPathFromLocationState :: LocationState -> String
-getPathFromLocationState locationState = Routes.stripFragment $ locationState.path <> locationState.search
-
 app :: Effect (React.ReactComponent JSProps)
 app = do
   initialValues <- getInitialValues mosaicoPaper
@@ -66,8 +63,7 @@ app = do
   propsMemo <- createPropsMemo
 
   React.reactComponent "Mosaico" $ fromJSProps propsMemo >>> \props -> React.do
-    let initialPath :: String
-        initialPath = getPathFromLocationState initialValues.locationState
+    let initialPath = initialValues.locationState.pathname <> initialValues.locationState.search
         initialRoute = Routes.match props.catMap initialPath
     state /\ setState <- useState $ initialState initialValues props initialRoute
 

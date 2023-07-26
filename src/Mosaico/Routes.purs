@@ -58,7 +58,7 @@ routes categories = root *> oneOf
                               <$> int
                               <*> ({time:_, publication:_, user:_, hash:_}
                                    <$> param "dp-time"
-                                   <*> param "publication"
+                                   <*> param "publicationId"
                                    <*> param "user"
                                    <*> param "hash")
                             ) <* optionalMatch params)
