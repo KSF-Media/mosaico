@@ -57,11 +57,11 @@ routes categories = root *> oneOf
                              (Tuple
                               <$> int
                               <*> ({time:_, publication:_, user:_, hash:_}
-                                   <$> param "time"
+                                   <$> param "dp-time"
                                    <*> param "publication"
                                    <*> param "user"
                                    <*> param "hash")
-                            ))
+                            ) <* optionalMatch params)
   , ArticlePage <$> (lit "artikel" *> uuid)
   , KorsordPage <$ (lit "korsord" *> end)
   , StaticPage <$> (lit "sida" *> str)
