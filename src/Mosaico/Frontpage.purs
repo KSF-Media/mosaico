@@ -141,14 +141,17 @@ render (List props) =
                 ]
             }
 
-render (Prerendered props@{ hooks }) = genericRender
-  (\content -> [
-    BreakingNews.render {content: props.breakingNews}
+render (Prerendered props) = genericRender
+  (\content ->
+    [ BreakingNews.render
+        { content: props.breakingNews
+        , currentArticleId: Nothing
+        }
     , HtmlRenderer.render
-                   { content
-                   , hooks: Just $ toHookRep <$> hooks
-                   }
-                ]
+        { content
+        , hooks: Just $ toHookRep <$> props.hooks
+        }
+    ]
   )
   props.onClick
   props.content

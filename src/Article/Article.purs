@@ -127,7 +127,16 @@ render embedNagbar imageComponent boxComponent props =
       , children:
         [ DOM.div {className: "flex flex-col items-center lg:w-240"
         , children:
-          [ DOM.div {className: "lg:w-192", children: [BreakingNews.render { content: props.breakingNews }]}
+          [ DOM.div
+              { className: "lg:w-192"
+              , children:
+                  [ BreakingNews.render
+                      { content: props.breakingNews
+                      , currentArticleId:
+                          Just $ either (_.uuid) (_.article.uuid) props.article
+                      }
+                  ]
+              }
           , DOM.header
               { className: "mb-4 lg:w-192"
               , children:
