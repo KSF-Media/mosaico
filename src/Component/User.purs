@@ -106,6 +106,7 @@ component logger = do
           liftEffect do
             logger.setUser u
             props.setUser u
+            props.onPaywallEvent
           alreadySent <- Aff.AVar.take alreadySentInitialAnalytics
           when (not alreadySent) $ liftEffect $ sendAnalytics true u
 
