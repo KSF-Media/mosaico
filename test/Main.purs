@@ -75,6 +75,8 @@ main = launchAff_ do
       _ -> log "Skip paywall open test via navigation"
     log "Test paywall opens, direct"
     withBrowserPage $ Article.testPaywallLogin true premiumUuid entitledUser entitledPassword Article.testPaywallOpen
+    log "Test paywall opens, SSO"
+    withBrowserPage $ Article.testPaywallLogin true premiumUuid entitledUser entitledPassword Article.testPaywallSSO
 
   log "Test related article links"
   withBrowserPage Article.testRelated

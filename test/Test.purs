@@ -11,6 +11,7 @@ import Effect.Aff (Aff)
 import Effect.Class.Console (log) as Console
 import KSF.Puppeteer as Chrome
 import Test.Unit.Assert as Assert
+import Toppokki (unsafeEvaluateStringFunction)
 import Partial.Unsafe (unsafePartial)
 
 type Test = Chrome.Page -> Aff Unit
@@ -59,3 +60,8 @@ assertNonEmpty :: forall a. String -> Array a -> Aff a
 assertNonEmpty msg arr = do
   Assert.assert msg $ length arr > 0
   pure $ unsafePartial $ head arr
+
+reload :: Chrome.Page -> Aff Unit
+reload page = do
+  _ <- unsafeEvaluateStringFunction "location.reload()" page
+  pure unit

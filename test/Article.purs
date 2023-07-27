@@ -5,12 +5,11 @@ import Prelude hiding (sub)
 import Control.Alternative (guard)
 import Control.Monad.Maybe.Trans (runMaybeT, lift)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Time.Duration (Milliseconds(..))
-import Effect.Aff (Aff, delay)
+import Effect.Aff (Aff)
 import KSF.Paper (Paper(..))
 import KSF.Puppeteer as Chrome
 import Mosaico.Paper (mosaicoPaper)
-import Mosaico.Test (Test, log, site, sub, assertNonEmpty)
+import Mosaico.Test (Test, assertNonEmpty, log, site, sub, reload)
 import Mosaico.Test.Account as Account
 import Test.Unit.Assert as Assert
 
@@ -169,6 +168,13 @@ testPaywallHolds article originalBlocks page = do
   paywallBlocks <- Chrome.countElements article (Chrome.Selector ".mosaico-article__body .article-element") page
   Assert.assert "Login without entitlements gives displays the same content" $ paywallBlocks == originalBlocks
   Chrome.waitFor_ (sub " .mosaico-article__main .mosaico-article__body .vetrina--container" article) page
+
+testPaywallSSO :: Chrome.Selector -> Int -> Test
+testPaywallSSO article _ page = do
+  Chrome.waitFor_ (Chrome.Selector ".mosaico-article__body .article-element") page
+  log "Reload page to trigger SSO"
+  reload page
+  Chrome.waitFor_ (sub " .premium-only" article) page
 
 testRelated :: Test
 testRelated =
