@@ -5,7 +5,7 @@ import Prelude
 import Affjax (get, printError) as AX
 import Affjax.ResponseFormat (string) as AX
 import Data.Either (Either(..), hush)
-import Data.Maybe (Maybe(..), fromJust)
+import Data.Maybe (fromJust)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import KSF.Driver (getDriver)

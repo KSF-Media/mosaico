@@ -8,12 +8,11 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Lettera.Models (Article)
 import Data.Nullable (toMaybe)
 import KSF.User.Cusno (Cusno, toString)
-import KSF.User (User, Subscription)
-import Data.JSDate as JSDate
+import KSF.User (User)
 import Data.Foldable (foldMap)
 import Data.Formatter.DateTime (format)
 import KSF.Helpers (dateTimeFormatter)
-import Data.Array (intercalate, any)
+import Data.Array (intercalate)
 
 type StringArticleMetadata = 
   { title :: String
