@@ -52,7 +52,7 @@ stripFragment = String.takeWhile (_ /= codePointFromChar '#')
 
 routes :: Categories -> Match MosaicoPage
 routes categories = root *> oneOf
-  [ DraftPage (Left unit) <$ (lit "artikel" *> lit "draft" *> lit "test" *> end)
+  [ DraftPage (Left unit) <$ (lit "artikel" *> lit "draft" *> lit "test")
   , DraftPage <<< Right <$> (lit "artikel" *> lit "draft" *>
                              (Tuple
                               <$> int
@@ -63,21 +63,21 @@ routes categories = root *> oneOf
                                    <*> param "hash")
                             ) <* optionalMatch params)
   , ArticlePage <$> (lit "artikel" *> uuid)
-  , KorsordPage <$ (lit "korsord" *> end)
+  , KorsordPage <$ lit "korsord"
   , StaticPage <$> (lit "sida" *> str)
-  , EpaperPage <$ (lit "epaper" *> optionalMatch params *> end)
-  , ProfilePage <$ (lit "konto" *> end)
-  , TagPage <<< uriComponentToTag <$> (lit "tagg" *> str) <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
-  , Frontpage <$ end
+  , EpaperPage <$ lit "epaper"
+  , ProfilePage <$ lit "konto"
+  , TagPage <<< uriComponentToTag <$> (lit "tagg" *> str) <*> ((Int.fromString =<< _) <$> optionalMatch (param "c"))
   , MenuPage <$ lit "meny"
-  , SearchPage <$> (lit "sök" *> optionalMatch (param "q")) <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
+  , SearchPage <$> (lit "sök" *> optionalMatch (param "q")) <*> ((Int.fromString =<< _) <$> optionalMatch (param "c"))
   , DebugPage <$> (lit "debug" *> uuid)
-  , DeployPreview <$ str <* lit "mosaico" <* lit "index.html" <* end
-  , CategoryPage <$> categoryRoute <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
+  , DeployPreview <$ str <* lit "mosaico" <* lit "index.html"
+  , CategoryPage <$> categoryRoute <*> ((Int.fromString =<< _) <$> optionalMatch (param "c"))
+  , Frontpage <$ optionalMatch params <* end
   -- Since Routing has no way to match with the rest of the URL (all
   -- path components included) leave NotFoundPage to caller and the
   -- Left response.
-  ]
+  ] <* optionalMatch params <* end
   where
     categoryRoute =
       let matchRoute route
