@@ -106,7 +106,7 @@ staticComponents =
   , articleComponent: Article.pureComponent
   , epaperComponent: Epaper.render Nothing
   , headerComponent: Header.render 0
-  , nagbarComponent: Eval.render (Just false) <<< _.isArticle
+  , nagbarComponent: const mempty
   , paywallComponent: const loadingSpinner
   , korsordComponent: Korsord.render Nothing
   }
