@@ -10,6 +10,7 @@ import Mosaico.Test.Account as Account
 import Mosaico.Test.Article as Article
 import Mosaico.Test.Embeds as Embeds
 import Mosaico.Test.Frontpage as Frontpage
+import Mosaico.Test.Korsord as Korsord
 import Mosaico.Test.Layout as Layout
 import Mosaico.Test.Lettera as Lettera
 import Mosaico.Test.Redir as Redir
@@ -77,6 +78,13 @@ main = launchAff_ do
     withBrowserPage $ Article.testPaywallLogin true premiumUuid entitledUser entitledPassword Article.testPaywallOpen
     log "Test paywall opens, SSO"
     withBrowserPage $ Article.testPaywallLogin true premiumUuid entitledUser entitledPassword Article.testPaywallSSO
+
+    log "Test korsord, navigation"
+    withDesktopBrowserPage $ Korsord.testKorsord Korsord.Navigation entitledUser entitledPassword
+    log "Test korsord, direct"
+    withDesktopBrowserPage $ Korsord.testKorsord Korsord.Direct entitledUser entitledPassword
+    log "Test korsord, SSO"
+    withDesktopBrowserPage $ Korsord.testKorsord Korsord.SSO entitledUser entitledPassword
 
   log "Test related article links"
   withBrowserPage Article.testRelated
