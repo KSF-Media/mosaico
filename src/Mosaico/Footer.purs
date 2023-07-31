@@ -109,7 +109,7 @@ hblContactInfo commonFooter =
     ]
 
   secondColumn =
-    [ section "Erja Yläjärvi" [ DOM.text "Chefredaktör och ansvarig utgivare" ]
+    [ section "Kalle Silfverberg" [ DOM.text "Chefredaktör och ansvarig utgivare" ]
     , section "Gunilla Celvin" [ DOM.text "Biträdande chefredaktör och redaktionschef (nyheter)" ]
     , section "Steffen Ørsted" [ DOM.text "Redaktionschef (visuellt och utveckling)" ]
     , section "Nyhetstips"
