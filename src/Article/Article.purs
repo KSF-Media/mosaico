@@ -3,7 +3,7 @@ module Mosaico.Article where
 import Prelude
 
 import Control.Alt ((<|>))
-import Data.Array (cons, head, insertAt, length, null, snoc, take, (!!))
+import Data.Array (cons, filter, head, insertAt, length, null, snoc, take, (!!))
 import Data.Either (Either(..), either, hush)
 import Data.Foldable (fold, foldMap)
 import Data.List (fromFoldable, (:))
@@ -115,8 +115,10 @@ render embedNagbar imageComponent boxComponent props =
             }
           ]
         advertorial = if hideAds then mempty else foldMap renderAdvertorialTeaser props.advertorial
-        mostRead = foldMap renderMostReadArticles $
-          if null props.mostReadArticles then Nothing else Just $ take 5 props.mostReadArticles
+        mostReadFilter = either (\a b -> a.uuid /= b.uuid) (\a b -> a.article.uuid /= b.uuid) props.article
+        mostRead = case take 5 $ filter mostReadFilter props.mostReadArticles of
+          [] -> mempty
+          xs -> renderMostReadArticles xs
         shareUrl = getShareUrl props.article
         embedScripts = getExternalScripts props.article
         articleCategory = head $ getArticleCategories props.article
