@@ -73,8 +73,6 @@ component logger = do
         onUserFetch (Left err) = do
           props.onPaywallEvent
           props.setUser Nothing
-          props.onClose
-            -- TODO: Handle properly
           Console.error $ "Login error " <> show err
         onUserFetch (Right u) = do
           props.setUser $ Just u
