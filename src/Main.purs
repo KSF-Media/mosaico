@@ -3,14 +3,15 @@ module Main where
 import Prelude
 
 import Data.Argonaut.Core as JSON
-import Data.Array (head)
+import Data.Array (filter, head)
 import Data.Either (Either(..))
 import Data.Map as Map
+import Data.Foldable (intercalate)
 import Data.List (List)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (toNullable)
 import Data.String as String
-import Data.Tuple (Tuple(..))
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff as Aff
@@ -142,10 +143,15 @@ getClientIP req =
     hdr = HTTP.requestHeaders req
 
 resolveRedir :: Env -> HTTP.Request -> Aff (Maybe String)
-resolveRedir env req = do
-  let url = HTTP.requestURL req
-      redir = Map.lookup (Tuple (String.drop 1 url) mosaicoPaper) env.redirects
-  pure redir
+resolveRedir env req = pure $
+  -- HTTP.requestURL returns the path, not the URL
+  -- eg "/kontakt" and not "https://www.hbl.fi/kontakt"
+  flip Map.lookup env.redirects $
+  (_ /\ mosaicoPaper) $
+  intercalate "/" $
+  filter (_ /= "") $
+  String.split (String.Pattern "/") $
+  HTTP.requestURL req
 
 assets :: { params :: { path :: List String }, guards :: { logger :: Unit } } -> Aff (Either Failure File)
 assets { params: { path } } = Handlers.directory "dist/assets" path
