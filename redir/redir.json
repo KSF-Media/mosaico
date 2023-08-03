@@ -272,5 +272,10 @@
     "route": "sommar",
     "paper": "on",
     "destination": "https://www.ksfmedia.fi/ostnyland-sommar"
+  },
+  {
+    "route": "hbljunior-nyhetspriset",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbljunior-nyhetspriset"
   }
 ]
