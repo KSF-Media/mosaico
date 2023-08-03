@@ -59,7 +59,7 @@ render state props =
                     , children:
                         [ DOM.button
                             { type: "submit"
-                            , className: "flex justify-center items-center mr-4 w-8 h-8 bg-green-500 rounded-md border-0 mosaico-search__button hover:bg-green-300"
+                            , className: "flex justify-center items-center mr-4 w-8 h-8 bg-green-500 rounded-md border-0 mosaico-search__button hover:bg-green-300 disabled:bg-gray-500"
                             , children: [ DOM.span { className: "w-6 h-6 bg-white maskimage-search mask-size-6" } ]
                             , disabled: let query = (state >>= _.query) <|> props.query
                                         in isNothing query || query == Just "" || props.searching
