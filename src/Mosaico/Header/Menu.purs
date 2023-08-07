@@ -160,6 +160,7 @@ render props@{ handlers: { onLogin, onLogout, onMainClick, onStaticPageClick } }
 
     renderIcon :: String -> String -> String -> EventHandler -> JSX
     renderIcon icon title href onClick = DOM.a
+      -- bg color here means 'color of icon'
       { children: [ DOM.span { className: "block mr-3 bg-aptoma-text-color mask-repeat-none mask-size-contain mask-position-center" <> " " <> icon}
                   , DOM.text title
                   ]
