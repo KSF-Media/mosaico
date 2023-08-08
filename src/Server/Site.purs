@@ -5,15 +5,17 @@ import Prelude
 import Data.Argonaut as JSON
 import Data.Either (Either(..), either, hush)
 import Data.Formatter.DateTime (format)
-import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe, isJust)
+import Data.String.Regex as Regex
 import Data.String as String
 import Data.Tuple (Tuple(..))
+import Data.UUID as UUID
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import KSF.Helpers (rfc1123Formatter)
 import Lettera as Lettera
 import Lettera.Models as Lettera.Models
-import Lettera.Models (MosaicoArticleType(..), articleToArticleStub, articleToJson, notFoundArticle)
+import Lettera.Models (MosaicoArticleType(..), articleToArticleStub, articleToJson, notFoundArticle, editorialIdToUuid)
 import Mosaico as Mosaico
 import Mosaico.Article as Article
 import Mosaico.Cache as Cache
@@ -41,8 +43,10 @@ getClientRoute env req = do
   pure $ either (const $ NotFoundPage url) identity route
 
 redir :: String -> Response ResponseBody
-redir to = (\(Response r) -> Response $ r { headers = Headers.set "Location" to r.headers }) $
-           Response.found EmptyBody
+redir = redirWith (Response.found EmptyBody)
+
+redirWith :: Response ResponseBody -> String -> Response ResponseBody
+redirWith baseResponse toUrl = (\(Response r) -> Response $ r { headers = Headers.set "Location" toUrl r.headers }) baseResponse
 
 type HandlerParams a =
   { guards :: { logger :: Unit
@@ -58,12 +62,15 @@ defaultHandler _ _ { guards: { redirection: Just url } } = do
   pure $ redir url
 
 defaultHandler env Nothing params@{ guards: { clientRoute: NotFoundPage page }}
+  | {before, after} <- String.splitAt 9 page, before == "/artikel/" && isEditorialId after =
+    pure $ redirWith (Response.movedPermanently EmptyBody) $
+      "/artikel/" <> (UUID.toString $ editorialIdToUuid after)
   | {before, after: slug} <- String.splitAt 9 page, before == "/artikel/" = do
-  eitherArticle <- Lettera.getArticleWithSlug slug mosaicoPaper Nothing Nothing
-  case eitherArticle of
-    Right article ->
-      pure $ redir $ "/artikel/" <> article.article.uuid
-    Left _ -> defaultHandler env (Just SlugNotFound) params
+    eitherArticle <- Lettera.getArticleWithSlug slug mosaicoPaper Nothing Nothing
+    case eitherArticle of
+      Right article ->
+        pure $ redir $ "/artikel/" <> article.article.uuid
+      Left _ -> defaultHandler env (Just SlugNotFound) params
 
 defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
   let htmlTemplate = cloneTemplate env.htmlTemplate
@@ -154,3 +161,13 @@ defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
       }
     expires validUntil (Response r) =
       Response $ r { headers = Headers.set "Expires" (format rfc1123Formatter validUntil) r.headers }
+
+-- Just treat numeric id's as editorial id's.
+isEditorialId :: String -> Boolean
+isEditorialId str = isJust $ do
+  re <- hush digitsRegex
+  Regex.match re str
+
+-- Top level to ensure it's precompiled
+digitsRegex :: Either String Regex.Regex
+digitsRegex = Regex.regex "^\\d+$" mempty
