@@ -286,6 +286,7 @@ render embedNagbar imageComponent boxComponent props =
         , content: Just articles
         , loading: false
         , handlers: props.handlers
+        , showMoreButton: false
         })
 
     renderAdvertorialTeaser :: ArticleStub -> JSX

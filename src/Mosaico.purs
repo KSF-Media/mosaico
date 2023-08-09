@@ -217,6 +217,7 @@ render hooks components handlers props state =
               , content
               , loading
               , handlers
+              , showMoreButton: true
               })
        Routes.NotFoundPage _ -> mosaicoLayoutNoAside $ renderArticle $ Right notFoundArticle
        Routes.TagPage tag _ ->
@@ -302,6 +303,7 @@ render hooks components handlers props state =
         , content
         , loading: state.feeds.loading > 0
         , handlers
+        , showMoreButton: true
         })
 
     prerenderedFrontpage :: Maybe JSX -> Array ArticleStub -> Maybe String -> JSX

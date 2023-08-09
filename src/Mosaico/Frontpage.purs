@@ -45,6 +45,7 @@ type ListFrontpageProps =
   , content :: Maybe (Array ArticleStub)
   , loading :: Boolean
   , handlers :: Handlers
+  , showMoreButton :: Boolean
   }
 
 type PrerenderedFrontpageProps =
@@ -68,7 +69,7 @@ render (List props) =
           , genericRender (\list ->
               map renderListArticle list
               <> [if props.loading then loadingSpinner else mempty]
-              <> [if not $ null list then moreButton props.handlers.getMore else mempty]
+              <> [if props.showMoreButton && not (null list) then moreButton props.handlers.getMore else mempty]
               )
             -- No need for top level click handler for this mode since
             -- we can easily put it on the individual article link.
