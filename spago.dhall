@@ -36,6 +36,7 @@ You can edit this file as you like.
   , "node-buffer"
   , "node-fs"
   , "node-http"
+  , "node-path"
   , "node-process"
   , "nonempty"
   , "now"
