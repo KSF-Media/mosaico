@@ -167,7 +167,7 @@ vastranylandContactInfo commonFooter =
     ]
 
   secondColumn =
-    [ section "Ansvarig utgivare: " [ DOM.text "Erja Yläjärvi" ]
+    [ section "Ansvarig utgivare: " [ DOM.text "Kalle Silfverberg" ]
     , section "Chefredaktör för tidningen och nyhetschef: " [ DOM.text "Marina Holmberg" ]
     , section "Insändare: "
         [ columnLink "/sida/insandare" [ DOM.text "Skriv din insändare här" ]
@@ -224,7 +224,7 @@ ostnylandContactInfo commonFooter =
     ]
 
   secondColumn =
-    [ section "Ansvarig utgivare: " [ DOM.text "Erja Yläjärvi" ]
+    [ section "Ansvarig utgivare: " [ DOM.text "Kalle Silfverberg" ]
     , section "Chefredaktör för tidningen och nyhetschef: "
         [ DOM.text "Helén Kurri "
         , tel "040 506 3977"
