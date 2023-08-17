@@ -3,12 +3,13 @@ module Mosaico.Test.Account where
 import Prelude hiding (sub)
 
 import Data.Array.Partial (head)
-import Effect.Aff as Aff
 import Effect.Aff (Milliseconds(..))
-import Mosaico.Test (Test, site, sub)
+import Effect.Aff as Aff
+import Effect.Class.Console (log)
 import KSF.Puppeteer as Chrome
-import Test.Unit.Assert as Assert
+import Mosaico.Test (Test, site, sub)
 import Partial.Unsafe (unsafePartial)
+import Test.Unit.Assert as Assert
 import Unsafe.Coerce (unsafeCoerce)
 
 accountSelector :: Chrome.Selector
@@ -40,10 +41,11 @@ loginLogout user password page = do
 login :: String -> String -> Chrome.Selector -> Int -> Test
 login user password openSel attempts page = do
   let modal = Chrome.Selector ".mosaico--login-modal"
+      emailField = (sub " input[type=\"email\"]" modal)
       passwordField = (sub " input[type=\"password\"]" modal)
   Chrome.click openSel page
   Chrome.waitFor_ modal page
-  Chrome.type_ (sub " input[type=\"email\"]" modal) user page
+  Chrome.type_ emailField user page
   Chrome.type_ passwordField (password <> "\n") page
   Chrome.waitFor_ (sub "[data-loggedin=\"1\"], .login-form .login--error-msg" accountSelector) page
   errorCount <- Chrome.countElements

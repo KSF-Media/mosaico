@@ -277,5 +277,15 @@
     "route": "hbljunior-nyhetspriset",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbljunior-nyhetspriset"
+  },
+  {
+    "route": "host",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/ostnyland-hosten"
+  },
+  {
+    "route": "höst",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/ostnyland-hosten"
   }
 ]

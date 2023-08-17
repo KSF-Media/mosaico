@@ -37,6 +37,15 @@ main = launchAff_ do
 
   log "Test draft article"
   withBrowserPage $ Article.testDraftArticle
+
+  -- Output test users 
+  log "--- Test Accounts ---"
+  log ("TEST_USER: " <> testUser)
+  log ("TEST_PASSWORD: " <> testPassword)
+  log ("ENTITLED_USER: " <> entitledUser)
+  log ("ENTITLED_PASSWORD: " <> entitledPassword)
+  log "--- --- ----- --- ---"
+
   let loginTestUser = if testUser == "" then entitledUser else testUser
       loginTestPassword = if testPassword == "" then entitledPassword else testPassword
   if loginTestUser == "" || loginTestPassword == ""
