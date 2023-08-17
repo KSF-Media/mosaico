@@ -36,6 +36,8 @@ import Payload.Server.Response as Response
 import Payload.Spec (type (:), GET, Guards, Spec(Spec), Nil)
 
 foreign import log :: forall a . a -> Effect Unit
+foreign import logPretty :: forall a . a -> Effect Unit
+foreign import logJsEnv :: Unit -> Effect Unit
 foreign import serverPort :: Int
 
 spec ::
@@ -102,7 +104,9 @@ spec = Spec
 main :: Effect Unit
 main = do
   Aff.launchAff_ do
+    liftEffect $ logJsEnv unit
     env <- newEnv
+    liftEffect $ logPretty {env}
     let handlers =
           { getHealthz
           , googleSiteVerification: staticAsset GoogleSiteVerification
