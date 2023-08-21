@@ -54,6 +54,8 @@ import Web.HTML.Window (document, scroll) as Web
 
 foreign import refreshAdsImpl :: EffectFn1 (Array String) Unit
 foreign import setManualScrollRestoration :: Effect Unit
+foreign import getCurrentLocation :: forall r . Effect { href :: String | r }
+foreign import reload :: Effect Unit
 
 app :: Effect (React.ReactComponent JSProps)
 app = do
@@ -71,6 +73,10 @@ app = do
       Cache.setClientFeeds initialValues.cache props.initialFeeds $
         \f -> setState $ \s -> s { feeds = f s.feeds }
 
+      let pushStateInterfaceListener locationState = do
+            location <- getCurrentLocation
+            guard (locationState.path /= location.href) reload
+      _ <- initialValues.nav.listen pushStateInterfaceListener
       -- Listen for route changes and set state accordingly
       locations (routeListener props.catMap setState) initialValues.nav
 
