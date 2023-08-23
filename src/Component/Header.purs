@@ -114,7 +114,7 @@ headerContent props =
       { className: "hidden text-[13px] mosaico-header__right-links text-neutral md:block"
       , children:
           [ DOM.ul
-              { className: "flex flex-col items-end mt-0 list-none"
+              { className: "flex flex-col items-center mt-0 list-none"
               , children:
                   [ DOM.li_
                       [ DOM.a
