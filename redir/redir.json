@@ -287,5 +287,15 @@
     "route": "höst",
     "paper": "on",
     "destination": "https://www.ksfmedia.fi/ostnyland-hosten"
+  },
+  {
+    "route": "höst",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vastranyland-host"
+  },
+  {
+    "route": "host",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vastranyland-host"
   }
 ]
