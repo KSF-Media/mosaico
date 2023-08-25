@@ -19,16 +19,15 @@
   &__main-image {
     margin-bottom: 30px;
     .wrapper {
-      height: 66vw;
       margin-left: -12px;
       margin-right: -12px;
       overflow: hidden;
+      max-height: 125vw;
       @media (min-width: @breakpoint-2col) {
         margin: 0;
       }
       @media (min-width: @breakpoint-3col) {
-        width: 960px;
-        height: 640px;
+        max-height: 1200px;
       }
       img {
         object-position: 50% 50%;
