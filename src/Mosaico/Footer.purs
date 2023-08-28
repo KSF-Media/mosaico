@@ -26,7 +26,7 @@ footer mosaicoPaper { onCategoryClick, onStaticPageClick } =
         , DOM.hr { className: "w-4/5 md:w-56 lg:w-96 mt-0 mx-auto mb-5 bg-gray-300 border-0 h-[1px]" }
         , DOM.div
             { className: "mt-6 mb-4 text-sm text-aptoma-footer-text-color"
-            , children: [ DOM.text "ALLA KSF-TIDNINGAR" ]
+            , children: [ DOM.text "ALLA TIDNINGAR" ]
             }
         , DOM.div
             { className: "flex flex-col w-full md:w-80 lg:w-96 sm:flex-row"
@@ -353,7 +353,7 @@ tel number =
 
 thirdColumn :: Array JSX
 thirdColumn =
-  [ section "" [ DOM.text "KSF Media ger ut Hufvudstadsbladet, Västra Nyland, Östnyland och HBL Junior. KSF Media ägs av Bonnier News och Konstsamfundet." ]
+  [ section "" [ DOM.text "Hufvudstadsbladet Ab ger ut Hufvudstadsbladet, Västra Nyland, Östnyland och HBL Junior. Hufvudstadsbladet Ab ägs av Bonnier News och Konstsamfundet." ]
   , section ""
       [ columnLink "https://www.ksfmedia.fi/jobba-hos-oss" [ DOM.text "Jobba hos oss" ]
       ]
