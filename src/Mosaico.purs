@@ -3,7 +3,7 @@ module Mosaico where
 import Prelude
 
 import Data.Array (null)
-import Data.Either (Either(..), hush)
+import Data.Either (hush)
 import Data.Foldable (fold, foldMap)
 import Data.Int (ceil)
 import Data.Map as Map
@@ -18,7 +18,7 @@ import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn1, runEffectFn1)
 import KSF.Paper as Paper
 import KSF.Spinner (loadingSpinner)
-import Lettera.Models (ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), FullArticle, frontpageCategoryLabel, notFoundArticle)
+import Lettera.Models (ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), frontpageCategoryLabel, notFoundArticle)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendPageView)
 import Mosaico.Article.Advertorial as Advertorial
@@ -27,6 +27,7 @@ import Mosaico.Cache as Cache
 import Mosaico.Client.Handlers (Handlers, clientHandlers, nullHandlers)
 import Mosaico.Client.Init (Components, JSProps, createPropsMemo, fromJSProps, getComponents, getInitialValues, initialState, staticComponents)
 import Mosaico.Client.Models (ModalView(..), Props, State)
+import Mosaico.Component.Article (InputArticle(..))
 import Mosaico.Error as Error
 import Mosaico.Eval as Eval
 import Mosaico.Feed (ArticleFeed(..), routeFeed)
@@ -54,8 +55,6 @@ import Web.HTML.Window (document, scroll) as Web
 
 foreign import refreshAdsImpl :: EffectFn1 (Array String) Unit
 foreign import setManualScrollRestoration :: Effect Unit
-foreign import getCurrentLocation :: forall r . Effect { href :: String | r }
-foreign import reload :: Effect Unit
 
 app :: Effect (React.ReactComponent JSProps)
 app = do
@@ -73,10 +72,6 @@ app = do
       Cache.setClientFeeds initialValues.cache props.initialFeeds $
         \f -> setState $ \s -> s { feeds = f s.feeds }
 
-      let pushStateInterfaceListener locationState = do
-            location <- getCurrentLocation
-            guard (locationState.path /= location.href) reload
-      _ <- initialValues.nav.listen pushStateInterfaceListener
       -- Listen for route changes and set state accordingly
       locations (routeListener props.catMap setState) initialValues.nav
 
@@ -195,12 +190,13 @@ render hooks components handlers props state =
   where
     renderRouteContent = case _ of
        Routes.CategoryPage category _ -> renderCategory category
-       Routes.ArticlePage _
+       Routes.ArticlePage uuid
          | Just article <- props.article
-         , state.ssrPreview -> mosaicoLayoutNoAside $ renderArticle $ Right article
-         | Just articleStub <- state.clickedArticle -> mosaicoLayoutNoAside $ renderArticle $ Left articleStub
-       -- Should be impossible
-         | otherwise -> mosaicoLayoutNoAside $ renderArticle $ Right notFoundArticle
+         , state.ssrPreview -> mosaicoLayoutNoAside $ renderArticle $ InitialFullArticle article
+         | Just articleStub <- state.clickedArticle
+         , Just uuid == UUID.parseUUID articleStub.uuid -> mosaicoLayoutNoAside $ renderArticle $ ClickedArticle articleStub
+         -- Most likely forward/backward navigation
+         | otherwise -> mosaicoLayoutNoAside $ renderArticle $ OnlyUUID uuid
        Routes.Frontpage -> renderFrontpage
        Routes.SearchPage Nothing _ ->
           mosaicoDefaultLayout $ components.searchComponent { query: Nothing, handlers, searching: false }
@@ -225,7 +221,7 @@ render hooks components handlers props state =
               , handlers
               , showMoreButton: true
               })
-       Routes.NotFoundPage _ -> mosaicoLayoutNoAside $ renderArticle $ Right notFoundArticle
+       Routes.NotFoundPage _ -> mosaicoLayoutNoAside $ renderArticle $ InitialFullArticle notFoundArticle
        Routes.TagPage tag _ ->
           let maybeFeed = Map.lookup tag state.feeds.tag
               tagLabel = Just (CategoryLabel $ unwrap tag)
@@ -253,8 +249,8 @@ render hooks components handlers props state =
              , onStaticPageClick: handlers.onStaticPageClick
              }
        Routes.DraftPage _
-         | Just article <- props.article -> mosaicoLayoutNoAside $ renderArticle $ Right article
-         | otherwise -> mosaicoLayoutNoAside $ renderArticle $ Right notFoundArticle
+         | Just article <- props.article -> mosaicoLayoutNoAside $ renderArticle $ InitialFullArticle article
+         | otherwise -> mosaicoLayoutNoAside $ renderArticle $ InitialFullArticle notFoundArticle
        Routes.KorsordPage -> mosaicoLayoutNoAside $
            fragment
              [ components.nagbarComponent { isArticle: false }
@@ -422,7 +418,7 @@ render hooks components handlers props state =
       Routes.DebugPage _ -> false
       Routes.DeployPreview -> false
 
-    renderArticle :: Either ArticleStub FullArticle -> JSX
+    renderArticle :: InputArticle -> JSX
     renderArticle article =
       components.articleComponent
         { paper: mosaicoPaper

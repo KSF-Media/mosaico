@@ -3,16 +3,17 @@ module Mosaico.Component.Article where
 import Prelude
 
 import Data.Array as Array
-import Data.Either (Either(..), either, hush, isLeft)
+import Data.Either (Either(..))
 import Data.Foldable (foldMap)
-import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
+import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.NonEmpty (NonEmpty(..))
-import Data.UUID (emptyUUID, parseUUID)
+import Data.UUID (UUID, emptyUUID, parseUUID)
 import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class (liftEffect)
 import Effect.Random (randomInt)
 import KSF.Paper (Paper)
+import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
 import Lettera as Lettera
 import Lettera.Models (MosaicoArticleType(..), ArticleStub, ArticleType(..), FullArticle, notFoundArticle)
@@ -31,13 +32,26 @@ import Web.HTML (window) as Web
 import Web.HTML.HTMLDocument (setTitle) as Web
 import Web.HTML.Window (document) as Web
 
+data InputArticle
+  -- Should only happen with forward or backward navigation
+  = OnlyUUID UUID
+  -- Normal article element clicks
+  | ClickedArticle ArticleStub
+  -- From server side renders
+  | InitialFullArticle FullArticle
+
+inputArticleUUID :: InputArticle -> UUID
+inputArticleUUID (OnlyUUID u) = u
+inputArticleUUID (ClickedArticle s) = fromMaybe emptyUUID $ parseUUID s.uuid
+inputArticleUUID (InitialFullArticle a) = fromMaybe emptyUUID $ parseUUID a.article.uuid
+
+notInitial :: InputArticle -> Boolean
+notInitial (InitialFullArticle _) = false
+notInitial _ = true
+
 type Props =
   { paper :: Paper
-  -- If given an ArticleStub, this component will handle loading the
-  -- full article.  If for some reason there's an article which has
-  -- only UUID available skip routing and let it go via standard a
-  -- href handler and load from server.
-  , article :: Either ArticleStub FullArticle
+  , article :: InputArticle
   , handlers :: Handlers
   , user :: Maybe (Maybe User)
   , breakingNews :: String
@@ -64,11 +78,15 @@ pickRandomElement (NonEmpty head tail) = do
   pure $ fromMaybe head $ Array.index tail randomIndex
 
 pureComponent :: Props -> JSX
-pureComponent = render Nothing
+pureComponent props = render Nothing
   { image: Image.render mempty
   , box: Box.render mempty
   , nagbar: Eval.render (Just false) <<< _.isArticle
-  }
+  } props $ case props.article of
+      -- Should always be this
+      InitialFullArticle a -> Right a
+      ClickedArticle a -> Left a
+      _ -> Right notFoundArticle
 
 component :: Cache.Cache -> Component Props
 component cache = do
@@ -83,10 +101,10 @@ component cache = do
   React.component "Article" $ \props -> React.do
     article /\ setArticle <- useState' $
       case props.article of
-        Right { articleType: ErrorArticle } -> Just notFoundArticle
-        Right article -> Just article
+        InitialFullArticle { articleType: ErrorArticle } -> Just notFoundArticle
+        InitialFullArticle article -> Just article
         _ -> Nothing
-    let articleId = fromMaybe emptyUUID $ parseUUID $ either _.uuid _.article.uuid props.article
+    let articleId = inputArticleUUID props.article
     advertorial /\ setAdvertorial <- useState' Nothing
     -- Load article if uuid changed or there's a chance that user has
     -- signed in or gone through paywall.  This can't depend on cusno
@@ -96,12 +114,13 @@ component cache = do
     useEffect { articleId
               , paywallCounter: props.paywallCounter
               } do
-      -- Only initial render has props.article Right
-      foldMap (Article.evalEmbeds <<< _.article) $ hush props.article
+      foldMap (Article.evalEmbeds <<< _.article) $ case props.article of
+        InitialFullArticle x -> Just x
+        _ -> Nothing
       -- Needs to not be a special article
       if not $ articleId /= emptyUUID &&
          -- Either it's somehow a different article than what it's supposed to be ...
-         ((Just articleId /= (parseUUID <<< _.article.uuid =<< article) && isLeft props.article) ||
+         ((Just articleId /= (parseUUID <<< _.article.uuid =<< article) && notInitial props.article) ||
           -- or logged in and it's a preview
           (isJust (join props.user) &&
            (_.articleType <$> article) == Just PreviewArticle)) then pure $ pure unit else do
@@ -118,7 +137,7 @@ component cache = do
                 props.handlers.setAllowAds $ Article.adsAllowed a
                 setArticle $ Just a
                 Article.evalEmbeds a.article
-                when (isLeft props.article) $
+                when (notInitial props.article) $
                   sendArticleAnalytics a.article $ join props.user
                 when (a.article.articleType /= Advertorial) $ case props.advertorials of
                   Nothing -> pure unit
@@ -137,11 +156,15 @@ component cache = do
         -- loading article just because of a rerender.
         pure mempty
 
-    pure $ render (Just { advertorial }) components $
-      props { article = maybe props.article Right article }
+    let render' = render (Just { advertorial }) components props
+    pure $ case {article, initialArticle: props.article} of
+      { article: Just a } -> render' $ Right a
+      { initialArticle: InitialFullArticle a } -> render' $ Right a
+      { initialArticle: ClickedArticle a } -> render' $ Left a
+      _ -> loadingSpinner
 
-render :: Maybe State -> Components -> Props -> JSX
-render state components props =
+render :: Maybe State -> Components -> Props -> Either ArticleStub FullArticle -> JSX
+render state components props activeArticle =
   let normalRender article =
         Article.render components.nagbar components.image components.box
         { paper: props.paper
@@ -154,7 +177,7 @@ render state components props =
         , breakingNews: props.breakingNews
         , paywall: props.paywall
         }
-  in case props.article of
+  in case activeArticle of
     Right { article } | article.articleType == Advertorial ->
       Advertorial.render components.image components.box {article}
     article -> normalRender article

@@ -10,11 +10,3 @@ export function refreshAdsImpl(slotArray) {
 export function setManualScrollRestoration() {
   history.scrollRestoration = "manual";
 }
-
-export function getCurrentLocation() {
-  return window.location;
-}
-
-export function reload() {
-  window.location.reload();
-}
