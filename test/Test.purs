@@ -65,3 +65,8 @@ reload :: Chrome.Page -> Aff Unit
 reload page = do
   _ <- unsafeEvaluateStringFunction "location.reload()" page
   pure unit
+
+forward :: Chrome.Page -> Aff Unit
+forward page = do
+  _ <- unsafeEvaluateStringFunction "window.history.forward()" page
+  pure unit

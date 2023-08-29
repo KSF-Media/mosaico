@@ -9,7 +9,7 @@ import Effect.Aff (Aff)
 import KSF.Paper (Paper(..))
 import KSF.Puppeteer as Chrome
 import Mosaico.Paper (mosaicoPaper)
-import Mosaico.Test (Test, assertNonEmpty, log, site, sub, reload)
+import Mosaico.Test (Test, assertNonEmpty, forward, log, site, sub, reload)
 import Mosaico.Test.Account as Account
 import Test.Unit.Assert as Assert
 
@@ -198,3 +198,27 @@ testDraftArticle page = do
   let article = Chrome.Selector "article.mosaico-article"
   draftContent <- Chrome.getContent (sub " .article-element__html" article) page
   Assert.assert "Draft content matches with test data" $ draftContent == "Just some draft content"
+
+testNavigationLoads :: Chrome.Page -> Aff Unit
+testNavigationLoads page = do
+  let getHeadline = do
+        Chrome.waitFor_ (Chrome.Selector ".mosaico-article__body") page
+        Chrome.getContent (Chrome.Selector ".mosaico-article__headline") page
+  Chrome.goto (Chrome.URL site) page
+  Chrome.waitFor_ (Chrome.Selector ".mosaico-asidelist__latest .list-article-liftup") page
+  Chrome.click (Chrome.Selector ".mosaico-asidelist__latest li:nth-child(1) a") page
+  headline1 <- getHeadline
+  Chrome.click (Chrome.Selector ".mosaico-asidelist__latest li:nth-child(2) a") page
+  headline2 <- getHeadline
+  if headline1 == headline2
+    then
+      -- It's no use trying to code defensively against this with
+      -- content checks.  Just don't do it.
+      log "The last two articles in the latest list have identical headlines.  It's not an error as such but this test is aborted because of that."
+    else do
+      Chrome.back page
+      headline1' <- getHeadline
+      Assert.assert "Article headlines match after back navigation" $ headline1 == headline1'
+      forward page
+      headline2' <- getHeadline
+      Assert.assert "Article headlines match after forward navigation" $ headline2 == headline2'

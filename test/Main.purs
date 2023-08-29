@@ -38,7 +38,8 @@ main = launchAff_ do
   log "Test draft article"
   withBrowserPage $ Article.testDraftArticle
 
-  -- Output test users 
+  -- Output test users.  Will be printed to Gitlab CI logs but it
+  -- scrubs passwords from the output.
   log "--- Test Accounts ---"
   log ("TEST_USER: " <> testUser)
   log ("TEST_PASSWORD: " <> testPassword)
@@ -97,6 +98,10 @@ main = launchAff_ do
 
   log "Test related article links"
   withBrowserPage Article.testRelated
+
+  log "Test article loads after forward/back navigation"
+  -- Desktop layout to have the latest list visible
+  withDesktopBrowserPage Article.testNavigationLoads
 
   log "Test CSS has loaded"
   withBrowserPage Layout.testLayout
