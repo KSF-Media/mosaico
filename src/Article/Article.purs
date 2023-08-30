@@ -175,7 +175,7 @@ render embedNagbar imageComponent boxComponent props =
                                     Right PreviewArticle ->
                                       renderElem (Tuple (Ad { contentUnit: "mosaico-ad__mobparad", inBody: false }) false)
                                       `cons` bodyWithoutAd
-                                      `snoc` (if isNothing props.user then loadingSpinner else props.paywall)
+                                      `snoc` (if isNothing props.user then loadingSpinner else DOM.div { className: "mosaico--paywall -mx-4", children: [ props.paywall ] })
                                       `snoc` tagsListing tags props.handlers.onTagClick
                                       `snoc` renderElem (Tuple (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false }) false)
                                       `snoc` advertorial

@@ -19,9 +19,7 @@ import Vetrina.Types (Product)
 paperHeadline :: Paper -> JSX
 paperHeadline HBL =
   DOM.div_
-    [ DOM.text $ "HBL digitalt "
-    , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "nu 0 €" ] }
-    ]
+    [ DOM.text $ "Prova HBL Digital utan kostnad i en månad"]
 paperHeadline p =
   DOM.div_
     [ DOM.text $ "Läs " <> Paper.paperName p <> " digitalt för "
