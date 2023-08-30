@@ -401,14 +401,14 @@
   z-index: 1000;
 }
 
-.mosaico .vetrina--container {
+.mosaico .mosaico--paywall {
   @media (min-width: @breakpoint-3col) {
     grid-template-columns: 3em minmax(auto, 600px) 3em;
   }
   position: relative;
 }
 
-.mosaico-article__body .article-element + .vetrina--container:before {
+.mosaico-article__body .article-element + .mosaico--paywall:before {
   content: " ";
   display: block;
   background-color: var(--site-background, white);
