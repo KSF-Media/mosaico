@@ -51,6 +51,7 @@ render state props =
                             , validationError: Nothing
                             , disabled: props.searching
                             , autoFocus: true
+                            , inputClass: ""
                             }
                         ]
                     }
