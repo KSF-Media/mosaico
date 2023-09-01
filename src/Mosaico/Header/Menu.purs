@@ -148,9 +148,7 @@ render props@{ handlers: { onLogin, onLogout, onMainClick, onStaticPageClick } }
     paperSpecificLinks _ = mempty
 
     vastranylandMenuLinks :: Array JSX
-    vastranylandMenuLinks = [ renderBottomLink { title: "ANSLAGSTAVLAN" , url: "/sida/anslagstavlan" }
-                            , renderBottomLink { title: "FISKECUPEN" , url: "/sida/fiskecupen" }
-                            ]
+    vastranylandMenuLinks = [ renderBottomLink { title: "ANSLAGSTAVLAN" , url: "/sida/anslagstavlan" } ]
 
     renderLoadingIcon :: JSX
     renderLoadingIcon = DOM.div
