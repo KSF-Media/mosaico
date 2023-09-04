@@ -22,8 +22,9 @@ paperHeadline HBL =
     [ DOM.text $ "Prova HBL Digital utan kostnad i en månad"]
 paperHeadline p =
   DOM.div_
-    [ DOM.text $ "Läs " <> Paper.paperName p <> " digitalt för "
+    [ DOM.text $ "Prova " <> Paper.paperName p <> " Digital för "
     , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "endast 1 €" ] }
+    , DOM.text $ " i en månad"
     ]
 
 products :: Paper -> Array Product
