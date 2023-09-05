@@ -139,10 +139,6 @@ component cache = do
                 Article.evalEmbeds a.article
                 when (notInitial props.article) $
                   sendArticleAnalytics a.article $ join props.user
-                when (a.article.articleType /= Advertorial) $ case props.advertorials of
-                  Nothing -> pure unit
-                  Just advertorials ->
-                    setAdvertorial <<< Just =<< pickRandomElement advertorials
               Right _ -> pure unit
               Left _ -> do
                 -- TODO handle other errors
@@ -155,6 +151,15 @@ component cache = do
         -- changing this to killFiber won't work because it'll kill
         -- loading article just because of a rerender.
         pure mempty
+
+    useEffect { articleId } do
+      -- Don't show a link to an advertorial if the article itself is an advertorial
+      let isNonAdvertorial = (article <#> _.article.articleType <#> ((==) Advertorial)) == Just false
+      when isNonAdvertorial $ case props.advertorials of
+        Nothing -> pure unit
+        Just advertorials ->
+          setAdvertorial <<< Just =<< pickRandomElement advertorials
+      pure mempty
 
     let render' = render (Just { advertorial }) components props
     pure $ case {article, initialArticle: props.article} of
