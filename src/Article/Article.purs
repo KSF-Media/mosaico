@@ -82,6 +82,8 @@ evalEmbeds = Eval.evalArticleScripts <<< map Eval.ScriptTag <<< map unwrap <<< f
 
 type BodyElement' = Tuple BodyElement Boolean
 
+data WithAd = WithAd | WithoutAd
+
 render :: (Eval.Props -> JSX) -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
 render embedNagbar imageComponent boxComponent props =
     let title = getTitle props.article
@@ -106,8 +108,8 @@ render embedNagbar imageComponent boxComponent props =
             run arr n (x:xs) = run (snoc arr $ Tuple x true) n xs
         body = getBody props.article
         hideAds = getRemoveAds props.article
-        bodyWithoutAd = map renderElem (markPremiumElements false body)
-        bodyWithAd =
+        articleBody WithoutAd = map renderElem (markPremiumElements false body)
+        articleBody WithAd =
           [ Mosaico.ad { contentUnit: "mosaico-ad__mobparad", inBody: false, hideAds }
           , DOM.section
             { className: "article-content"
@@ -174,16 +176,16 @@ render embedNagbar imageComponent boxComponent props =
                                   case _.articleType <$> props.article of
                                     Right PreviewArticle ->
                                       renderElem (Tuple (Ad { contentUnit: "mosaico-ad__mobparad", inBody: false }) false)
-                                      `cons` bodyWithoutAd
+                                      `cons` articleBody WithoutAd
                                       `snoc` (if isNothing props.user then loadingSpinner else DOM.div { className: "mosaico--paywall -mx-4", children: [ props.paywall ] })
                                       `snoc` tagsListing tags props.handlers.onTagClick
                                       `snoc` renderElem (Tuple (Ad { contentUnit: "mosaico-ad__bigbox1", inBody: false }) false)
                                       `snoc` advertorial
                                       `snoc` mostRead
                                     Right DraftArticle ->
-                                      bodyWithoutAd
+                                      articleBody WithoutAd
                                     Right FullArticle ->
-                                      bodyWithAd
+                                      articleBody WithAd
                                       `snoc` DOM.div { id: "tb-embed" }
                                       `snoc` tagsListing tags props.handlers.onTagClick
                                       `snoc` advertorial
