@@ -81,7 +81,7 @@ pureComponent :: Props -> JSX
 pureComponent props = render Nothing
   { image: Image.render mempty
   , box: Box.render mempty
-  , nagbar: Eval.render (Just false) <<< _.isArticle
+  , nagbar: pure mempty
   } props $ case props.article of
       -- Should always be this
       InitialFullArticle a -> Right a
