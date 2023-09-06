@@ -46,6 +46,7 @@ render state props =
                             , name: "q"
                             , placeholder: "Sök..."
                             , label: Nothing
+                            , labelClass: ""
                             , value: maybe props.query _.query state
                             , onChange: maybe (const mempty) _.setQuery state
                             , validationError: Nothing
