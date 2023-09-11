@@ -12,6 +12,9 @@ function areAdsAllowed() {
     if (window.Cookiebot.consent.marketing) {
       window.consentToEmbeddedScripts(true);
       console.log("User has consented to ads cookies; allowing external scripts.");
+    } else if (isDraft()) {
+      window.consentToEmbeddedScripts(true);
+      console.log("Draft preview; allow external scripts.");
     } else {
       window.consentToEmbeddedScripts(false);
       console.log("User has not consented to ads cookie; external scripts blocked.");
@@ -40,7 +43,7 @@ export const consentedToEmbeddedScripts =
   typeof window !== "undefined" &&
   new Promise((resolve) => {
     window.consentToEmbeddedScriptsResolve = resolve;
-    if (document && document.location.pathname.startsWith("/artikel/draft/")) {
+    if (isDraft()) {
       // We're in Aptoma's preview window, load embeds
       window.consentToEmbeddedScripts(true);
     }
@@ -82,7 +85,7 @@ export async function forceEvalExternalScriptsImpl(scripts) {
 }
 
 export async function evalExternalScriptsImpl(scripts) {
-  if ((await consentedToEmbeddedScripts) == true) {
+  if ((await consentedToEmbeddedScripts) == true || isDraft()) {
     forceEvalExternalScriptsImpl(scripts);
   } else {
     console.log("User has not consented to receive ads; not loading external scripts.");
@@ -97,4 +100,11 @@ function evalScript(s) {
   } catch (err) {
     console.warn("Failed to eval script:", err);
   }
+}
+
+function isDraft() {
+  // return true for preview paths, starting with "/artikel/draft"
+  // or domains "mosaico-<brand>.api" where Cookiebot isn't available
+  return document && document.location.pathname.startsWith("/artikel/draft/") ||
+         window && window.location.host.match(/^mosaico-(.*).api/);
 }
