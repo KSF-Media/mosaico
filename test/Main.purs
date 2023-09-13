@@ -95,8 +95,12 @@ main = launchAff_ do
     log "Test korsord, SSO"
     withDesktopBrowserPage $ Korsord.testKorsord Korsord.SSO entitledUser entitledPassword
 
+{-
+  -- TODO this uses an OC article as an example and staging Lettera no
+  -- longer has access to those.
   log "Test related article links"
   withBrowserPage Article.testRelated
+-}
 
   log "Test CSS has loaded"
   withBrowserPage Layout.testLayout
@@ -109,10 +113,13 @@ main = launchAff_ do
   -- list in staging, which would fail this test.
   --log "Test most read list"
   --withDesktopBrowserPage $ Frontpage.testMostRead
+{-
+  -- TODO find/insert new examples to staging Lettera
   log "Test embed render via navigation"
   withBrowserPage Embeds.testEmbedNavigation
   log "Test embed render, direct"
   withBrowserPage Embeds.testEmbedServerRender
+-}
   log "Test search via navigation"
   withBrowserPage Search.testSearchNavigation
   log "Test search direct"
@@ -124,9 +131,12 @@ main = launchAff_ do
   log "Test static pages"
   withBrowserPage Static.testNavigateToStatic
   withBrowserPage Static.testStaticEmbeds
+{-
+  -- TODO find/insert new examples to staging Lettera
   log "Test listTitle field"
   withBrowserPage Lettera.testListTitle
   withBrowserPage Lettera.testDefaultListTitle
+-}
   log "Test categories"
   withBrowserPage Lettera.testCategoryLists
   where
