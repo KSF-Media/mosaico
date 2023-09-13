@@ -59,6 +59,9 @@ spec ::
                 { response :: ResponseBody
                 , guards :: Guards ("triggerbee" : Nil)
                 }
+         , robotsTxt ::
+              GET "/robots.txt"
+                { response :: File }
          , adsTxt ::
               GET "/ads.txt"
                 { response :: File }
@@ -118,6 +121,7 @@ main = do
           , adsTxt: staticAsset AdsTXT
           , adnamiDomainEnabler: staticAsset AdnamiDomainEnabler
           , corsProxy: corsProxyPage env
+          , robotsTxt: staticAsset RobotsTXT
           }
         guards =
           { clientip: getClientIP
@@ -160,7 +164,7 @@ resolveRedir env req = pure $
 assets :: { params :: { path :: List String }, guards :: { logger :: Unit } } -> Aff (Either Failure File)
 assets { params: { path } } = Handlers.directory "dist/assets" path
 
-data StaticAsset = AdsTXT | AdnamiDomainEnabler | GoogleSiteVerification | SSOReceiver
+data StaticAsset = AdsTXT | AdnamiDomainEnabler | GoogleSiteVerification | SSOReceiver | RobotsTXT
 
 staticAsset :: forall r. StaticAsset -> { | r} -> Aff File
 staticAsset asset = Handlers.file $ case asset of
@@ -168,6 +172,7 @@ staticAsset asset = Handlers.file $ case asset of
   AdnamiDomainEnabler -> "dist/assets/adnami/adnm.html"
   GoogleSiteVerification -> "dist/assets/google8c22fe93f3684c84.html"
   SSOReceiver -> "dist/assets/xd_receiver.html"
+  RobotsTXT -> "dist/assets/robots.txt"
 
 type TriggerbeeCookies =
   { mtruid :: String
