@@ -59,7 +59,7 @@ ad props = make component
       render self@{ state: { gamId: Just gamId, isLazy: Just isLazy }} =
         let inBodyClass = if self.props.inBody then "in-body" else mempty
             contentUnitClass = toLowerCase self.props.contentUnit
-        in DOM.div
+        in DOM.aside
           { className: joinWith " " [blockClass, contentUnitClass]
           , children:
             [ DOM.div
