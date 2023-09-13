@@ -97,6 +97,22 @@ export async function runBuild() {
       })
       .catch((err) => console.error("Error fetching Aptoma assets: " + err));
 
+    const relevantScriptIds = {
+      hbl: "61bc52c2df5a45f309c9e2bb",
+      on: "61bc52cb8bc0f138aac9e2bc",
+      vn: "61bc52d80bae0f393cc9e2bd",
+    };
+
+    const relevantScriptUrl = `https://apps-cdn.relevant-digital.com/static/tags/${
+      relevantScriptIds[process.env.PAPER]
+    }.js`;
+
+    template("#relevant-js").attr("src", relevantScriptUrl);
+
+    const programmaticAdsScriptUrl = `https://cdn.ksfmedia.fi/assets/js/programmatic-ads-scripts/programmatic-ads-${process.env.PAPER}.js`;
+
+    template("#programmatic-ads-js").attr("src", programmaticAdsScriptUrl);
+
     const cookiebotDataId = {
       hbl: "e3464008-80f1-479f-99f2-dc8b41cd79a7",
       vn: "9aea18f0-286d-4988-af88-351c5bf83a2c",
