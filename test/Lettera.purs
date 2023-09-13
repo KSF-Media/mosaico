@@ -21,10 +21,10 @@ import Test.Unit as Unit
 import Test.Unit.Assert as Assert
 
 listTitleExample :: UUID
-listTitleExample = unsafePartial $ fromJust $ UUID.parseUUID "6555d4ff-cbd0-4a85-ac60-4967166704a4"
+listTitleExample = unsafePartial $ fromJust $ UUID.parseUUID "a3fd5fa1-0199-5562-a944-c1da2f4bd271"
 
 missingListTitleExample :: UUID
-missingListTitleExample = unsafePartial $ fromJust $ UUID.parseUUID "f4b6ca52-6078-43c8-b31f-9df85087dbff"
+missingListTitleExample = unsafePartial $ fromJust $ UUID.parseUUID "41a5f05b-69c3-5658-90f6-acedeb450dd4"
 
 testListTitle :: Test
 testListTitle page = do

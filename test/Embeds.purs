@@ -7,7 +7,7 @@ import KSF.Puppeteer as Chrome
 import Toppokki (unsafeEvaluateStringFunction) as Chrome
 
 exampleArticle :: String
-exampleArticle = "97272947-6d4b-42d4-a907-e1a83f265963"
+exampleArticle = "d175946e-ce35-448f-ab81-d93a5f2d8ea0"
 
 testEmbedNavigation :: Test
 testEmbedNavigation page = do

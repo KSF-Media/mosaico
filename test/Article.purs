@@ -21,7 +21,7 @@ type PageIds =
 -- TODO find examples for all papers
 relatedExample :: Maybe String
 relatedExample = case mosaicoPaper of
-  HBL -> Just "d25bde70-a2a1-4ac6-9c38-22f742b799f7"
+  HBL -> Just "3152880e-3dcb-48d6-af4f-dc3d16379d78"
   VN -> Nothing
   ON -> Nothing
   _ -> Nothing
