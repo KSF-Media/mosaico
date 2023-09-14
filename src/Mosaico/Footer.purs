@@ -94,7 +94,7 @@ hblContactInfo commonFooter =
     , section "Prenumerationer och Kundservice: "
         [ tel "09 125 35 00"
         , DOM.text ", "
-        , email "pren@ksfmedia.fi"
+        , email "kundservice@hbl.fi"
         , DOM.br {}
         , DOM.text "(mån-fre kl. 9.00-12.00 och 13.00-15.00.)"
         ]
@@ -150,7 +150,7 @@ vastranylandContactInfo commonFooter =
         , DOM.br {}
         , DOM.text "(mån-fre kl. 9.00-12.00 och 13.00-15.00.)"
         , DOM.text ", "
-        , email "pren@ksfmedia.fi"
+        , email "kundservice@hbl.fi"
         ]
     , section "Redaktionen: "
         [ tel "019 222 822"
@@ -205,7 +205,7 @@ ostnylandContactInfo commonFooter =
     , section "Prenumerationer och kundservice:"
         [ tel "09 1253 500"
         , DOM.br {}
-        , columnLink "mailto:pren@ksfmedia.fi" [ DOM.text "pren@ksfmedia.fi" ]
+        , columnLink "kundservice@hbl.fi" [ DOM.text "kundservice@hbl.fi" ]
         , DOM.br {}
         , DOM.text "(mån-fre kl. 9.00-12.00 och 13.00-15.00.)"
         ]
