@@ -288,6 +288,15 @@ function listener(_model, message) {
   }
 }
 
+// This listens for DN interactive graphic embeds to find out what height they need to be
+// Is there a better location for this code?
+window.addEventListener("message", (event) => {
+  if (event.data.location && event.data.ratio) {
+    const iframeToTarget = document.querySelector(`iframe[src="${event.data.location}"]`)
+    iframeToTarget.style.height = iframeToTarget.clientWidth * event.data.ratio + "px";
+  }
+});
+
 window.googletag = window.googletag || { cmd: [] };
 window.googletag.cmd.push(function () {
   // Restrict an ad to just the sites, if key-value targeting is applied
