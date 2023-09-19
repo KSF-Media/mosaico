@@ -141,7 +141,14 @@
 
 .article-element {
   margin-bottom: 1rem;
-  font: 400 1.07rem/1.5 "Roboto", sans-serif;
+  font: 400 1.125rem/1.4 "Publico Text", serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  b {
+    font-weight: 600;
+  }
 
   &__html {
     color: var(--text-color);
@@ -268,7 +275,8 @@
     }
   }
   &__subheadline {
-    font: 500 1.07rem/1.5rem "Roboto", sans-serif;
+    font-weight: 600;
+    line-height: 1.4;
     margin-top: 30px;
     margin-bottom: 10px;
   }
