@@ -54,7 +54,9 @@ import Web.HTML.HTMLDocument (setTitle) as Web
 import Web.HTML.Window (document, scroll) as Web
 
 foreign import refreshAdsImpl :: EffectFn1 (Array String) Unit
+foreign import deleteAdnamiTopscroll :: Effect Unit
 foreign import setManualScrollRestoration :: Effect Unit
+
 
 app :: Effect (React.ReactComponent JSProps)
 app = do
@@ -153,6 +155,7 @@ app = do
 routeListener :: Categories -> ((State -> State) -> Effect Unit) -> Maybe LocationState -> LocationState -> Effect Unit
 routeListener c setState oldLoc location = do
   runEffectFn1 refreshAdsImpl []
+  when (isJust oldLoc) deleteAdnamiTopscroll
   let newPath = stripFragment location
       newRoute = Routes.match c newPath
       oldRoute = Routes.match c <<< stripFragment <$> oldLoc
