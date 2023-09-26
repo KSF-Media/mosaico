@@ -26,3 +26,4 @@ yarn-error.log
 .env.development
 src/Version.js
 .env.test
+.envrc
