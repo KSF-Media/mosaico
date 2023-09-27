@@ -297,5 +297,15 @@
     "route": "host",
     "paper": "vn",
     "destination": "https://www.ksfmedia.fi/vastranyland-host"
+  },
+  {
+    "route": "bokmassa2023",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-bokmassan"
+  },
+  {
+    "route": "bokmässa2023",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-bokmassan"
   }
 ]
