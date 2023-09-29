@@ -307,5 +307,9 @@
     "route": "bokmässa2023",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbl-bokmassan"
+  },
+  {
+    "route": "dataskydd",
+    "destination": "https://www.ksfmedia.fi/dataskydd"
   }
 ]
