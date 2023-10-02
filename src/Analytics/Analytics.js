@@ -14,6 +14,7 @@ export function _pushToDataLayer(metadata) {
   push_data.userCusno = metadata.userCusno;
   push_data.articleLength = metadata.articleLength;
   push_data.tags = metadata.tags.split(", ").map((x) => x.replaceAll('"', ""));
+  push_data.structuredTags = metadata.structuredTags;
   window.pageAnalyticsMetadata = push_data;
   dataLayer.push(push_data);
 }
