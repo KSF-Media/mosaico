@@ -10,6 +10,7 @@ import Prelude
 import Data.Array (drop)
 import Data.Int (ceil)
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Monoid (guard)
 import Data.Newtype (unwrap)
 import Data.Nullable (toMaybe)
 import Data.String as String
@@ -111,28 +112,19 @@ headerContent props =
             ]
       }
   , DOM.div
-      { className: "hidden text-[13px] mosaico-header__right-links text-neutral md:block"
+      { className: "text-[13px] mosaico-header__right-links text-neutral flex flex-col items-end"
       , children:
-          [ DOM.ul
-              { className: "flex flex-col items-center mt-0 list-none"
-              , children:
-                  [ DOM.li_
-                      [ DOM.a
-                          { className: "inline-block no-underline"
-                          , children: [ DOM.text "KUNDSERVICE" ]
-                          , href: "/sida/kundservice"
-                          , onClick: props.handlers.onStaticPageClick "kundservice"
-                          }
-                      ]
-                  , DOM.li_
-                      [ DOM.a
-                          { className: "inline-block p-[3px] text-center text-white no-underline rounded bg-neutral"
-                          , children: [ DOM.text "PRENUMERERA" ]
-                          , href: "https://prenumerera.ksfmedia.fi/#/" <> String.toLower (toString mosaicoPaper)
-                          , target: "_blank"
-                          }
-                      ]
-                  ]
+          [ DOM.a
+              { className: "hidden no-underline md:block"
+              , children: [ DOM.text "KUNDSERVICE" ]
+              , href: "/sida/kundservice"
+              , onClick: props.handlers.onStaticPageClick "kundservice"
+              }
+          , DOM.a
+              { className: "px-[3px] md:p-[3px] text-center text-white no-underline rounded bg-neutral md:block" <>  (guard (isLoggedIn props.user) $ " hidden")
+              , children: [ DOM.text "PRENUMERERA" ]
+              , href: "https://prenumerera.ksfmedia.fi/#/" <> String.toLower (toString mosaicoPaper)
+              , target: "_blank"
               }
           ]
       }
@@ -239,7 +231,9 @@ headerContent props =
                ]
            , _data: Object.fromFoldable [Tuple "loggedin" "1"]
            }
-
+    
+    isLoggedIn (Just (Just _)) = true
+    isLoggedIn _ = false
 -- The separator between the header and the rest of the page
 mainSeparator :: JSX
 mainSeparator = DOM.hr { className: "mosaico-main-separator" }
