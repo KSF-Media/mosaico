@@ -20,3 +20,13 @@ export function logJsEnv(a) {
     console.log({jsEnv: projection})
   }
 }
+
+export function decodeURIComponent_(uri) {
+  try {
+    return decodeURIComponent(uri);
+  } catch(error) {
+    // Just ignore, for our use this is presumed to be impossible
+    // since the path has already been processed by Payload.
+    return "";
+  }
+}

@@ -39,6 +39,7 @@ foreign import log :: forall a . a -> Effect Unit
 foreign import logPretty :: forall a . a -> Effect Unit
 foreign import logJsEnv :: Unit -> Effect Unit
 foreign import serverPort :: Int
+foreign import decodeURIComponent_ :: String -> String
 
 spec ::
   Spec
@@ -156,6 +157,7 @@ resolveRedir env req = pure $
   -- eg "/kontakt" and not "https://www.hbl.fi/kontakt"
   flip Map.lookup env.redirects $
   (_ /\ mosaicoPaper) $
+  decodeURIComponent_ $
   intercalate "/" $
   filter (_ /= "") $
   String.split (String.Pattern "/") $
