@@ -311,5 +311,10 @@
   {
     "route": "dataskydd",
     "destination": "https://www.ksfmedia.fi/dataskydd"
+  },
+  {
+    "route": "vinter",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-vinter"
   }
 ]
