@@ -7,8 +7,8 @@ import Prelude
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (drop, take)
 import Foreign.Object (singleton)
-import KSF.HtmlRenderer as HtmlRenderer
-import KSF.HtmlRenderer.Models as HtmlRenderer
+import KSF.HtmlRenderer (render) as HtmlRenderer
+import KSF.HtmlRenderer.Models (HookRep, Node, dfs, getName, getStringAttrib, replacingHook) as HtmlRenderer
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 

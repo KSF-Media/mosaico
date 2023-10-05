@@ -2,19 +2,19 @@ module Mosaico.Analytics where
 
 import Prelude
 
-import Data.Argonaut.Core (Json, stringify) as Json
+import Data.Argonaut.Core (Json) as Json
 import Data.Argonaut.Encode (encodeJson) as Json
 import Data.Array (intercalate)
 import Data.Foldable (foldMap)
 import Data.Formatter.DateTime (format)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Nullable (Nullable, toMaybe, toNullable)
+import Data.Nullable (Nullable, toNullable)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn1, runEffectFn1, EffectFn2, runEffectFn2)
 import KSF.Helpers (dateTimeFormatter)
 import KSF.User (User)
 import KSF.User.Cusno (Cusno, toString)
-import Lettera.Models (Article, StructuredTags)
+import Lettera.Models (Article)
 
 type StringArticleMetadata =
   { title :: String
