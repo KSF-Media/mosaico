@@ -461,6 +461,15 @@ renderElement hideAds imageComponent boxComponent onArticleClick (Tuple el premi
           [ DOM.ul_ $ map renderRelatedArticle related
           ]
       }
+  Table table -> DOM.div
+    { className: "article-element article-element__table"
+    , children:
+      [ DOM.table_ $
+          maybe [] (pure <<< DOM.caption_ <<< pure <<< DOM.text) table.caption `snoc`
+          DOM.tbody_ (map tableRow table.cells)
+      ]
+  }
+
   Ad { contentUnit, inBody} -> Mosaico.ad { contentUnit, inBody, hideAds }
   where
     -- This class is used to tell Google that these elements can only
@@ -474,6 +483,20 @@ renderElement hideAds imageComponent boxComponent onArticleClick (Tuple el premi
             , onClick: foldMap (\f -> f article) onArticleClick
             }
         ]
+    tableRow = DOM.tr_ <<< map tableCell
+    tableCell cell = case cell.th of
+      Just true ->
+        DOM.th
+          { colSpan: fromMaybe 1 cell.colSpan
+          , rowSpan: fromMaybe 1 cell.rowSpan
+          , children: [DOM.text cell.content]
+          }
+      _ ->
+        DOM.td
+          { colSpan: fromMaybe 1 cell.colSpan
+          , rowSpan: fromMaybe 1 cell.rowSpan
+          , children: [DOM.text cell.content]
+          }
 
 adsAllowed :: FullArticle -> Boolean
 adsAllowed { articleType: ErrorArticle } = false

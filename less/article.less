@@ -175,6 +175,35 @@
       }
     }
   }
+
+  &__table {
+    overflow-x: auto;
+    margin-bottom: 32px;
+    table {
+      font-family: "Roboto", sans-serif;
+      width: 100%;
+      border-collapse: unset;
+      text-align: left;
+    }
+    table tr:nth-child(odd) {
+      background-color: #eee;
+    }
+    table tr:nth-child(even) {
+      background-color: #fff;
+    }
+    table th,
+    table td {
+      padding: 2px 4px;
+    }
+    caption {
+      caption-side: top;
+      color: black;
+      font-size: 1.5rem;
+      font-weight: bold;
+      padding-top: 0;
+    }
+  }
+
   &__question {
     font-size: 1.125rem;
     font-style: italic;
