@@ -21,6 +21,7 @@ You can edit this file as you like.
   , "datetime"
   , "effect"
   , "either"
+  , "enums"
   , "exceptions"
   , "foldable-traversable"
   , "foreign"

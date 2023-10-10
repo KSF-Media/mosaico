@@ -6,16 +6,17 @@ import Data.Argonaut as JSON
 import Data.Either (Either(..), either, hush)
 import Data.Formatter.DateTime (format)
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe, isJust)
-import Data.String.Regex as Regex
 import Data.String as String
+import Data.String.Regex as Regex
 import Data.Tuple (Tuple(..))
 import Data.UUID as UUID
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Effect.Now (nowDate)
 import KSF.Helpers (rfc1123Formatter)
 import Lettera as Lettera
-import Lettera.Models as Lettera.Models
 import Lettera.Models (MosaicoArticleType(..), articleToArticleStub, articleToJson, notFoundArticle, editorialIdToUuid)
+import Lettera.Models as Lettera.Models
 import Mosaico as Mosaico
 import Mosaico.Article as Article
 import Mosaico.Cache as Cache
@@ -24,8 +25,8 @@ import Mosaico.Meta (getMeta, pageTitle)
 import Mosaico.Paper (mosaicoPaper)
 import Mosaico.Routes (MosaicoPage(..), routes)
 import Mosaico.Server.Env (Env)
-import Mosaico.Server.StaticPage (loadStaticPage)
 import Mosaico.Server.Output (htmlContent)
+import Mosaico.Server.StaticPage (loadStaticPage)
 import Mosaico.Server.Template (appendMosaico, appendHead, appendVars, cloneTemplate, globalDisableAds, makeTitle, mkWindowVariables, renderTemplateHtml)
 import Node.HTTP as HTTP
 import Payload.Headers as Headers
@@ -96,6 +97,8 @@ defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
   Cache.Stamped {content: initialFeeds, validUntil} <-
     Cache.loadFeeds env.cache $ _.feedType <$> routeFeed route
 
+  currentDate <- liftEffect nowDate
+
   let state =
         { route
         , prevRoute: Nothing
@@ -110,6 +113,7 @@ defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
         , starting: true
         , articleAllowAds: maybe true Article.adsAllowed article
         , paywallCounter: 0
+        , currentDate
         }
       props =
         { article
@@ -120,6 +124,7 @@ defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
         , globalDisableAds
         , initialFeeds
         , headless
+        , initialCurrentDate: currentDate
         }
 
       content = Mosaico.serverRender props state

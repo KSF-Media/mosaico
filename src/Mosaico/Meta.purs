@@ -67,6 +67,10 @@ pageTitle route maybeArticle =
       Routes.EpaperPage -> "E-Tidningen"
       Routes.KorsordPage -> "Korsord och hjärngympa"
       Routes.StaticPage page -> staticPageTitle page mosaicoPaper
+      Routes.ArchivePage view -> case view of
+        Routes.MonthSelection -> "Arkiv"
+        Routes.DateSelection _ _ -> "Arkiv"
+        Routes.ArticleSelection _ -> "Arkiv"
       Routes.ArticlePage articleId
         | Just article <- maybeArticle
         , UUID.parseUUID article.uuid == Just articleId -> article.title

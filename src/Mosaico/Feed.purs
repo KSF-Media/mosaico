@@ -6,8 +6,11 @@ import Data.Argonaut as JSON
 import Data.Argonaut.Core (Json, fromArray)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
-import Data.Array (findMap, mapMaybe)
+import Data.Array (catMaybes, findMap, head, mapMaybe)
+import Data.Date (Date, canonicalDate)
 import Data.Either (hush)
+import Data.Enum (toEnum)
+import Data.Int as Int
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -17,13 +20,15 @@ import Data.Tuple (Tuple(..))
 import Data.UUID (UUID)
 import Data.UUID as UUID
 import Foreign.Object as Object
+import KSF.Helpers as Helpers
 import Lettera.Models (ArticleStub, Category(..), CategoryLabel(..), CategoryType(..), Tag(..), articleStubToJson, parseArticleStubWithoutLocalizing, frontpageCategoryLabel)
 import Mosaico.Routes as Routes
 
-parseFeed :: Json -> Maybe (Tuple ArticleFeedType ArticleFeed)
-parseFeed = JSON.toObject >=> \feed -> do
+parseFeed :: Date -> Json -> Maybe (Tuple ArticleFeedType ArticleFeed)
+parseFeed selectedDate = JSON.toObject >=> \feed -> do
   let lookup k = Object.lookup k feed >>= JSON.toString
       feedPage = lookup "feedPage"
+
   feedType <- do
     f <- lookup "feedType"
     case String.toLower f of
@@ -37,6 +42,7 @@ parseFeed = JSON.toObject >=> \feed -> do
       "mostreadfeed" -> Just MostReadFeed
       "breakingnews" -> Just BreakingNewsFeed
       "advertorials" -> Just AdvertorialsFeed
+      "archive"      -> Just $ ArchiveFeed selectedDate
       "debug"        -> DebugFeed <$> (UUID.parseUUID =<< feedPage)
       _              -> Nothing
   feedContent <- do
@@ -85,6 +91,7 @@ serializeFeed (Tuple feedDefinition feed) =
       MostReadFeed        -> Tuple "mostreadfeed" ""
       BreakingNewsFeed    -> Tuple "breakingnews" ""
       AdvertorialsFeed    -> Tuple "advertorials" ""
+      ArchiveFeed date    -> Tuple "archive" $ Helpers.formatDate date
       DebugFeed uuid      -> Tuple "debug" $ UUID.toString uuid
 
 data ArticleFeed
@@ -101,6 +108,7 @@ data ArticleFeedType
   | MostReadFeed
   | BreakingNewsFeed
   | AdvertorialsFeed
+  | ArchiveFeed Date
   | DebugFeed UUID
 derive instance eqArticleFeedType :: Eq ArticleFeedType
 derive instance ordArticleFeedType :: Ord ArticleFeedType
@@ -122,6 +130,7 @@ type Feeds =
   , mostReadArticles :: Array ArticleStub
   , latestArticles :: Array ArticleStub
   , breakingNews :: String
+  , archive :: Maybe (Tuple Date (Array ArticleStub))
   -- Client side state
   , loading :: Int
   }
@@ -153,6 +162,10 @@ feedsFromInitial ini =
       (\a -> case a of
           (Tuple BreakingNewsFeed (Html _ x)) -> Just x
           _ -> Nothing) ini
+  , archive: head $ mapMaybe
+      (\a -> case a of
+          (Tuple (ArchiveFeed date) (ArticleList xs)) -> Just $ Tuple date xs
+          _ -> Nothing) ini
   , loading: 0
   }
 
@@ -170,6 +183,8 @@ routeFeed (Routes.TagPage tag limit) =
   Just { limit, feedType: TagFeed tag }
 routeFeed (Routes.SearchPage (Just query) limit) =
   Just { limit, feedType: SearchFeed query }
+routeFeed (Routes.ArchivePage (Routes.ArticleSelection date)) =
+  Just { limit: Nothing, feedType: ArchiveFeed date }
 routeFeed (Routes.DebugPage uuid) =
   Just { limit: Nothing, feedType: DebugFeed uuid }
 routeFeed _ = Nothing

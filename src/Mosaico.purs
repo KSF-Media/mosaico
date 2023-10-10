@@ -21,6 +21,7 @@ import KSF.Spinner (loadingSpinner)
 import Lettera.Models (ArticleStub, ArticleType(..), Categories, Category(..), CategoryLabel(..), CategoryType(..), frontpageCategoryLabel, notFoundArticle)
 import Mosaico.Ad (ad) as Mosaico
 import Mosaico.Analytics (sendPageView)
+import Mosaico.Archive as Archive
 import Mosaico.Article.Advertorial as Advertorial
 import Mosaico.Article.Paywall as Paywall
 import Mosaico.Cache as Cache
@@ -280,6 +281,28 @@ render hooks components handlers props state =
        Routes.DebugPage _ -> frontpageNoHeader Nothing $ Map.lookup (CategoryLabel "debug") state.feeds.category
        -- NOTE: This should not ever happen, as we always "redirect" to Frontpage route from DeployPreview
        Routes.DeployPreview -> renderFrontpage
+       Routes.ArchivePage archivePage -> mosaicoDefaultLayout $ case archivePage of
+         Routes.MonthSelection ->
+           components.archiveComponent $ Archive.MonthSelection
+             { currentDate: state.currentDate
+             , handlers
+             }
+         Routes.DateSelection selectedYear selectedMonth ->
+           components.archiveComponent $ Archive.DateSelection
+             { currentDate: state.currentDate
+             , selectedYear
+             , selectedMonth
+             , handlers
+             }
+         Routes.ArticleSelection selectedDate ->
+           components.archiveComponent $ Archive.ArticleSelection
+             { selectedDate
+             , articles: case state.feeds.archive of
+                 Just (Tuple date articles) | date == selectedDate -> articles
+                 _ -> []
+             , handlers
+             }
+
     renderFrontpage = maybe mempty renderCategory $ Map.lookup frontpageCategoryLabel props.catMap
 
     renderCategory :: Category -> JSX
@@ -420,6 +443,7 @@ render hooks components handlers props state =
       Routes.StaticPage _ -> false
       Routes.DebugPage _ -> false
       Routes.DeployPreview -> false
+      Routes.ArchivePage _ -> false
 
     renderArticle :: InputArticle -> JSX
     renderArticle article =

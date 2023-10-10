@@ -4,7 +4,9 @@ import Prelude
 
 import Data.Array (find)
 import Data.Array.NonEmpty as NonEmptyArray
+import Data.Date (day, month, year)
 import Data.Either (hush)
+import Data.Enum (fromEnum)
 import Data.Foldable (foldMap)
 import Data.Maybe (Maybe(..), isJust)
 import Data.String.Regex (match, regex) as Regex
@@ -36,6 +38,7 @@ type Handlers =
   , onLogout :: EventHandler
   -- Don't start with a slash
   , onStaticPageClick :: String -> EventHandler
+  , onArchivePageClick :: String -> EventHandler
   , onAuthorClick :: Author -> EventHandler
   -- May choose to not capture the event
   , onPrerenderedClick :: Array ArticleStub -> EventHandler
@@ -77,6 +80,21 @@ clientHandlers initialValues state setState =
   , onStaticPageClick: \link -> case state.route of
     Routes.StaticPage page | page == link -> mempty
     _ -> capture_ $ Routes.changeRoute initialValues.nav ("/sida/" <> link)
+  , onArchivePageClick: \link -> case state.route of
+    Routes.ArchivePage Routes.MonthSelection
+      | "/arkiv" == link ->
+          mempty
+    Routes.ArchivePage (Routes.DateSelection year month)
+      | "/arkiv/" <> show (fromEnum year) <> "/"
+        <> show (fromEnum month) == link ->
+          mempty
+    Routes.ArchivePage (Routes.ArticleSelection date)
+      | "/arkiv/" <> show (fromEnum (year date)) <> "/"
+        <> show (fromEnum (month date)) <> "/"
+        <> show (fromEnum (day date)) == link ->
+          mempty
+    _ ->
+          capture_ $ Routes.changeRoute initialValues.nav link
   , onAuthorClick: \author -> capture_ $ simpleRoute $ "/sök?q=" <> author.byline
   , onPrerenderedClick: \articles -> onFrontpageClick $ \path -> do
         let uuidRegex = hush $ Regex.regex "[^/]+$" mempty
@@ -131,6 +149,7 @@ nullHandlers =
   , setUser: const mempty
   , onLogout: mempty
   , onStaticPageClick: const mempty
+  , onArchivePageClick: const mempty
   , onAuthorClick: const mempty
   , onPrerenderedClick: const mempty
   , onCategoryClick: const mempty

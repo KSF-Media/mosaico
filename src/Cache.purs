@@ -7,6 +7,7 @@ import Control.Monad.Rec.Class (untilJust)
 import Control.Parallel.Class (parallel, sequential)
 import Control.Plus (class Plus, empty)
 import Data.Array (cons, filter, fromFoldable, length, mapMaybe, take)
+import Data.Date (Date)
 import Data.DateTime (DateTime, adjust, diff)
 import Data.Either (Either(..), hush)
 import Data.Foldable (foldr)
@@ -22,15 +23,16 @@ import Data.Time.Duration (Seconds(..))
 import Data.Traversable (class Foldable, class Traversable, foldMap, sequence, traverse)
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.AVar (AVar)
+import Effect.AVar as Effect.AVar
 import Effect.Aff (Aff)
 import Effect.Aff as Aff
-import Effect.AVar (AVar)
 import Effect.Aff.AVar as AVar
-import Effect.AVar as Effect.AVar
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Console
 import Effect.Exception as Exception
 import Effect.Now (nowDateTime)
+import KSF.Paper (Paper)
 import Lettera (LetteraResponse(..))
 import Lettera as Lettera
 import Lettera.Models (ArticleStub, Category(..), CategoryLabel(..), CategoryType(Feed, Prerendered), Tag)
@@ -383,6 +385,11 @@ getByTag cache tag count =
   getListUsingCache cache.feedList (TagFeed tag) count $
     \s l -> Lettera.getByTag s l tag mosaicoPaper
 
+getArchive :: Cache -> Date -> Paper -> Aff (Stamped (Array ArticleStub))
+getArchive cache date paper =
+  getListUsingCache cache.feedList (ArchiveFeed date) Nothing $
+    \_s _l -> Lettera.getByDay date paper
+
 resetCategory :: Cache -> CategoryLabel -> Aff Unit
 resetCategory cache category = do
   removeFromActive cache.prerendered
@@ -516,6 +523,13 @@ requestFeed cache {limit, feedType: (SearchFeed query)} = do
   setFeeds cache \s -> s { loading = s.loading + 1 }
   cl <- parallelWithCommonLists cache $ getContent <$> search cache query limit
   setFeeds cache $ setCommonFeeds cl <<< \s -> s { search = Map.insert query cl.pageContent s.search }
+requestFeed cache {feedType: (ArchiveFeed date)} = do
+  setFeeds cache \s -> s { loading = s.loading + 1 }
+  cl <- parallelWithCommonLists cache $ Lettera.getByDay date mosaicoPaper
+  case Lettera.responseBody cl.pageContent of
+    Just articles ->
+      setFeeds cache $ setCommonFeeds cl <<< \s -> s { archive = Just (Tuple date articles) }
+    Nothing -> pure unit
 requestFeed cache {feedType: (DebugFeed uuid)} = do
   setFeeds cache \s -> s { loading = s.loading + 1 }
   cl <- parallelWithCommonLists cache $ Lettera.getArticleStub uuid
@@ -562,6 +576,8 @@ loadFeeds cache feedType = do
       Just (DebugFeed uuid) -> do
         map ((_ <$ (eotStamp :: Stamped (Array Unit))) <<< ArticleList <<< pure) <<< hush
         <$> Lettera.getArticleStub uuid
+      Just (ArchiveFeed date) ->
+        Just <<< map ArticleList <$> getArchive cache date mosaicoPaper
       _ -> pure Nothing
   advertorials <- getAdvertorials cache
 

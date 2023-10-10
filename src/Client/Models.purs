@@ -2,6 +2,7 @@ module Mosaico.Client.Models where
 
 import Prelude
 
+import Data.Date (Date)
 import Data.Maybe (Maybe)
 import Data.NonEmpty (NonEmpty)
 import Data.Tuple (Tuple)
@@ -26,6 +27,7 @@ type InitialValues =
   , staticPageContent :: Maybe String
   , staticPageScript :: Maybe String
   , logger :: Sentry.Logger
+  , currentDate :: Date
   }
 
 type State =
@@ -43,6 +45,7 @@ type State =
     -- Bump whenever there's a chance that preview articles could be
     -- turned to full articles
   , paywallCounter :: Int
+  , currentDate :: Date
   }
 
 type Props =
@@ -55,4 +58,5 @@ type Props =
   , globalDisableAds :: Boolean
   , initialFeeds :: Array (Tuple ArticleFeedType ArticleFeed)
   , headless :: Boolean
+  , initialCurrentDate :: Date
   }

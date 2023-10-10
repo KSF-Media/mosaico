@@ -7,15 +7,21 @@ import Data.Argonaut (jsonNull)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core (toArray, toBoolean, toObject, toString) as JSON
 import Data.Argonaut.Decode (decodeJson)
-import Data.Array (cons, mapMaybe, splitAt)
-import Data.Either (hush)
+import Data.Argonaut.Decode.Error (JsonDecodeError(..))
+import Data.Array (catMaybes, cons, mapMaybe, splitAt)
+import Data.Date (canonicalDate)
+import Data.Either (Either(..), either, hush, note)
+import Data.Enum (toEnum)
 import Data.Foldable (findMap, foldMap)
+import Data.Int as Int
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.NonEmpty (NonEmpty(..))
 import Data.Nullable (toMaybe)
 import Data.String (toLower)
+import Data.String as String
 import Data.Tuple (Tuple(..))
 import Effect (Effect)
+import Effect.Now (nowDate)
 import Effect.Ref as Ref
 import Effect.Unsafe (unsafePerformEffect)
 import Foreign.Object as Object
@@ -26,15 +32,16 @@ import KSF.Sentry as Sentry
 import KSF.Spinner (loadingSpinner)
 import KSF.Vetrina as Vetrina
 import Lettera.Models (MosaicoArticleType(..), articleToArticleStub, categoriesMap, correctionsCategory, notFoundArticle, parseArticleWithoutLocalizing, parseDraftArticle, readArticleType)
+import Mosaico.Archive as Archive
 import Mosaico.Article (adsAllowed)
 import Mosaico.Cache as Cache
 import Mosaico.Client.Models (InitialValues, Props, State)
 import Mosaico.Component.Article as Article
-import Mosaico.Component.User as User
 import Mosaico.Component.Epaper as Epaper
 import Mosaico.Component.Header as Header
 import Mosaico.Component.Korsord as Korsord
 import Mosaico.Component.Search as Search
+import Mosaico.Component.User as User
 import Mosaico.Component.Webview as Webview
 import Mosaico.Eval as Eval
 import Mosaico.Feed (ArticleFeed(..), ArticleFeedType(..), feedsFromInitial, parseFeed)
@@ -57,6 +64,7 @@ type Components =
   , nagbarComponent :: Eval.Props -> JSX
   , paywallComponent :: Vetrina.Props -> JSX
   , korsordComponent :: Korsord.Props -> JSX
+  , archiveComponent :: Archive.Props -> JSX
   }
 
 -- Quick and dirty memoization: The main level Mosaico component has
@@ -77,8 +85,19 @@ fromJSProps memo = case unsafePerformEffect $ Ref.read memo of
                                   Just ErrorArticle -> const $ pure notFoundArticle.article
                                   _                 -> parseArticleWithoutLocalizing
                               ) $ lookup "article")
+        initialCurrentDate = either (const fallbackDate) identity $ do
+          let rawDate = fromMaybe jsonNull $ Object.lookup "initialCurrentDate" obj
+              error = UnexpectedValue rawDate
+          date <- decodeJson =<< decodeJson rawDate
+          let xs = catMaybes <<< map Int.fromString $
+                   String.split (String.Pattern "-") date
+          case xs of
+            [y, m, d] -> do
+              note error $ canonicalDate <$> toEnum y <*> toEnum m <*> toEnum d
+            _ ->
+              Left error
         initialFeeds =
-          fromMaybe [] $ mapMaybe parseFeed <$> JSON.toArray (lookup "feeds")
+          fromMaybe [] $ mapMaybe (parseFeed initialCurrentDate) <$> JSON.toArray (lookup "feeds")
         advertorials = findMap getAdvertorials initialFeeds
         globalDisableAds = fromMaybe false $ JSON.toBoolean $ (lookup "globalDisableAds")
         -- Decoding errors are being hushed here, although if this
@@ -88,8 +107,12 @@ fromJSProps memo = case unsafePerformEffect $ Ref.read memo of
           foldMap (mapMaybe (hush <<< decodeJson)) $ JSON.toArray (lookup "categoryStructure")
         catMap = categoriesMap $ correctionsCategory `cons` categoryStructure
         headless = fromMaybe false $ JSON.toBoolean (lookup "headless")
+        -- The case where date parsing fails should be unreachable as the date
+        -- comes from the Mosaico server and not some random user input:
+        fallbackDate = unsafePerformEffect nowDate
+
     in unsafePerformEffect do
-      let props = { article, advertorials, initialFeeds, categoryStructure, catMap, globalDisableAds, headless }
+      let props = { article, advertorials, initialFeeds, categoryStructure, catMap, globalDisableAds, headless, initialCurrentDate }
       Ref.write (Just props) memo
       pure props
   where
@@ -109,6 +132,7 @@ staticComponents =
   , nagbarComponent: const mempty
   , paywallComponent: const loadingSpinner
   , korsordComponent: Korsord.render Nothing
+  , archiveComponent: Archive.render
   }
 
 getInitialValues :: Paper.Paper -> Effect InitialValues
@@ -122,6 +146,7 @@ getInitialValues paper = do
   staticPageScript <- toMaybe <$> getInitialStaticPageScript
   logger <- Sentry.mkLoggerWithSR sentryDsn 0.03 Nothing "mosaico"
   logger.setTag "paper" $ toLower $ Paper.toString paper
+  currentDate <- nowDate
 
   pure
     { cache
@@ -130,21 +155,23 @@ getInitialValues paper = do
     , staticPageContent
     , staticPageScript
     , logger
+    , currentDate
     }
 
 -- This used to be a part of InitialValues but it was split because it
 -- would cause import loops with the new module set up.
 getComponents :: InitialValues -> Effect Components
 getComponents initialValues = do
-  userComponent        <- User.component initialValues.logger
-  searchComponent      <- Search.searchComponent
-  webviewComponent     <- Webview.webviewComponent
-  articleComponent     <- Article.component initialValues.cache
-  epaperComponent      <- Epaper.component
-  headerComponent      <- Header.component
-  nagbarComponent      <- Eval.embedNagbar
-  paywallComponent     <- Vetrina.component
-  korsordComponent     <- Korsord.component
+  userComponent    <- User.component initialValues.logger
+  searchComponent  <- Search.searchComponent
+  webviewComponent <- Webview.webviewComponent
+  articleComponent <- Article.component initialValues.cache
+  epaperComponent  <- Epaper.component
+  headerComponent  <- Header.component
+  nagbarComponent  <- Eval.embedNagbar
+  paywallComponent <- Vetrina.component
+  korsordComponent <- Korsord.component
+  archiveComponent <- Archive.component
   pure
     { userComponent
     , searchComponent
@@ -155,6 +182,7 @@ getComponents initialValues = do
     , nagbarComponent
     , paywallComponent
     , korsordComponent
+    , archiveComponent
     }
 
 initialState :: InitialValues -> Props -> Routes.MosaicoPage -> State
@@ -176,4 +204,5 @@ initialState initialValues props initialRoute =
   , starting: true
   , articleAllowAds: maybe true adsAllowed props.article
   , paywallCounter: 0
+  , currentDate: initialValues.currentDate
   }

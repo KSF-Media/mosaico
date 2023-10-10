@@ -4,13 +4,15 @@ import Prelude
 
 import Effect (Effect)
 import Foreign (Foreign)
+import Data.Date (Date, Month, Year, canonicalDate)
 import Data.Either (Either(..))
+import Data.Enum (class BoundedEnum, toEnum)
 import Data.Foldable (oneOf)
 import Data.Int as Int
 import Data.List (List(..))
-import Data.Maybe (Maybe(..))
-import Data.Semiring.Free (free)
 import Data.Map as Map
+import Data.Maybe (Maybe(..), maybe)
+import Data.Semiring.Free (free)
 import Data.String as String
 import Data.String.CodePoints (codePointFromChar)
 import Data.Tuple (Tuple(..))
@@ -18,14 +20,19 @@ import Data.Validation.Semiring (invalid)
 import Data.UUID as UUID
 import Lettera.Models (Categories, Category, CategoryLabel(..), DraftParams, Tag, uriComponentToTag)
 import Routing as Routing
-import Routing.Match (Match(..), end, int, lit, optionalMatch, param, params, root, str)
-import Routing.PushState (PushStateInterface)
+import Routing.Match (Match(..), eitherMatch, end, int, lit, optionalMatch, param, params, root, str)
 import Routing.Match.Error (MatchError(..))
+import Routing.PushState (PushStateInterface)
 import Routing.Types (RoutePart(..))
+import Simple.JSON (write)
 import Web.HTML (window)
 import Web.HTML.Window (scrollY)
 
-import Simple.JSON (write)
+data ArchivePageView
+  = MonthSelection
+  | DateSelection Year Month
+  | ArticleSelection Date
+derive instance eqArchivePageView :: Eq ArchivePageView
 
 data MosaicoPage
   = Frontpage -- Should take Paper as parameter
@@ -43,6 +50,7 @@ data MosaicoPage
   | DebugPage UUID.UUID -- Used for testing
   | DeployPreview -- Used for deploy previews only
   | MenuPage
+  | ArchivePage ArchivePageView
 derive instance eqMosaicoPage :: Eq MosaicoPage
 
 -- The URL given from Mosaico module shouldn't have the fragment
@@ -77,6 +85,11 @@ routes categories = root *> oneOf
   -- Since Routing has no way to match with the rest of the URL (all
   -- path components included) leave NotFoundPage to caller and the
   -- Left response.
+  , CategoryPage <$> categoryRoute <*> ((Int.fromString =<< _) <$> optionalMatch (param "c")) <* end
+  , ArchivePage <$> (ArticleSelection <$> (canonicalDate <$> (lit "arkiv" *> enum) <*> enum <*> enum))
+  , ArchivePage <$> (DateSelection <$> (lit "arkiv" *> enum) <*> enum)
+  , ArchivePage MonthSelection <$ lit "arkiv" <* end
+  , NotFoundPage <$> str
   ] <* optionalMatch params <* end
   where
     categoryRoute =
@@ -86,6 +99,9 @@ routes categories = root *> oneOf
             = pure $ Tuple rs category
             | otherwise = invalid $ free $ Fail "Not a category"
       in Match matchRoute
+
+enum :: forall a. BoundedEnum a => Match a
+enum = eitherMatch (maybe (Left "Invalid enum") Right <<< toEnum <$> int)
 
 match :: Categories -> String -> MosaicoPage
 match catMap path = case Routing.match (routes catMap) path of

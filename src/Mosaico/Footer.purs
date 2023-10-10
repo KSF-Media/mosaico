@@ -17,7 +17,7 @@ import React.Basic.DOM.Events (preventDefault)
 import React.Basic.Events (handler, EventHandler)
 
 footer :: Paper -> Handlers -> JSX
-footer mosaicoPaper { onCategoryClick, onStaticPageClick } =
+footer mosaicoPaper { onCategoryClick, onStaticPageClick, onArchivePageClick } =
   DOM.footer
     { className: "flex flex-col items-center py-12 px-0 m-0 bg-aptoma-footer-color lg:px-2 font-roboto [grid-area:foot]"
     , children:
@@ -59,7 +59,7 @@ footer mosaicoPaper { onCategoryClick, onStaticPageClick } =
   logoClass VN = Just " maskimage-vn"
   logoClass ON = Just " maskimage-on"
   logoClass _ = Nothing
-  commonFooter = footerLinks onCategoryClick onStaticPageClick
+  commonFooter = footerLinks onCategoryClick onStaticPageClick onArchivePageClick
 
 contactInfo :: Paper -> JSX -> JSX
 contactInfo ON = ostnylandContactInfo
@@ -236,8 +236,12 @@ ostnylandContactInfo commonFooter =
     , section "" [ DOM.text "Det lokala kommer först." ]
     ]
 
-footerLinks :: (Category -> EventHandler) -> (String -> EventHandler) -> JSX
-footerLinks onCategoryClick onStaticPageClick =
+footerLinks
+  :: (Category -> EventHandler)
+  -> (String -> EventHandler)
+  -> (String -> EventHandler)
+  -> JSX
+footerLinks onCategoryClick onStaticPageClick onArchivePageClick=
   DOM.div
     { className: "flex flex-col justify-center items-center mx-auto mt-9 mb-8 lg:flex-row"
     , children:
@@ -249,6 +253,7 @@ footerLinks onCategoryClick onStaticPageClick =
         , footerLink "Nyhetsbrev" "nyhetsbrev"
         , footerLink "App" "app"
         , categoryLink correctionsCategory
+        , archiveLink
         ]
     }
   where
@@ -273,6 +278,14 @@ footerLinks onCategoryClick onStaticPageClick =
         , className: "my-1 mx-auto text-sm no-underline text-aptoma-text-color md:mx-5"
         , children: [ DOM.text $ unwrap label ]
         , onClick: onCategoryClick cat
+        }
+
+    archiveLink =
+      DOM.a
+        { href: "/arkiv"
+        , className: "my-1 mx-auto text-sm no-underline text-aptoma-text-color md:mx-5"
+        , children: [ DOM.text "Arkiv" ]
+        , onClick: onArchivePageClick "/arkiv"
         }
 
 appLinks :: Paper -> JSX
