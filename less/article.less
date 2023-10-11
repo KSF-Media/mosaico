@@ -186,10 +186,10 @@
       text-align: left;
     }
     table tr:nth-child(odd) {
-      background-color: #eee;
+      background-color: var(--table-background-alt1);
     }
     table tr:nth-child(even) {
-      background-color: #fff;
+      background-color: var(--table-background-alt2);
     }
     table th,
     table td {
@@ -197,10 +197,12 @@
     }
     caption {
       caption-side: top;
-      color: black;
+      color: var(--table-caption-color);
       font-size: 1.5rem;
       font-weight: bold;
       padding-top: 0;
+      text-align: left;
+      margin-bottom: 8px;
     }
   }
 
