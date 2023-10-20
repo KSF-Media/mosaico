@@ -15,6 +15,7 @@ import React.Basic.DOM as DOM
 import React.Basic.DOM.Server (renderToStaticMarkup)
 import Mosaico.FallbackImage (fallbackImageShare)
 import Mosaico.Paper (mosaicoPaper)
+import Mosaico.RSS as RSS
 import Data.Newtype (unwrap)
 import KSF.Paper (Paper(..))
 import KSF.Paper as Paper
@@ -93,6 +94,7 @@ getMeta route _ =
     , DOM.meta { property: "og:image", content: fallbackImageShare mosaicoPaper }
     , foldMap (\content -> DOM.meta { property: "og:description", content }) description
     , foldMap (\content -> DOM.meta { name: "description", content }) description
+    , fold $ RSS.getFeed mosaicoPaper route
     ]
   where
     title = pageTitle route Nothing
@@ -153,5 +155,5 @@ updateMeta :: JSX -> Effect Unit
 updateMeta tags = do
     let deleteMetaByProperty prop = deleteBySelector ("[property='" <> prop <> "']")
     traverse_ deleteMetaByProperty ["og:type", "og:title", "og:url", "og:description", "og:image"]
-    traverse_ deleteBySelector ["[rel='canonical']", "[name='description']", "[type='application/ld+json']"]
+    traverse_ deleteBySelector ["[rel='canonical']", "[name='description']", "[type='application/ld+json']", "[type='application/rss+xml']"]
     appendToHead $ renderToStaticMarkup tags
