@@ -1,16 +1,17 @@
 export function refreshAdsImpl(slotArray) {
   console.log("refreshAdsImpl called");
-
   if (window.userHasSelectedConsent !== undefined) {
-    setTimeout(() => {
-      window.loadAds?.();
-      console.log("loadAds from Mosaico.js: ", window.loadAds);
+    const checkIfPubadsReady = setInterval(() => {
+      if (window.googletag && googletag.pubadsReady) {
+        googletag.pubads().refresh();
+        clearInterval(checkIfPubadsReady);
+      }
     }, 500);
   }
 }
 
 export function deleteAdnamiTopscroll() {
-  const adnamiTopscroll = document.querySelector(".adnm-html-topscroll-frame-wrapper")
+  const adnamiTopscroll = document.querySelector(".adnm-html-topscroll-frame-wrapper");
   console.log("deleteAdnamiTopscroll called", adnamiTopscroll);
   if (adnamiTopscroll) {
     adnamiTopscroll.remove();

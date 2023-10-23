@@ -267,22 +267,21 @@ window.adSlots = {
 window.helper = new DataLayerHelper(window.dataLayer, listener, true);
 
 function listener(_model, message) {
-  if (message.event=="cookie_consent_update") {
+  if (message.event == "cookie_consent_update") {
+    // Make sure that googletag.cmd exists.
+    window.googletag = window.googletag || {};
+    googletag.cmd = googletag.cmd || [];
+
     if (Cookiebot.consent.marketing) {
       window.userHasSelectedConsent = true;
-      // googletag may not exist if user has an ad blocker
-      if (window.googletag) {
-        window.googletag.cmd.push(function () {
-          googletag.pubads().setPrivacySettings({limitedAds: false});
-        })
-      }
+      window.googletag.cmd.push(function () {
+        googletag.pubads().setPrivacySettings({ limitedAds: false });
+      });
     } else {
       window.userHasSelectedConsent = false;
-      if (window.googletag) {
-        window.googletag.cmd.push(function () {
-          googletag.pubads().setPrivacySettings({limitedAds: true});
-        })
-      }
+      window.googletag.cmd.push(function () {
+        googletag.pubads().setPrivacySettings({ limitedAds: true });
+      });
     }
     refreshAdsImpl([]);
   }
