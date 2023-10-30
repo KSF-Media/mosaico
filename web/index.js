@@ -79,7 +79,6 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__top-parade",
-      isLazy: false,
     },
     {
       gamId: getGamId("mobparad"),
@@ -91,13 +90,11 @@ window.adSlots = {
         [320, 320],
       ],
       targetId: "mosaico-ad__mobparad",
-      isLazy: false,
     },
     {
       gamId: getGamId("digihelmob"),
       sizes: [300, 431],
       targetId: "mosaico-ad__bigbox1",
-      isLazy: true,
     },
     {
       gamId: getGamId("mobmitt"),
@@ -111,7 +108,6 @@ window.adSlots = {
         [320, 320],
       ],
       targetId: "mosaico-ad__bigbox2",
-      isLazy: true,
     },
     {
       gamId: getGamId("mobbox1"),
@@ -125,7 +121,6 @@ window.adSlots = {
         [320, 320],
       ],
       targetId: "mosaico-ad__mobbox1",
-      isLazy: true,
     },
     {
       gamId: getGamId("mobbox2"),
@@ -138,7 +133,6 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__mobbox2",
-      isLazy: true,
     },
     {
       gamId: getGamId("mobbox3"),
@@ -151,7 +145,6 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__mobbox3",
-      isLazy: true,
     },
   ],
   desktop: [
@@ -162,7 +155,6 @@ window.adSlots = {
         [620, 991],
       ],
       targetId: "mosaico-ad__bigbox1",
-      isLazy: true,
     },
     {
       gamId: getGamId("jattebox"),
@@ -172,7 +164,6 @@ window.adSlots = {
         [468, 600],
       ],
       targetId: "mosaico-ad__bigbox2",
-      isLazy: true,
     },
     {
       gamId: getGamId("parad"),
@@ -185,7 +176,6 @@ window.adSlots = {
         [1600, 1150],
       ],
       targetId: "mosaico-ad__parade",
-      isLazy: false,
     },
     {
       gamId: getGamId("maxparad"),
@@ -198,7 +188,6 @@ window.adSlots = {
         [1920, 1080],
       ],
       targetId: "mosaico-ad__top-parade",
-      isLazy: false,
     },
     {
       gamId: getGamId("box1"),
@@ -209,7 +198,6 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__box1",
-      isLazy: true,
     },
     {
       gamId: getGamId("box2"),
@@ -220,7 +208,6 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__box2",
-      isLazy: true,
     },
     {
       gamId: getGamId("box3"),
@@ -231,7 +218,6 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__box3",
-      isLazy: true,
     },
     {
       gamId: getGamId("box4"),
@@ -242,7 +228,6 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__box4",
-      isLazy: true,
     },
     {
       gamId: getGamId("box5"),
@@ -253,13 +238,11 @@ window.adSlots = {
         [300, 600],
       ],
       targetId: "mosaico-ad__box5",
-      isLazy: true,
     },
     // {
     //   gamId: "wallpaper",
     //   sizes: [ [1600,1200], [1920,1080] ],
     //   targetId: "mosaico-ad__wallpaper",
-    //   isLazy: true
     // },
   ],
 };
@@ -315,12 +298,24 @@ window.googletag.cmd.push(function () {
     .map((s) => s.getSlotElementId());
   googletag.pubads().collapseEmptyDivs();
 
-  // This means ads won't load on display, but only on refresh.
-  // We've done this so the ads aren't fetched twice, ie once on initial load
-  // and then again when we run loadAds to start the programmatic ads auction.
+  // This prevents ads loading before the user has given or denied consent.
+  // If the user made a consent choice earlier, ads are refreshed
+  // elsewhere in the code based on that choice.
   googletag.pubads().disableInitialLoad();
 
+  googletag.pubads().enableLazyLoad({
+    // Fetch slots within 1 viewport
+    fetchMarginPercent: 100,
+    // Render slots within 1 viewport
+    renderMarginPercent: 100,
+    // Double the above values on mobile, where viewports are smaller
+    // and users tend to scroll faster
+    mobileScaling: 2.0
+  });
+
+  googletag.pubads().enableSingleRequest();
   googletag.enableServices();
+
   googletag.pubads().addEventListener("slotRenderEnded", (event) => {
     if (!event.isEmpty) {
       let elementId = event.slot.getSlotElementId();

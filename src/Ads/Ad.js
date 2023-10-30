@@ -27,21 +27,6 @@ export function getGamId(contentUnit) {
   }
 }
 
-export function getIsLazy(contentUnit) {
-  try {
-    const slots = window.innerWidth < 1020 ? window.adSlots.mobile : window.adSlots.desktop;
-    const slot = slots.find((element) => contentUnit === element.targetId);
-    if (typeof slot === "undefined") {
-      return null;
-    } else {
-      return slot.isLazy;
-    }
-  } catch (err) {
-    console.log(err);
-    return null;
-  }
-}
-
 export function showConsentRevocationMessage() {
   if (window.Cookiebot !== undefined) {
     window.Cookiebot.show();
