@@ -8,7 +8,9 @@ mainContent :: String -> Boolean -> Array JSX -> JSX
 mainContent className fullWidth children =
     DOM.div
       { id: "mosaico-main-content"
-      , className: (if fullWidth then "[grid-area:full-width] " else "[grid-area:thin] ") <> className
+      , className: "overflow-x-hidden md:overflow-x-visible "
+                   <> (if fullWidth then "[grid-area:full-width] " else "[grid-area:thin] ")
+                   <> className
       , children
       }
 
