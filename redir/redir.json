@@ -316,5 +316,9 @@
     "route": "vinter",
     "paper": "vn",
     "destination": "https://www.ksfmedia.fi/vn-vinter"
+  },
+  {
+    "route": "media",
+    "destination": "https://media.hbl.fi"
   }
 ]
