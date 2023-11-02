@@ -266,6 +266,7 @@ function listener(_model, message) {
         googletag.pubads().setPrivacySettings({ limitedAds: true });
       });
     }
+    console.log("refreshAdsImpl called from index.js")
     refreshAdsImpl([]);
   }
 }

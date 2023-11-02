@@ -1,5 +1,4 @@
 export function refreshAdsImpl(slotArray) {
-  console.log("refreshAdsImpl called");
   if (window.userHasSelectedConsent !== undefined) {
     const checkIfPubadsReady = setInterval(() => {
       if (window.googletag && googletag.pubadsReady) {

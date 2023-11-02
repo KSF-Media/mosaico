@@ -12,6 +12,7 @@ import Data.Monoid (guard)
 import Data.Newtype (unwrap)
 import Data.Tuple (Tuple(..))
 import Data.UUID as UUID
+import Debug (traceM)
 import Effect (Effect)
 import Effect.Aff as Aff
 import Effect.Class (liftEffect)
@@ -155,8 +156,10 @@ app = do
 
 routeListener :: Categories -> ((State -> State) -> Effect Unit) -> Maybe LocationState -> LocationState -> Effect Unit
 routeListener c setState oldLoc location = do
-  runEffectFn1 refreshAdsImpl []
-  when (isJust oldLoc) deleteAdnamiTopscroll
+  when (isJust oldLoc) do
+    runEffectFn1 refreshAdsImpl []
+    traceM "refreshAdsImpl called from Mosaico.purs"
+    deleteAdnamiTopscroll
   let newPath = stripFragment location
       newRoute = Routes.match c newPath
       oldRoute = Routes.match c <<< stripFragment <$> oldLoc
