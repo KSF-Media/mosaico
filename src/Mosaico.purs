@@ -346,7 +346,7 @@ render hooks components handlers props state =
           (Frontpage.render $ Frontpage.Prerendered
              { content
              , breakingNews
-             , hooks: hooks handlers.onArticleClick mostReadArticles latestArticles
+             , hooks: hooks handlers.onArticleClick handlers.onMainClick mostReadArticles latestArticles
              , onClick: handlers.onPrerenderedClick articles
              })
 

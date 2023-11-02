@@ -2,10 +2,12 @@ module Mosaico.EpaperBanner where
 
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
+import React.Basic.Events (EventHandler)
 
+type Props = { onMainClick :: String -> EventHandler}
 
-render :: JSX
-render =
+render :: Props -> JSX
+render props =
   DOM.section
     { className: "pb-3 mb-3 md:mx-2 bg-aptoma-epaper-background"
     , children:
@@ -20,6 +22,7 @@ render =
           }
       , DOM.a
         { href: "/epaper"
+        , onClick : props.onMainClick "/epaper"
         , className: "block"
         , children:
           [ DOM.span

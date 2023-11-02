@@ -20,7 +20,7 @@ data Hook
   | Latest (Array ArticleStub) (ArticleStub -> EventHandler)
   | Ad String String
   | ArticleUrltoRelative
-  | EpaperBanner
+  | EpaperBanner (String -> EventHandler)
   | RemoveTooltips
 
 toHookRep :: Hook -> HtmlRenderer.HookRep
@@ -28,7 +28,7 @@ toHookRep (MostRead articles onArticleClick) = mostReadHook { articles, onArticl
 toHookRep (Latest articles onArticleClick)   = latestHook { articles, onArticleClick }
 toHookRep ArticleUrltoRelative               = articleUrltoRelativeHook
 toHookRep RemoveTooltips                     = removeTooltipsHook
-toHookRep EpaperBanner                       = epaperBannerHook
+toHookRep (EpaperBanner onMainClick)         = epaperBannerHook onMainClick
 toHookRep (Ad placeholderText targetId)      = adHook { placeholderText, targetId }
 
 mostReadHook
@@ -116,8 +116,8 @@ adHook { placeholderText, targetId } = HtmlRenderer.replacingHook
                  )
   }
 
-epaperBannerHook :: HtmlRenderer.HookRep
-epaperBannerHook = HtmlRenderer.replacingHook
+epaperBannerHook :: (String -> EventHandler) -> HtmlRenderer.HookRep
+epaperBannerHook onMainClick = HtmlRenderer.replacingHook
   { shouldProcessNode: (\n ->
                           let info = do
                                 name      <- HtmlRenderer.getName n
@@ -133,7 +133,7 @@ epaperBannerHook = HtmlRenderer.replacingHook
                               , text      == "E-tidningen DESKTOP" -> true
                             _                                      -> false
                        )
-  , processNode: (\_ _ _ -> pure $ EpaperBanner.render
+  , processNode: (\_ _ _ -> pure $ EpaperBanner.render { onMainClick }
                  )
   }
 

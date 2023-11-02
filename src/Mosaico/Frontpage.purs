@@ -181,11 +181,11 @@ genericRender f onClick content = DOM.div
   , onClick
   }
 
-type MosaicoHooks = (ArticleStub -> EventHandler) -> Array ArticleStub -> Array ArticleStub -> Array Hook
+type MosaicoHooks = (ArticleStub -> EventHandler) -> (String -> EventHandler) -> Array ArticleStub -> Array ArticleStub -> Array Hook
 
 clientHooks :: MosaicoHooks
-clientHooks onArticleClick mostRead latest =
-  serverHooks onArticleClick mostRead latest <>
+clientHooks onArticleClick onMainClick mostRead latest =
+  serverHooks onArticleClick onMainClick mostRead latest <>
   [ Ad "Box Ad 1 DESKTOP"     "mosaico-ad__box1"
   , Ad "Box Ad 2 DESKTOP"     "mosaico-ad__box2"
   , Ad "Box Ad 3 DESKTOP"     "mosaico-ad__box3"
@@ -200,10 +200,10 @@ clientHooks onArticleClick mostRead latest =
   ]
 
 serverHooks :: MosaicoHooks
-serverHooks onArticleClick mostRead latest =
+serverHooks onArticleClick onMainClick mostRead latest =
   [ RemoveTooltips
   , MostRead mostRead onArticleClick
   , Latest latest onArticleClick
   , ArticleUrltoRelative
-  , EpaperBanner
+  , EpaperBanner onMainClick
   ]
