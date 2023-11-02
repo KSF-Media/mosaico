@@ -320,5 +320,10 @@
   {
     "route": "media",
     "destination": "https://media.hbl.fi"
+  },
+  {
+    "route": "svenskaveckan",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-svenska-veckan"
   }
 ]
