@@ -318,6 +318,11 @@
     "destination": "https://www.ksfmedia.fi/vn-vinter"
   },
   {
+    "route": "julkampanj",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/on-julkampanj"
+  },
+  {
     "route": "media",
     "destination": "https://media.hbl.fi"
   },
