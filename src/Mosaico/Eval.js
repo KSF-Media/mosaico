@@ -55,6 +55,9 @@ export const consentedToEmbeddedScripts =
 
 if (typeof window !== "undefined") {
   window.consentedToEmbeddedScripts = consentedToEmbeddedScripts;
+  window.addEventListener("CookiebotOnAccept", (event) => {
+    consentToEmbeddedScripts(window.Cookiebot.consent.marketing);
+  });
 }
 
 export async function forceEvalExternalScriptsImpl(scripts) {
