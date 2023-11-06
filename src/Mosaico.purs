@@ -115,7 +115,7 @@ app = do
         -- browser history is a bit buggy currently. This is because each time we land on an article page,
         -- the page is basically blank, so the browser loses the position anyway (there's nothing to recover to).
         -- If we want to fix this, we'd have to keep prev article in state too.
-        { route: Routes.ArticlePage _ } -> scrollToYPos 0
+        { route: Routes.ArticlePage _ _ } -> scrollToYPos 0
 
         -- Keep position when getting more results.
         { route: Routes.SearchPage s1 l1
@@ -180,8 +180,8 @@ routeListener c setState oldLoc location = do
                    , prevRoute = Just (Tuple s.route oldPath)
                    }
   case newRoute of
-    Routes.ArticlePage _ -> pure unit
-    _                    -> sendPageView
+    Routes.ArticlePage _ _ -> pure unit
+    _                      -> sendPageView
 
   where
     stripFragment l = Routes.stripFragment $ l.pathname <> l.search
@@ -197,7 +197,7 @@ render hooks components handlers props state =
   where
     renderRouteContent = case _ of
        Routes.CategoryPage category _ -> renderCategory category
-       Routes.ArticlePage uuid
+       Routes.ArticlePage uuid _
          | Just article <- props.article
          , state.ssrPreview -> mosaicoLayoutNoAside $ renderArticle $ InitialFullArticle article
          | Just articleStub <- state.clickedArticle
@@ -363,7 +363,7 @@ render hooks components handlers props state =
               , user: state.user
               , handlers
               , showHeading: case state.route of
-                  Routes.ArticlePage _ -> false
+                  Routes.ArticlePage _ _ -> false
                   Routes.StaticPage _ -> false
                   _ -> true
               }
@@ -375,7 +375,7 @@ render hooks components handlers props state =
 
           advertorialBanner :: JSX
           advertorialBanner = case state.route of
-            Routes.ArticlePage articleId
+            Routes.ArticlePage articleId _
               | Just article <- state.clickedArticle
               , UUID.parseUUID article.uuid == Just articleId
               , Advertorial <- article.articleType -> Advertorial.advertorialTopBanner article
@@ -383,7 +383,7 @@ render hooks components handlers props state =
 
           isFullWidth :: Boolean
           isFullWidth = case state.route of
-            Routes.ArticlePage _ -> true
+            Routes.ArticlePage _ _ -> true
             Routes.NotFoundPage _ -> true
             Routes.StaticPage _ -> true
             Routes.KorsordPage -> true
@@ -437,7 +437,7 @@ render hooks components handlers props state =
       Routes.SearchPage _ _ -> false
       Routes.DraftPage _ -> false
       Routes.ProfilePage -> false
-      Routes.ArticlePage _ -> state.articleAllowAds
+      Routes.ArticlePage _ _ -> state.articleAllowAds
       Routes.MenuPage -> false
       Routes.NotFoundPage _ -> false
       Routes.CategoryPage _ _ -> true

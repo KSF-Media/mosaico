@@ -129,7 +129,7 @@ component cache = do
           -- Refresh latest & co if needed
           res <-
             (Cache.parallelWithCommonLists cache $
-             Lettera.getArticleAuth articleId props.paper) >>= \res ->
+             Lettera.getArticleAuth articleId props.paper Nothing) >>= \res ->
             Cache.setFeeds cache (Cache.setCommonFeeds res) *> pure res.pageContent
           liftEffect do
             case res of

@@ -72,11 +72,11 @@ pageTitle route maybeArticle =
         Routes.MonthSelection -> "Arkiv"
         Routes.DateSelection _ _ -> "Arkiv"
         Routes.ArticleSelection _ -> "Arkiv"
-      Routes.ArticlePage articleId
+      Routes.ArticlePage articleId _
         | Just article <- maybeArticle
         , UUID.parseUUID article.uuid == Just articleId -> article.title
       -- This should never happen TODO model better
-      Routes.ArticlePage _ -> "Laddar..."
+      Routes.ArticlePage _ _ -> "Laddar..."
 
       -- TODO: are these good?
       Routes.DraftPage _ -> Paper.paperName mosaicoPaper
@@ -85,7 +85,7 @@ pageTitle route maybeArticle =
 
 getMeta :: Routes.MosaicoPage -> Maybe ArticleStub -> JSX
 getMeta (Routes.StaticPage page) _ = staticPageMeta page
-getMeta (Routes.ArticlePage articleId) (Just article)
+getMeta (Routes.ArticlePage articleId _) (Just article)
   | UUID.parseUUID article.uuid == Just articleId = articleMeta article
 getMeta route _ =
   fragment

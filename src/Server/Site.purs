@@ -67,7 +67,7 @@ defaultHandler env Nothing params@{ guards: { clientRoute: NotFoundPage page }}
     pure $ redirWith (Response.movedPermanently EmptyBody) $
       "/artikel/" <> (UUID.toString $ editorialIdToUuid after)
   | {before, after: slug} <- String.splitAt 9 page, before == "/artikel/" = do
-    eitherArticle <- Lettera.getArticleWithSlug slug mosaicoPaper Nothing Nothing
+    eitherArticle <- Lettera.getArticleWithSlug slug mosaicoPaper Nothing Nothing Nothing
     case eitherArticle of
       Right article ->
         pure $ redir $ "/artikel/" <> article.article.uuid
@@ -76,16 +76,16 @@ defaultHandler env Nothing params@{ guards: { clientRoute: NotFoundPage page }}
 defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
   let htmlTemplate = cloneTemplate env.htmlTemplate
       headless = case route of
-        ArticlePage _ -> fromMaybe false query.headless
+        ArticlePage _ _ -> fromMaybe false query.headless
         _ -> false
 
   staticPage <- case route of
     StaticPage pageName -> liftEffect $ loadStaticPage pageName
     _ -> pure Nothing
   article <- case route of
-    ArticlePage uuid ->
+    ArticlePage uuid freePassHash ->
       maybe (Just notFoundArticle) Just <<< hush <$>
-      Lettera.getArticle uuid mosaicoPaper Nothing clientip
+      Lettera.getArticle uuid mosaicoPaper Nothing clientip freePassHash
     DraftPage (Left _) -> pure $ Just draftTestArticle
     DraftPage (Right (Tuple aptomaId draftParams)) ->
       maybe (Just notFoundArticle) Just <<< hush <$>
@@ -152,7 +152,7 @@ defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
   pure $ expires validUntil $ htmlContent $
     (case route of
         NotFoundPage _ -> Response.notFound
-        ArticlePage _ | maybe true (\x -> x.articleType == ErrorArticle) article -> Response.notFound
+        ArticlePage _ _ | maybe true (\x -> x.articleType == ErrorArticle) article -> Response.notFound
         _ -> Response.ok) $
     StringBody $ renderTemplateHtml html
   where

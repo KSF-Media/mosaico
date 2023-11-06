@@ -6,11 +6,9 @@ import Data.Argonaut as JSON
 import Data.Argonaut.Core (Json, fromArray)
 import Data.Argonaut.Decode (decodeJson)
 import Data.Argonaut.Encode (encodeJson)
-import Data.Array (catMaybes, findMap, head, mapMaybe)
-import Data.Date (Date, canonicalDate)
+import Data.Array (findMap, head, mapMaybe)
+import Data.Date (Date)
 import Data.Either (hush)
-import Data.Enum (toEnum)
-import Data.Int as Int
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe)

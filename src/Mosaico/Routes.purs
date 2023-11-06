@@ -5,16 +5,19 @@ import Prelude
 import Effect (Effect)
 import Foreign (Foreign)
 import Data.Date (Date, Month, Year, canonicalDate)
-import Data.Either (Either(..))
+import Data.Either (Either(..), hush)
 import Data.Enum (class BoundedEnum, toEnum)
 import Data.Foldable (oneOf)
 import Data.Int as Int
 import Data.List (List(..))
 import Data.Map as Map
 import Data.Maybe (Maybe(..), maybe)
+import Data.Monoid (guard)
 import Data.Semiring.Free (free)
 import Data.String as String
 import Data.String.CodePoints (codePointFromChar)
+import Data.String.Regex (Regex, regex, test) as Regex
+import Data.String.Regex.Flags (noFlags) as Regex
 import Data.Tuple (Tuple(..))
 import Data.Validation.Semiring (invalid)
 import Data.UUID as UUID
@@ -39,7 +42,7 @@ data MosaicoPage
   | DraftPage (Either Unit (Tuple Int DraftParams))
   | EpaperPage
   | ProfilePage
-  | ArticlePage UUID.UUID
+  | ArticlePage UUID.UUID (Maybe String)
   | NotFoundPage String
   | KorsordPage
   -- TODO Use a newtype wrapper that prohibits slashes in it?
@@ -58,6 +61,11 @@ derive instance eqMosaicoPage :: Eq MosaicoPage
 stripFragment :: String -> String
 stripFragment = String.takeWhile (_ /= codePointFromChar '#')
 
+-- | A regular expression that accepts a 40 character hexadecimal number
+--   (without the `0x` prefix), such as an SHA1 checksum.
+hashRegex :: Maybe Regex.Regex
+hashRegex = hush $ Regex.regex "^[a-fA-F0-9]{40}$" Regex.noFlags
+
 routes :: Categories -> Match MosaicoPage
 routes categories = root *> oneOf
   [ DraftPage (Left unit) <$ (lit "artikel" *> lit "draft" *> lit "test")
@@ -70,7 +78,7 @@ routes categories = root *> oneOf
                                    <*> param "user"
                                    <*> param "hash")
                             ) <* optionalMatch params)
-  , ArticlePage <$> (lit "artikel" *> uuid)
+  , ArticlePage <$> (lit "artikel" *> uuid) <*> (sanitizeHash <$> optionalMatch (param "freePassHash"))
   , KorsordPage <$ lit "korsord"
   , StaticPage <$> (lit "sida" *> str)
   , EpaperPage <$ lit "epaper"
@@ -92,6 +100,11 @@ routes categories = root *> oneOf
   , NotFoundPage <$> str
   ] <* optionalMatch params <* end
   where
+    sanitizeHash :: Maybe String -> Maybe String
+    sanitizeHash s = do
+      t <- s
+      regex <- hashRegex
+      guard (Regex.test regex t) s
     categoryRoute =
       let matchRoute route
             | Cons (Path categoryRouteName) rs <- route
