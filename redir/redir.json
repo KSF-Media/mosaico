@@ -330,5 +330,10 @@
     "route": "svenskaveckan",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbl-svenska-veckan"
+  },
+  {
+    "route": "julkampanj",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-julkampanj"
   }
 ]
