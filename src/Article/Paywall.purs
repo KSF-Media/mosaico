@@ -7,7 +7,6 @@ import Bottega.Models.PaymentMethod (PaymentMethod(..))
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
 import KSF.Paper (Paper(..))
-import KSF.Paper as Paper
 import KSF.User (User)
 import KSF.Vetrina as Vetrina
 import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
@@ -22,10 +21,13 @@ paperHeadline HBL =
     [ DOM.text $ "Läs HBL Digital gratis ända in i 2024"]
 paperHeadline p =
   DOM.div_
-    [ DOM.text $ "Prova " <> Paper.paperName p <> " Digital för "
-    , DOM.span { className: "vetrina--price-headline", children: [ DOM.text "endast 1 €" ] }
-    , DOM.text $ " i en månad"
-    ]
+    [ DOM.text $ "Läs " <> paperAcronym p <> " Digital gratis ända in i 2024" ]
+
+paperAcronym :: Paper -> String
+paperAcronym HBL = "HBL"
+paperAcronym VN = "VN"
+paperAcronym ON = "ÖN"
+paperAcronym _ = mempty
 
 products :: Paper -> Array Product
 products HBL = [ hblPremium ]
