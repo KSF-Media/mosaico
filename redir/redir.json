@@ -292,6 +292,11 @@
     "destination": "https://www.ksfmedia.fi/hbl-svenska-veckan"
   },
   {
+    "route": "digital-jul",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/digital-jul"
+  },
+  {
     "route": "julkampanj",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbl-julkampanj"
