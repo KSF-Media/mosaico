@@ -204,36 +204,6 @@
     "destination": "https://www.ksfmedia.fi/karistelefon"
   },
   {
-    "route": "jul22",
-    "paper": "vn",
-    "destination": "https://www.ksfmedia.fi/vn-jul22"
-  },
-  {
-    "route": "julkampanj2022",
-    "paper": "vn",
-    "destination": "https://www.ksfmedia.fi/vn-julkampanj2022"
-  },
-  {
-    "route": "julkampanj2022",
-    "paper": "on",
-    "destination": "https://www.ksfmedia.fi/on-julkampanj2022"
-  },
-  {
-    "route": "jul",
-    "paper": "vn",
-    "destination": "https://www.ksfmedia.fi/vn-julkampanj2022"
-  },
-  {
-    "route": "jul",
-    "paper": "on",
-    "destination": "https://www.ksfmedia.fi/on-julkampanj2022"
-  },
-  {
-    "route": "junior-jul",
-    "paper": "hbl",
-    "destination": "https://www.ksfmedia.fi/hbljunior-julkampanj2022"
-  },
-  {
     "route": "newsmap.xml",
     "paper": "hbl",
     "destination": "https://lettera.api.ksfmedia.fi/v4/list/newsmap?paper=HBL"
@@ -313,16 +283,6 @@
     "destination": "https://www.ksfmedia.fi/dataskydd"
   },
   {
-    "route": "vinter",
-    "paper": "vn",
-    "destination": "https://www.ksfmedia.fi/vn-vinter"
-  },
-  {
-    "route": "julkampanj",
-    "paper": "on",
-    "destination": "https://www.ksfmedia.fi/on-julkampanj"
-  },
-  {
     "route": "media",
     "destination": "https://media.hbl.fi"
   },
@@ -335,5 +295,45 @@
     "route": "julkampanj",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbl-julkampanj"
+  },
+  {
+    "route": "jul",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-julkampanj"
+  },
+  {
+    "route": "vinter",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-vinter"
+  },
+  {
+    "route": "jul",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-vinter"
+  },
+  {
+    "route": "julkampanj",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-vinter"
+  },
+  {
+    "route": "jul",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/on-julkampanj"
+  },
+  {
+    "route": "julkampanj",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/on-julkampanj"
+  },
+  {
+    "route": "junior-jul",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-junior-julkampanj"
+  },
+  {
+    "route": "hbljunior-jul",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-junior-julkampanj"
   }
 ]
