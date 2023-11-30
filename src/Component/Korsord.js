@@ -10,10 +10,10 @@ export function loadKorsord() {
       const cwDiv = document.createElement("div");
       cwDiv.setAttribute("id", "puzzle-portal");
       cwDiv.setAttribute("data-customerid", "ksf");
-      cwDiv.setAttribute("data-publicpath", "https://web.keesing.com/pub/portal/v2.21.3/dist/");
 
       const cwScript = document.createElement("script");
-      cwScript.src = "https://web.keesing.com/pub/portal/v2.21.3/dist/main-bundle.js";
+      cwScript.setAttribute("data-wlpp-bundle", "portal");
+      cwScript.src = "https://web.keesing.com/pub/bundle-loader/bundle-loader.js";
       cwScript.type = "text/javascript";
 
       wrapper.appendChild(cwDiv);
