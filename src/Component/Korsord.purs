@@ -113,7 +113,7 @@ korsordContent paper =
                   , DOM.strong_ [DOM.text "Krypto"]
                   , DOM.text " samt "
                   , DOM.strong_ [DOM.text "Storkrysset"]
-                  , DOM.text " på fredagar. Kom ihåg att du kan skicka in dina lösningar om du vill tävla om att vinna fina priser!"
+                  , DOM.text " på fredagar."
                   ]
               }
           , DOM.p
