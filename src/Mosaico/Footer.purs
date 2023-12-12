@@ -111,7 +111,7 @@ hblContactInfo commonFooter =
   secondColumn =
     [ section "Kalle Silfverberg" [ DOM.text "Chefredaktör och ansvarig utgivare" ]
     , section "Gunilla Celvin" [ DOM.text "Biträdande chefredaktör och redaktionschef (nyheter och sport)" ]
-    , section "Dan Lolax" [ DOM.text "t.f. redaktionschef (kultur, opinion och ekonomi)" ]
+    , section "Dan Lolax" [ DOM.text "Redaktionschef (kultur, opinion och ekonomi)" ]
     , section "Steffen Ørsted" [ DOM.text "Redaktionschef (visuellt och utveckling)" ]
     , section "Nyhetstips"
         [ tel "09 125 32 22"
