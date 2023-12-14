@@ -80,6 +80,9 @@ export async function runBuild() {
         "process.env.JANRAIN_LOGIN_CLIENT_ID": '"' + process.env.JANRAIN_LOGIN_CLIENT_ID + '"',
         "process.env.JANRAIN_SSO_SERVER": '"' + process.env.JANRAIN_SSO_SERVER + '"',
         "process.env.JANRAIN_XD_RECEIVER_PATH": '"' + process.env.JANRAIN_XD_RECEIVER_PATH + '"',
+        "process.env.HBL_CAMPNO": '"' + process.env.HBL_CAMPNO + '"',
+        "process.env.VN_CAMPNO": '"' + process.env.VN_CAMPNO + '"',
+        "process.env.ON_CAMPNO": '"' + process.env.ON_CAMPNO + '"',
       },
       treeShaking: true,
     };

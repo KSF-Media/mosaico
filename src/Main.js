@@ -15,7 +15,7 @@ export function logPretty(a) {
 
 export function logJsEnv(a) {
   return function () {
-    const fields = [ 'LETTERA_URL', 'BOTTEGA_URL', 'PERSONA_URL', 'PORT', 'PAPER' ];
+    const fields = [ 'LETTERA_URL', 'BOTTEGA_URL', 'PERSONA_URL', 'PORT', 'PAPER', 'HBL_CAMPNO', 'VN_CAMPNO', 'ON_CAMPNO' ];
     const projection = fields.reduce((acc,k) => {acc[k] = process.env[k]; return acc;}, {});
     console.log({jsEnv: projection})
   }
