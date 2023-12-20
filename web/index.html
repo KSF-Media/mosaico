@@ -15,23 +15,53 @@
     <script data-cookieconsent="ignore">
       window.dataLayer = window.dataLayer || [];
       function gtag() {
-          dataLayer.push(arguments);
+        dataLayer.push(arguments);
       }
       gtag("consent", "default", {
-          ad_storage: "denied",
-          analytics_storage: "denied",
-          functionality_storage: "denied",
-          personalization_storage: "denied",
-          security_storage: "granted",
-          wait_for_update: 500,
+        ad_storage: "denied",
+        analytics_storage: "denied",
+        functionality_storage: "denied",
+        personalization_storage: "denied",
+        security_storage: "granted",
+        wait_for_update: 500,
       });
       gtag("set", "ads_data_redaction", true);
-  </script>
+    </script>
 
     <!-- Cookiebot -->
-    <script defer id="Cookiebot" src="https://consent.cookiebot.com/uc.js"
-      data-blockingmode="auto" type="text/javascript">
+    <!-- This script must come before the standard Cookiebot script below -->
+    <script id="CookiebotConfiguration" type="application/json" data-cookieconsent="ignore">
+      {
+        "Frameworks": {
+          "IABTCF2": {
+            "AllowedVendors": [
+              217, 806, 147, 57, 44, 50, 15, 597, 93, 9, 22, 612, 264, 205, 827, 195, 27, 68, 793, 23, 119, 394, 273,
+              156, 12, 30, 684, 163, 422, 729, 315, 734, 767, 243, 416, 77, 85, 91, 397, 126, 110, 168, 929, 402, 8,
+              213, 853, 24, 312, 1, 78, 328, 758, 1017, 755, 657, 98, 1050, 131, 721, 253, 10, 452, 278, 129, 294, 62,
+              345, 751, 544, 994, 667, 97, 587, 109, 95, 52, 317, 193, 703, 807, 34, 37, 468, 130, 373, 388, 832, 304,
+              241, 69, 772, 559, 139, 384, 140, 297, 228, 762, 226, 76, 81, 11, 60, 631, 1100, 192, 759, 71, 4, 16, 506,
+              415, 84, 59, 73, 82, 161, 653, 546, 246, 381, 13, 238, 136, 517, 275, 42, 475, 132, 21, 423, 28, 36, 212,
+              512, 40, 39, 70, 284, 281, 25, 469
+            ],
+            "AllowedGoogleACVendors": [
+              1716, 1577, 574, 70, 2357, 1301, 93, 864, 2526, 108, 122, 1878, 1097, 2253, 2571, 317, 311, 1276, 2575,
+              196, 89, 1365, 2072, 1201, 149, 338, 259, 1095, 2568, 1651, 1449, 1570, 1205, 2299, 1415, 415, 1870, 486,
+              540, 495, 494, 482, 2677, 981, 1889, 2074, 323
+            ]
+          }
+        }
+      }
     </script>
+    <!-- This script must come after the Cookiebot configuration script above -->
+    <script
+      defer
+      id="Cookiebot"
+      src="https://consent.cookiebot.com/uc.js"
+      data-blockingmode="auto"
+      type="text/javascript"
+      data-framework="TCFv2.2"
+    ></script>
+
     <!-- End Cookiebot -->
 
     <!-- Google Tag Manager -->
