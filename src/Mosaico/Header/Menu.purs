@@ -124,7 +124,7 @@ render props@{ handlers: { onLogin, onLogout, onMainClick, onStaticPageClick } }
 
     bottomLinks :: Array JSX
     bottomLinks = [ renderBottomLink { title: "KONTAKTA OSS" , url: "/sida/kontakt" }
-                  , renderBottomLink { title: "FÖRETAGSANNONSER" , url: "https://www.ksfmedia.fi/" }
+                  , renderBottomLink { title: "FÖRETAGSANNONSER" , url: "https://media.hbl.fi/" }
                   , maybe mempty renderPrivateAnnonserCategory $ privatAnnonserLink mosaicoPaper
                   , renderBottomLink { title: "JOBBA HOS OSS" , url: "https://www.ksfmedia.fi/jobba-hos-oss" }
                   ]
