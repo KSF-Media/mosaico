@@ -6,7 +6,7 @@ import Bottega.Models.Order (OrderSource(..))
 import Bottega.Models.PaymentMethod (PaymentMethod(..))
 import Data.Maybe (Maybe(..))
 import Data.Set as Set
-import KSF.Paper (Paper(..))
+import KSF.Paper (Paper(..), paperName)
 import KSF.User (User)
 import KSF.Vetrina as Vetrina
 import KSF.Vetrina.Products.Premium (hblPremium, vnPremium, onPremium)
@@ -18,10 +18,10 @@ import Vetrina.Types (Product)
 paperHeadline :: Paper -> JSX
 paperHeadline HBL =
   DOM.div_
-    [ DOM.text $ "Läs HBL Digital gratis ända in i 2024"]
+    [ DOM.text $ "Läs HBL Digital gratis i två månader!"]
 paperHeadline p =
   DOM.div_
-    [ DOM.text $ "Läs " <> paperAcronym p <> " Digital gratis ända in i 2024" ]
+    [ DOM.text $ "Läs " <> paperName p <> " digitalt i 3 månader för 3 €" ]
 
 paperAcronym :: Paper -> String
 paperAcronym HBL = "HBL"
