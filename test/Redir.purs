@@ -13,10 +13,10 @@ import KSF.Puppeteer as Chrome
 
 testRedir :: Chrome.Page -> Aff Unit
 testRedir page = do
-  let eitherRegex = Regex.regex "^https://annonskiosken.ksfmedia.fi/" mempty
+  let eitherRegex = Regex.regex "sida/annonskiosken" mempty
   Chrome.goto (Chrome.URL $ site <> "annonskiosken") page
   loc <- getLocationRef page
   case eitherRegex of
     Left _ -> failure "Internal error: failed to construct regex"
     Right regex ->
-      Assert.assert "annonskiosken URL redirects to annonskiosken.ksfmedia.fi" $ Regex.test regex loc
+      Assert.assert "annonskiosken URL redirects to sida/annonskiosken URL" $ Regex.test regex loc

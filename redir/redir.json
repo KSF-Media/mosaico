@@ -22,18 +22,7 @@
   },
   {
     "route": "annonskiosken",
-    "paper": "hbl",
-    "destination": "https://annonskiosken.ksfmedia.fi/ilmoita/hufvudstadsbladet"
-  },
-  {
-    "route": "annonskiosken",
-    "paper": "vn",
-    "destination": "https://annonskiosken.ksfmedia.fi/ilmoita/vastranyland"
-  },
-  {
-    "route": "annonskiosken",
-    "paper": "on",
-    "destination": "https://annonskiosken.ksfmedia.fi/ilmoita/ostnyland"
+    "destination": "sida/annonskiosken"
   },
   {
     "route": "kampanj",
