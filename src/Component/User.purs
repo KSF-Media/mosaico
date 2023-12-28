@@ -77,9 +77,9 @@ component logger = do
         onUserFetch (Right u) = do
           props.setUser $ Just u
           logger.setUser $ Just u
+          props.onClose
           props.onPaywallEvent
           sendAnalytics false $ Just u
-          props.onClose
 
     useEffectOnce do
       withLoginLock <- (\l -> Aff.bracket (Aff.AVar.put unit l)
