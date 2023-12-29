@@ -6,7 +6,7 @@ import Data.Argonaut.Core as JSON
 import Data.Array (filter, head)
 import Data.Either (Either(..))
 import Data.Map as Map
-import Data.Foldable (intercalate)
+import Data.Foldable (intercalate, null)
 import Data.List (List)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (toNullable)
@@ -46,7 +46,7 @@ spec ::
     { routes ::
          { getHealthz ::
               GET "/healthz"
-                { response :: String
+                { response :: ResponseBody
                 , guards :: Guards ("clientip" : Nil)
                 }
          , googleSiteVerification ::
@@ -112,7 +112,7 @@ main = do
     env <- newEnv
     liftEffect $ logPretty {env}
     let handlers =
-          { getHealthz
+          { getHealthz: getHealthz env
           , googleSiteVerification: staticAsset GoogleSiteVerification
           , ssoCallbackReceiver: staticAsset SSOReceiver
           , setTriggerbeeCookies
@@ -141,9 +141,11 @@ loggerGuard req = do
   liftEffect $ log { url: url, requestId: toNullable reqId }
   pure $ Right unit
 
-getHealthz :: {guards :: {clientip :: Maybe String, logger :: Unit}} -> Aff String
-getHealthz {guards: {clientip}} =
-  pure $ "OK " <> fromMaybe "" clientip <> "\n" <> mosaicoVersion
+getHealthz :: Env -> {guards :: {clientip :: Maybe String, logger :: Unit}} -> Aff (Response ResponseBody)
+getHealthz env _ | null env.categoryStructure =
+  pure $ Response.notFound $ StringBody "Category structure missing"
+getHealthz _ {guards: {clientip}} =
+  pure $ Response.ok $ StringBody $ "OK " <> fromMaybe "" clientip <> "\n" <> mosaicoVersion
 
 getClientIP :: HTTP.Request -> Aff (Maybe String)
 getClientIP req =
