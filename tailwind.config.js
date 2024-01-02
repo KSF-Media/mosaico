@@ -31,7 +31,7 @@ const monoFonts = [
 ];
 
 const listOfIcons = {
-  hbl: `url(../images/logo-hbl.svg)`,
+  hbl: `url(../images/logo-hbl160.svg)`,
   vn: `url(../images/logo-vn.svg)`,
   on: `url(../images/logo-on.svg)`,
   menu: `url("../images/icon-mosaico-menu.svg")`,
