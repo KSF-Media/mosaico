@@ -329,5 +329,20 @@
     "route": "hbljunior-jul",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbl-junior-julkampanj"
+  },
+  {
+    "route": "borgabladet",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/borgabladet"
+  },
+  {
+    "route": "blade",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/borgabladet"
+  },
+  {
+    "route": "bbl",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/borgabladet"
   }
 ]
