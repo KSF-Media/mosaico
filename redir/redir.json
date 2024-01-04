@@ -22,7 +22,7 @@
   },
   {
     "route": "annonskiosken",
-    "destination": "sida/annonskiosken"
+    "destination": "https://privat-hbl.cargoselfservice.com"
   },
   {
     "route": "kampanj",

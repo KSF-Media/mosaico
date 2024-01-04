@@ -28,7 +28,6 @@ foreign import appendToHead :: String -> Effect Unit
 staticPageTitle :: String -> Paper -> String
 staticPageTitle page paper =
   case page, paper of
-    "annonskiosken", _   -> "Annonskiosken"
     "anslagstavlan", _   -> "Anslagstavlan"
     "bruksvillkor", _    -> "Bruksvillkor"
     "fiskecupen", _      -> "Fiskecupen"
