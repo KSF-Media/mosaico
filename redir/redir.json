@@ -344,5 +344,10 @@
     "route": "bbl",
     "paper": "on",
     "destination": "https://www.ksfmedia.fi/borgabladet"
+  },
+  {
+    "route": "gratis",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/en-manad-gratis-presidentval"
   }
 ]
