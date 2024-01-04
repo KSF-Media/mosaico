@@ -37,13 +37,13 @@ import Mosaico.Article (adsAllowed)
 import Mosaico.Cache as Cache
 import Mosaico.Client.Models (InitialValues, Props, State)
 import Mosaico.Component.Article as Article
+import Mosaico.Component.Consent as Consent
 import Mosaico.Component.Epaper as Epaper
 import Mosaico.Component.Header as Header
 import Mosaico.Component.Korsord as Korsord
 import Mosaico.Component.Search as Search
 import Mosaico.Component.User as User
 import Mosaico.Component.Webview as Webview
-import Mosaico.Eval as Eval
 import Mosaico.Feed (ArticleFeed(..), ArticleFeedType(..), feedsFromInitial, parseFeed)
 import Mosaico.Routes as Routes
 import Mosaico.StaticPage (StaticPageResponse(..), getInitialStaticPageContent, getInitialStaticPageScript)
@@ -56,12 +56,12 @@ type JSProps = { mosaicoVars :: Json }
 
 type Components =
   { userComponent :: User.Props -> JSX
+  , consentComponent :: Consent.Props -> JSX
   , searchComponent :: Search.Props -> JSX
   , webviewComponent :: Webview.Props -> JSX
   , articleComponent :: Article.Props -> JSX
   , epaperComponent :: Epaper.Props -> JSX
   , headerComponent :: Header.Props -> JSX
-  , nagbarComponent :: Eval.Props -> JSX
   , paywallComponent :: Vetrina.Props -> JSX
   , korsordComponent :: Korsord.Props -> JSX
   , archiveComponent :: Archive.Props -> JSX
@@ -123,13 +123,13 @@ fromJSProps memo = case unsafePerformEffect $ Ref.read memo of
 staticComponents :: Components
 staticComponents =
   { userComponent: const mempty
+  , consentComponent: const mempty
   , searchComponent: Search.render mempty
     -- TODO
   , webviewComponent: const loadingSpinner
   , articleComponent: Article.pureComponent
   , epaperComponent: Epaper.render Nothing
   , headerComponent: Header.render 0
-  , nagbarComponent: const mempty
   , paywallComponent: const loadingSpinner
   , korsordComponent: Korsord.render Nothing
   , archiveComponent: Archive.render
@@ -163,23 +163,23 @@ getInitialValues paper = do
 getComponents :: InitialValues -> Effect Components
 getComponents initialValues = do
   userComponent    <- User.component initialValues.logger
+  consentComponent <- Consent.component
   searchComponent  <- Search.searchComponent
   webviewComponent <- Webview.webviewComponent
   articleComponent <- Article.component initialValues.cache
   epaperComponent  <- Epaper.component
   headerComponent  <- Header.component
-  nagbarComponent  <- Eval.embedNagbar
   paywallComponent <- Vetrina.component
   korsordComponent <- Korsord.component
   archiveComponent <- Archive.component
   pure
     { userComponent
+    , consentComponent
     , searchComponent
     , webviewComponent
     , articleComponent
     , epaperComponent
     , headerComponent
-    , nagbarComponent
     , paywallComponent
     , korsordComponent
     , archiveComponent
@@ -204,5 +204,6 @@ initialState initialValues props initialRoute =
   , starting: true
   , articleAllowAds: maybe true adsAllowed props.article
   , paywallCounter: 0
+  , consent: Nothing
   , currentDate: initialValues.currentDate
   }

@@ -113,6 +113,7 @@ defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
         , starting: true
         , articleAllowAds: maybe true Article.adsAllowed article
         , paywallCounter: 0
+        , consent: Nothing
         , currentDate
         }
       props =

@@ -9,6 +9,12 @@ import Toppokki (unsafeEvaluateStringFunction) as Chrome
 exampleArticle :: String
 exampleArticle = "d175946e-ce35-448f-ab81-d93a5f2d8ea0"
 
+acceptCookies :: Test
+acceptCookies page = do
+  log "Accept cookies"
+  _ <- Chrome.unsafeEvaluateStringFunction "window.dispatchEvent(new Event('TestCookiebotOverride'));" page
+  pure unit
+
 testEmbedNavigation :: Test
 testEmbedNavigation page = do
   log "Get debug list with example article"
@@ -18,8 +24,7 @@ testEmbedNavigation page = do
   Chrome.click (Chrome.Selector ".mosaico--article-list article") page
   log "Wait for article to load"
   Chrome.waitFor_ (Chrome.Selector "h1.mosaico-article__headline") page
-  log "Accept cookies"
-  _ <- Chrome.unsafeEvaluateStringFunction "window.consentToEmbeddedScripts(true)" page
+  acceptCookies page
   log "Wait for embed content"
   Chrome.waitFor_ (Chrome.Selector "div.article-element__html iframe") page
 
@@ -29,7 +34,6 @@ testEmbedServerRender page = do
   Chrome.goto (Chrome.URL $ site <> "artikel/" <> exampleArticle) page
   log "Wait for article to load"
   Chrome.waitFor_ (Chrome.Selector "h1.mosaico-article__headline") page
-  log "Accept cookies"
-  _ <- Chrome.unsafeEvaluateStringFunction "window.consentToEmbeddedScripts(true)" page
+  acceptCookies page
   log "Wait for embed content"
   Chrome.waitFor_ (Chrome.Selector "div.article-element__html iframe") page

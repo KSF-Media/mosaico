@@ -9,12 +9,12 @@ import Data.Newtype (unwrap)
 import Data.String (Pattern(..), Replacement(..), replaceAll)
 import KSF.Paper (Paper(..), homepage, paperName)
 import Lettera.Models (Category(..), correctionsCategory)
-import Mosaico.Ad (openConsentRevocationMessage)
 import Mosaico.Client.Handlers (Handlers)
+import Mosaico.Component.Consent (openConsent)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
-import React.Basic.DOM.Events (preventDefault)
-import React.Basic.Events (handler, EventHandler)
+import React.Basic.DOM.Events (capture_)
+import React.Basic.Events (EventHandler)
 
 footer :: Paper -> Handlers -> JSX
 footer mosaicoPaper { onCategoryClick, onStaticPageClick, onArchivePageClick } =
@@ -374,7 +374,7 @@ thirdColumn =
   , section "Dataskydd: "
       [ DOM.a
           { href: "#"
-          , onClick: handler preventDefault openConsentRevocationMessage
+          , onClick: capture_ $ void openConsent
           , children: [ DOM.text "Hantera dataskydd" ]
           , className: "text-aptoma-link-color"
           }

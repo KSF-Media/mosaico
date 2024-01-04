@@ -6,11 +6,11 @@ import Data.Maybe (Maybe(..), maybe)
 import Data.Nullable (toMaybe)
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
-import Mosaico.Ad (openConsentRevocationMessage)
+import Mosaico.Component.Consent (openConsent)
 import React.Basic (JSX, fragment)
 import React.Basic.DOM as DOM
-import React.Basic.Events (handler, EventHandler)
-import React.Basic.DOM.Events (preventDefault)
+import React.Basic.DOM.Events (capture_)
+import React.Basic.Events (EventHandler)
 
 type Props =
   { user :: Maybe (Maybe User)
@@ -78,7 +78,7 @@ render props@{ onLogin, onLogout, onStaticPageClick } =
               , DOM.div_
                   [ DOM.a
                       { href: "#"
-                      , onClick: handler preventDefault openConsentRevocationMessage
+                      , onClick: capture_ $ void openConsent
                       , children: [ DOM.span { className: "glyphicon glyphicon-edit" }
                                   , DOM.text "Hantera dataskydd" ]
                       }

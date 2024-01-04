@@ -4,8 +4,9 @@ import Prelude
 
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Foldable (foldMap)
-import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Foldable (fold, foldMap)
+import Data.Maybe (Maybe(..), fromMaybe, isJust, maybe)
+import Data.Newtype (unwrap)
 import Data.NonEmpty (NonEmpty(..))
 import Data.UUID (UUID, emptyUUID, parseUUID)
 import Effect (Effect)
@@ -22,9 +23,9 @@ import Mosaico.Article as Article
 import Mosaico.Article.Advertorial as Advertorial
 import Mosaico.Article.Box as Box
 import Mosaico.Article.Image as Image
-import Mosaico.Eval as Eval
 import Mosaico.Cache as Cache
 import Mosaico.Client.Handlers (Handlers)
+import Mosaico.Eval as Eval
 import React.Basic (JSX)
 import React.Basic.Hooks (Component, useEffect, useState', (/\))
 import React.Basic.Hooks as React
@@ -60,6 +61,7 @@ type Props =
   , advertorials :: Maybe (NonEmpty Array ArticleStub)
   , paywall :: JSX
   , paywallCounter :: Int
+  , consent :: Maybe Boolean
   }
 
 type State =
@@ -69,7 +71,6 @@ type State =
 type Components =
   { image :: Image.Props -> JSX
   , box :: Box.Props -> JSX
-  , nagbar :: Eval.Props -> JSX
   }
 
 pickRandomElement :: forall a. NonEmpty Array a -> Effect a
@@ -81,7 +82,6 @@ pureComponent :: Props -> JSX
 pureComponent props = render Nothing
   { image: Image.render mempty
   , box: Box.render mempty
-  , nagbar: pure mempty
   } props $ case props.article of
       -- Should always be this
       InitialFullArticle a -> Right a
@@ -91,10 +91,9 @@ pureComponent props = render Nothing
 component :: Cache.Cache -> Component Props
 component cache = do
   components <-
-    { image: _, box: _, nagbar: _ }
+    { image: _, box: _ }
     <$> Image.component
     <*> Box.component
-    <*> Eval.embedNagbar
   document <- Web.document =<< Web.window
   let setTitle = flip Web.setTitle document
 
@@ -105,6 +104,7 @@ component cache = do
         InitialFullArticle article -> Just article
         _ -> Nothing
     let articleId = inputArticleUUID props.article
+    lastConsent /\ setLastConsent <- useState' $ fromMaybe false props.consent
     advertorial /\ setAdvertorial <- useState' Nothing
     -- Load article if uuid changed or there's a chance that user has
     -- signed in or gone through paywall.  This can't depend on cusno
@@ -113,8 +113,9 @@ component cache = do
     -- Vetrina.
     useEffect { articleId
               , paywallCounter: props.paywallCounter
+              , consent: props.consent
               } do
-      foldMap (Article.evalEmbeds <<< _.article) $ case props.article of
+      foldMap (\a -> when (props.consent == Just true) $ evalEmbeds a.article) $ case props.article of
         InitialFullArticle x -> Just x
         _ -> Nothing
       -- Needs to not be a special article
@@ -123,8 +124,13 @@ component cache = do
          ((Just articleId /= (parseUUID <<< _.article.uuid =<< article) && notInitial props.article) ||
           -- or logged in and it's a preview
           (isJust (join props.user) &&
-           (_.articleType <$> article) == Just PreviewArticle)) then pure $ pure unit else do
+           (_.articleType <$> article) == Just PreviewArticle) ||
+          -- or we had previously no consent and it has embeds in it
+          (not lastConsent && Just true == props.consent &&
+           maybe false (not <<< Array.null) (_.externalScripts <<< _.article =<< article))
+         ) then pure $ pure unit else do
         setArticle Nothing
+        setLastConsent $ fromMaybe false props.consent
         Aff.launchAff_ do
           -- Refresh latest & co if needed
           res <-
@@ -136,7 +142,7 @@ component cache = do
               Right a | parseUUID a.article.uuid == Just articleId -> do
                 props.handlers.setAllowAds $ Article.adsAllowed a
                 setArticle $ Just a
-                Article.evalEmbeds a.article
+                when (props.consent == Just true) $ evalEmbeds a.article
                 when (notInitial props.article) $
                   sendArticleAnalytics a.article $ join props.user
               Right _ -> pure unit
@@ -167,11 +173,15 @@ component cache = do
       { initialArticle: InitialFullArticle a } -> render' $ Right a
       { initialArticle: ClickedArticle a } -> render' $ Left a
       _ -> loadingSpinner
+  where
+    evalEmbeds = Eval.evalArticleScripts <<< map Eval.ScriptTag <<< map unwrap <<< fold <<< _.externalScripts
+
+
 
 render :: Maybe State -> Components -> Props -> Either ArticleStub FullArticle -> JSX
 render state components props activeArticle =
   let normalRender article =
-        Article.render components.nagbar components.image components.box
+        Article.render components.image components.box
         { paper: props.paper
         , article
         , handlers: props.handlers
@@ -181,6 +191,7 @@ render state components props activeArticle =
         , advertorial: _.advertorial =<< state
         , breakingNews: props.breakingNews
         , paywall: props.paywall
+        , consent: props.consent
         }
   in case activeArticle of
     Right { article } | article.articleType == Advertorial ->

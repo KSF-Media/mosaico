@@ -151,6 +151,9 @@ app = do
           , paper: mosaicoPaper
           , onPaywallEvent
           }
+      , components.consentComponent
+          { setConsent: \c -> setState _ { consent = Just c }
+          }
       , render Frontpage.clientHooks components handlers props state
       ]
 
@@ -260,7 +263,7 @@ render hooks components handlers props state =
          | otherwise -> mosaicoLayoutNoAside $ renderArticle $ InitialFullArticle notFoundArticle
        Routes.KorsordPage -> mosaicoLayoutNoAside $
            fragment
-             [ components.nagbarComponent { isArticle: false }
+             [ nagbar
              , DOM.div
                  { className: "mosaico--static-page"
                  , children:
@@ -276,7 +279,7 @@ render hooks components handlers props state =
          Nothing -> loadingSpinner
          Just (StaticPageResponse page)  ->
            fragment
-             [ if page.pageName == "korsord" then components.nagbarComponent { isArticle: false } else mempty
+             [ if page.pageName == "korsord" then nagbar else mempty
              , DOM.div { className: "mosaico--static-page", dangerouslySetInnerHTML: { __html: page.pageContent } }
              ]
          Just StaticPageNotFound -> Error.notFoundWithAside
@@ -461,6 +464,7 @@ render hooks components handlers props state =
         , breakingNews
         , paywall
         , paywallCounter: state.paywallCounter
+        , consent: state.consent
         }
 
     latestArticles = state.feeds.latestArticles
@@ -468,6 +472,11 @@ render hooks components handlers props state =
     mostReadArticles = state.feeds.mostReadArticles
 
     breakingNews = state.feeds.breakingNews
+
+    nagbar = Eval.render
+      { isArticle: false
+      , consent: state.consent
+      }
 
     paywall = Paywall.paywall components.paywallComponent
       { handlers

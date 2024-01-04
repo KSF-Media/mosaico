@@ -45,6 +45,7 @@ type State =
     -- Bump whenever there's a chance that preview articles could be
     -- turned to full articles
   , paywallCounter :: Int
+  , consent :: Maybe Boolean
   , currentDate :: Date
   }
 

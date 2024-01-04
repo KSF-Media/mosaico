@@ -5,15 +5,13 @@ import Prelude
 import Control.Alt ((<|>))
 import Data.Array (cons, filter, head, insertAt, length, null, snoc, take, (!!))
 import Data.Either (Either(..), either, hush)
-import Data.Foldable (fold, foldMap)
+import Data.Foldable (foldMap)
 import Data.List (fromFoldable, (:))
 import Data.List.Types (List(..))
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe)
 import Data.Monoid (guard)
-import Data.Newtype (unwrap)
 import Data.String (toUpper)
 import Data.Tuple (Tuple(..))
-import Effect (Effect)
 import Foreign.Object as Object
 import KSF.LocalDateTime (formatArticleTime)
 import KSF.Paper (Paper)
@@ -75,17 +73,15 @@ type Props =
   , advertorial :: Maybe ArticleStub
   , breakingNews :: String
   , paywall :: JSX
+  , consent :: Maybe Boolean
   }
-
-evalEmbeds :: Article -> Effect Unit
-evalEmbeds = Eval.evalArticleScripts <<< map Eval.ScriptTag <<< map unwrap <<< fold <<< _.externalScripts
 
 type BodyElement' = Tuple BodyElement Boolean
 
 data WithAd = WithAd | WithoutAd
 
-render :: (Eval.Props -> JSX) -> (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
-render embedNagbar imageComponent boxComponent props =
+render :: (Image.Props -> JSX) -> (Box.Props -> JSX) -> Props -> JSX
+render imageComponent boxComponent props =
     let title = getTitle props.article
         tags = getTags props.article
         mainImage = getMainImage props.article
@@ -123,6 +119,10 @@ render embedNagbar imageComponent boxComponent props =
           xs -> renderMostReadArticles xs
         shareUrl = getShareUrl props.article
         embedScripts = getExternalScripts props.article
+        embedNagbar = Eval.render
+          { isArticle: true
+          , consent: props.consent
+          }
         articleCategory = head $ getArticleCategories props.article
 
     in DOM.article
@@ -171,7 +171,7 @@ render embedNagbar imageComponent boxComponent props =
                             , DOM.div
                                 { className: "mosaico-article__body"
                                 , children:
-                                  [ if not $ null embedScripts then embedNagbar { isArticle: true } else mempty ]
+                                  [ if not $ null embedScripts then embedNagbar else mempty ]
                                   <>
                                   case _.articleType <$> props.article of
                                     Right PreviewArticle ->

@@ -26,11 +26,3 @@ export function getGamId(contentUnit) {
     return null;
   }
 }
-
-export function showConsentRevocationMessage() {
-  if (window.Cookiebot !== undefined) {
-    window.Cookiebot.show();
-  } else {
-    console.error("Cookiebot not loaded!")
-  }
-}
