@@ -349,5 +349,10 @@
     "route": "gratis",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/en-manad-gratis-presidentval"
+  },
+  {
+    "route": "verona",
+    "paper": "hbl",
+    "destination": "https://www.temamatkat.fi/matkavalikoima/eurooppa/italia/operaresa-till-verona-hufvudstadsbladet"
   }
 ]
