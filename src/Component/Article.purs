@@ -104,7 +104,9 @@ component cache = do
         InitialFullArticle article -> Just article
         _ -> Nothing
     let articleId = inputArticleUUID props.article
-    lastConsent /\ setLastConsent <- useState' $ fromMaybe false props.consent
+    lastConsent /\ setLastConsent <- useState' $ case props.article of
+      InitialFullArticle { articleType: DraftArticle } -> true
+      _ ->  fromMaybe false props.consent
     advertorial /\ setAdvertorial <- useState' Nothing
     -- Load article if uuid changed or there's a chance that user has
     -- signed in or gone through paywall.  This can't depend on cusno
