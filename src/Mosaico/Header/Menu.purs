@@ -3,9 +3,10 @@ module Mosaico.Header.Menu where
 import Prelude
 
 import Data.Array (intersperse, foldl, snoc)
-import Data.Maybe (Maybe(..), maybe)
+import Data.Either (Either(..), either)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
-import Data.String (take, toUpper)
+import Data.String (toUpper)
 import Foreign.Object (singleton)
 import Data.String as String
 import Effect (Effect)
@@ -123,33 +124,23 @@ render props@{ handlers: { onLogin, onLogout, onMainClick, onStaticPageClick } }
       in acc `snoc` section
 
     bottomLinks :: Array JSX
-    bottomLinks = [ renderBottomLink { title: "KONTAKTA OSS" , url: "/sida/kontakt" }
-                  , renderBottomLink { title: "FÖRETAGSANNONSER" , url: "https://media.hbl.fi/" }
-                  , maybe mempty renderPrivateAnnonserCategory $ privatAnnonserLink mosaicoPaper
-                  , renderBottomLink { title: "JOBBA HOS OSS" , url: "https://www.ksfmedia.fi/jobba-hos-oss" }
+    bottomLinks = [ renderBottomLink { title: "KONTAKTA OSS" , url: Right "/sida/kontakt" }
+                  , renderBottomLink { title: "FÖRETAGSANNONSER" , url: Left "https://media.hbl.fi/" }
+                  , renderBottomLink { title: "PRIVATANNONSER", url: Left "/annonskiosken" }
+                  , renderBottomLink { title: "JOBBA HOS OSS" , url: Left "https://www.ksfmedia.fi/jobba-hos-oss" }
                   ]
                   <> paperSpecificLinks mosaicoPaper
                   <>
-                  [ renderBottomLink { title: "NYHETSAPPAR" , url: "/sida/app" }
-                  , renderBottomLink { title: "NYHETSBREV" , url: "/sida/nyhetsbrev" }
+                  [ renderBottomLink { title: "NYHETSAPPAR" , url: Right "/sida/app" }
+                  , renderBottomLink { title: "NYHETSBREV" , url: Right "/sida/nyhetsbrev" }
                   ]
-
-    privatAnnonserLink :: Paper -> Maybe String
-    privatAnnonserLink paper = case paper of
-      HBL -> Just "https://hbl.fi/annonskiosken"
-      VN  -> Just "https://vastranyland.fi/annonskiosken"
-      ON  -> Just "https://ostnyland.fi/annonskiosken"
-      _   -> Nothing
-
-    renderPrivateAnnonserCategory :: String -> JSX
-    renderPrivateAnnonserCategory url = renderBottomLink { title: "PRIVATANNONSER" , url }
 
     paperSpecificLinks :: Paper -> Array JSX
     paperSpecificLinks VN = vastranylandMenuLinks
     paperSpecificLinks _ = mempty
 
     vastranylandMenuLinks :: Array JSX
-    vastranylandMenuLinks = [ renderBottomLink { title: "ANSLAGSTAVLAN" , url: "/sida/anslagstavlan" } ]
+    vastranylandMenuLinks = [ renderBottomLink { title: "ANSLAGSTAVLAN" , url: Right "/sida/anslagstavlan" } ]
 
     renderLoadingIcon :: JSX
     renderLoadingIcon = DOM.div
@@ -213,18 +204,15 @@ render props@{ handlers: { onLogin, onLogout, onMainClick, onStaticPageClick } }
           ]
       }
 
-    renderBottomLink :: { title :: String , url :: String } -> JSX
+    renderBottomLink :: { title :: String , url :: Either String String } -> JSX
     renderBottomLink { title, url } = DOM.div
       { className: "justify-center py-4 text-sm font-semibold font-roboto lg:my-8 lg:px-2 lg:flex lg:flex-row lg:justify-around"
       , children:
           [ DOM.h2_
               [ DOM.a
-                  { href: url
+                  { href: either identity identity url
                   , children: [ DOM.text title ]
-                  , onClick:
-                      if take 5 url == "https"
-                      then mempty
-                      else props.handlers.onMainClick url
+                  , onClick: either (const mempty) props.handlers.onMainClick url
                   , className: "block"
                   }
               ]

@@ -104,7 +104,7 @@ hblContactInfo commonFooter =
         , email "annons@hbl.fi"
         , DOM.br {}
         , DOM.text "Privatannonser: "
-        , columnLink "https://hbl.fi/annonskiosken" [ DOM.text "hbl.fi/annonskiosken"]
+        , columnLink "/annonskiosken" [ DOM.text "hbl.fi/annonskiosken"]
         ]
     ]
 
@@ -163,7 +163,7 @@ vastranylandContactInfo commonFooter =
         , email "annons@vastranyland.fi"
         , DOM.br {}
         , DOM.text "Privatannonser: "
-        , columnLink "https://vastranyland.fi/annonskiosken" [ DOM.text "vastranyland.fi/annonskiosken"]
+        , columnLink "/annonskiosken" [ DOM.text "vastranyland.fi/annonskiosken"]
         ]
     ]
 
@@ -220,7 +220,7 @@ ostnylandContactInfo commonFooter =
         , email "annons@ostnyland.fi"
         , DOM.br {}
         , DOM.text "Privatannonser: "
-        , columnLink "https://ostnyland.fi/annonskiosken" [ DOM.text "ostnyland.fi/annonskiosken"]
+        , columnLink "/annonskiosken" [ DOM.text "ostnyland.fi/annonskiosken"]
         ]
     ]
 
