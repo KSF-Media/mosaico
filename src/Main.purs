@@ -4,13 +4,14 @@ import Prelude
 
 import Data.Argonaut.Core as JSON
 import Data.Array (filter, head)
-import Data.Either (Either(..))
+import Data.Either (Either(..), hush)
 import Data.Map as Map
 import Data.Foldable (intercalate, null)
 import Data.List (List)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Nullable (toNullable)
 import Data.String as String
+import Data.String.Regex as Regex
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
@@ -51,10 +52,9 @@ spec ::
                 }
          , googleSiteVerification ::
               GET "/google8c22fe93f3684c84.html"
-                { response :: File }
-         , ssoCallbackReceiver ::
-              GET "/xd_receiver.html"
-                { response :: File }
+                { response :: File
+                , guards :: Guards ("apiHost" : Nil)
+                }
          , setTriggerbeeCookies ::
               GET "/api/triggerbee-cookies"
                 { response :: ResponseBody
@@ -62,13 +62,19 @@ spec ::
                 }
          , robotsTxt ::
               GET "/robots.txt"
-                { response :: File }
+                { response :: File
+                , guards :: Guards ("apiHost" : Nil)
+                }
          , adsTxt ::
               GET "/ads.txt"
-                { response :: File }
+                { response :: File
+                , guards :: Guards ("apiHost" : Nil)
+                }
          , adnamiDomainEnabler ::
               GET "/adnami/adnm.html"
-                { response :: File }
+                { response :: File
+                , guards :: Guards ("apiHost" : Nil)
+                }
          , assets ::
               GET "/assets/<..path>"
                 { params :: { path :: List String }
@@ -101,12 +107,14 @@ spec ::
          , logger :: Unit
          , clientRoute :: Routes.MosaicoPage
          , redirection :: Maybe String
+         , apiHost :: Boolean
          }
     }
 spec = Spec
 
 main :: Effect Unit
 main = do
+  let apiHostRegex = hush $ Regex.regex "api\\.ksfmedia\\.fi" mempty
   Aff.launchAff_ do
     liftEffect $ logJsEnv unit
     env <- newEnv
@@ -114,7 +122,6 @@ main = do
     let handlers =
           { getHealthz: getHealthz env
           , googleSiteVerification: staticAsset GoogleSiteVerification
-          , ssoCallbackReceiver: staticAsset SSOReceiver
           , setTriggerbeeCookies
           , assets
           , defaultHandler: defaultHandler env Nothing
@@ -130,6 +137,7 @@ main = do
           , logger: loggerGuard
           , clientRoute: getClientRoute env
           , redirection: resolveRedir env
+          , apiHost: maybe (const $ pure false) apiHost apiHostRegex
           }
     void $ Payload.startGuarded (Payload.defaultOpts { port = serverPort }) spec { handlers, guards }
     pure unit
@@ -168,15 +176,20 @@ resolveRedir env req = pure $
 assets :: { params :: { path :: List String }, guards :: { logger :: Unit } } -> Aff (Either Failure File)
 assets { params: { path } } = Handlers.directory "dist/assets" path
 
-data StaticAsset = AdsTXT | AdnamiDomainEnabler | GoogleSiteVerification | SSOReceiver | RobotsTXT
+apiHost :: Regex.Regex -> HTTP.Request -> Aff Boolean
+apiHost rg req = pure $ fromMaybe false $ do
+  Regex.test rg <$> lookup "host" hdr
+  where
+    hdr = HTTP.requestHeaders req
 
-staticAsset :: forall r. StaticAsset -> { | r} -> Aff File
-staticAsset asset = Handlers.file $ case asset of
+data StaticAsset = AdsTXT | AdnamiDomainEnabler | GoogleSiteVerification | RobotsTXT
+
+staticAsset :: StaticAsset -> { guards :: { apiHost :: Boolean, logger :: Unit } } -> Aff File
+staticAsset asset r@{ guards: { apiHost: isApi }} = flip Handlers.file r $ case asset of
   AdsTXT -> "dist/assets/ads.txt"
   AdnamiDomainEnabler -> "dist/assets/adnami/adnm.html"
   GoogleSiteVerification -> "dist/assets/google8c22fe93f3684c84.html"
-  SSOReceiver -> "dist/assets/xd_receiver.html"
-  RobotsTXT -> "dist/assets/robots.txt"
+  RobotsTXT -> if isApi then "dist/assets/robots.api.txt" else "dist/assets/robots.txt"
 
 type TriggerbeeCookies =
   { mtruid :: String
