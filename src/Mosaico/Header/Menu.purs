@@ -135,10 +135,11 @@ render props@{ handlers: { onLogin, onLogout, onMainClick, onStaticPageClick } }
                   ]
 
     privatAnnonserLink :: Paper -> Maybe String
-    privatAnnonserLink HBL = Just "https://annonskiosken.ksfmedia.fi/ilmoita/hufvudstadsbladet"
-    privatAnnonserLink VN = Just "https://annonskiosken.ksfmedia.fi/ilmoita/vastranyland"
-    privatAnnonserLink ON = Just "https://annonskiosken.ksfmedia.fi/ilmoita/ostnyland"
-    privatAnnonserLink _ = Nothing
+    privatAnnonserLink paper = case paper of
+      HBL -> Just "https://hbl.fi/annonskiosken"
+      VN  -> Just "https://vastranyland.fi/annonskiosken"
+      ON  -> Just "https://ostnyland.fi/annonskiosken"
+      _   -> Nothing
 
     renderPrivateAnnonserCategory :: String -> JSX
     renderPrivateAnnonserCategory url = renderBottomLink { title: "PRIVATANNONSER" , url }
