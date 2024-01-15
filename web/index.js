@@ -93,7 +93,10 @@ window.adSlots = {
     },
     {
       gamId: getGamId("digihelmob"),
-      sizes: [300, 431],
+      sizes: [
+        [300, 431],
+        [300, 600],
+      ],
       targetId: "mosaico-ad__bigbox1",
     },
     {
