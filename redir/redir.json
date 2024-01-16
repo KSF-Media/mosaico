@@ -359,5 +359,10 @@
     "route": "presidentval",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbl-presidentval"
+  },
+  {
+    "route": "rom",
+    "paper": "hbl",
+    "destination": "https://www.temamatkat.fi/matkavalikoima/eurooppa/italia/weekend-i-rom/"
   }
 ]
