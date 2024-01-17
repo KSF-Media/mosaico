@@ -364,5 +364,10 @@
     "route": "rom",
     "paper": "hbl",
     "destination": "https://www.temamatkat.fi/matkavalikoima/eurooppa/italia/weekend-i-rom/"
+  },
+  {
+    "route": "svenskanu-gavoprenumeration2024",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/abi-svenska-nu"
   }
 ]
