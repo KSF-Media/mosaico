@@ -361,11 +361,6 @@
     "destination": "https://www.ksfmedia.fi/hbl-presidentval"
   },
   {
-    "route": "rom",
-    "paper": "hbl",
-    "destination": "https://www.temamatkat.fi/matkavalikoima/eurooppa/italia/weekend-i-rom/"
-  },
-  {
     "route": "svenskanu-gavoprenumeration2024",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/abi-svenska-nu"
@@ -374,5 +369,10 @@
     "route": "stockholm",
     "paper": "hbl",
     "destination": "https://mejtresor.se/teaterresa-till-stockholm-med-tolvskillingsoperan-och-jussi-22-26-april-2024"
+  },
+  {
+    "route": "australien",
+    "paper": "hbl",
+    "destination": "https://www.temamatkat.fi/matkavalikoima/oseania/uusiseelanti/australia-ja-uusi-seelanti/"
   }
 ]
