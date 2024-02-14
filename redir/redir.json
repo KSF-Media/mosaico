@@ -374,5 +374,10 @@
     "route": "australien",
     "paper": "hbl",
     "destination": "https://www.temamatkat.fi/matkavalikoima/oseania/uusiseelanti/australia-ja-uusi-seelanti/"
+  },
+  {
+    "route": "gladvandag",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/glad-vandag"
   }
 ]
