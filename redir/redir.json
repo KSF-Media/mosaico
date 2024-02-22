@@ -379,5 +379,20 @@
     "route": "gladvandag",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/glad-vandag"
+  },
+  {
+    "route": "plusallt",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-digital-plus-allt"
+  },
+  {
+    "route": "plusallt",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-plus-allt"
+  },
+  {
+    "route": "plusallt",
+    "paper": "on",
+    "destination": "https://www.ksfmedia.fi/on-plusallt-2024"
   }
 ]
