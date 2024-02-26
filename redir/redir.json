@@ -394,5 +394,20 @@
     "route": "plusallt",
     "paper": "on",
     "destination": "https://www.ksfmedia.fi/on-plusallt-2024"
+  },
+  {
+    "route": "prenplusallt",
+    "paper": "hbl",
+    "destination": "https://kampanjer.dn.se/kampanj/tb/AKT_LEAD_HBL_KS_0KR_3M_TB/"
+  },
+  {
+    "route": "prenplusallt",
+    "paper": "vn",
+    "destination": "https://kampanjer.dn.se/kampanj/tb/AKT_LEAD_VN_KS_0KR_3M_TB/"
+  },
+  {
+    "route": "prenplusallt",
+    "paper": "on",
+    "destination": "https://kampanjer.dn.se/kampanj/tb/AKT_LEAD_ON_KS_0KR_3M_TB/"
   }
 ]
