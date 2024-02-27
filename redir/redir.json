@@ -409,5 +409,20 @@
     "route": "prenplusallt",
     "paper": "on",
     "destination": "https://kampanjer.dn.se/kampanj/tb/AKT_LEAD_ON_KS_0KR_3M_TB/"
+  },
+  {
+    "route": "plusallt-kundservice",
+    "paper": "hbl",
+    "destination": "https://kampanjer.dn.se/kampanj/tb/NYK_LEAD_NYKHBL_KS_0KR_3M_TB/"
+  },
+  {
+    "route": "plusallt-kundservice",
+    "paper": "vn",
+    "destination": "https://kampanjer.dn.se/kampanj/tb/NYK_LEAD_NYKVN_KS_0KR_3M_TB/"
+  },
+  {
+    "route": "plusallt-kundservice",
+    "paper": "on",
+    "destination": "https://kampanjer.dn.se/kampanj/tb/NYK_LEAD_NYKON_KS_0KR_3M_TB/"
   }
 ]
