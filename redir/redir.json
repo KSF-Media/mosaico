@@ -424,5 +424,10 @@
     "route": "plusallt-kundservice",
     "paper": "on",
     "destination": "https://kampanjer.dn.se/kampanj/tb/NYK_LEAD_NYKON_KS_0KR_3M_TB/"
+  },
+  {
+    "route": "juliaelin",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-julia-och-elin"
   }
 ]
