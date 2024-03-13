@@ -429,5 +429,10 @@
     "route": "juliaelin",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbl-julia-och-elin"
+  },
+  {
+    "route": "hbljunior-kampanj",
+    "paper": "hbl",
+    "destination": "https://www.ksfmedia.fi/hbl-junior-var"
   }
 ]
