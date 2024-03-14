@@ -439,5 +439,10 @@
     "route": "marocko",
     "paper": "hbl",
     "destination": "https://www.temamatkat.fi/matkavalikoima/afrikka/marokko/sydmarockanska-aventyr/"
+  },
+  {
+    "route": "haapsalu",
+    "paper": "hbl",
+    "destination": "https://matka-agentit.fi/Lukija-ja-j%C3%A4senmatkat/Viro/Haapsalu/hbl-lasarresa-estland"
   }
 ]
