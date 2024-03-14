@@ -434,5 +434,10 @@
     "route": "hbljunior-kampanj",
     "paper": "hbl",
     "destination": "https://www.ksfmedia.fi/hbl-junior-var"
+  },
+  {
+    "route": "marocko",
+    "paper": "hbl",
+    "destination": "https://www.temamatkat.fi/matkavalikoima/afrikka/marokko/sydmarockanska-aventyr/"
   }
 ]
