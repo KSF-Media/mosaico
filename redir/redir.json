@@ -444,5 +444,10 @@
     "route": "haapsalu",
     "paper": "hbl",
     "destination": "https://matka-agentit.fi/Lukija-ja-j%C3%A4senmatkat/Viro/Haapsalu/hbl-lasarresa-estland"
+  },
+  {
+    "route": "varkampanj",
+    "paper": "vn",
+    "destination": "https://www.ksfmedia.fi/vn-varkampanj-2024"
   }
 ]
