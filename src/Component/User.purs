@@ -35,7 +35,7 @@ import Mosaico.Triggerbee (addToTriggerbeeObj, sendTriggerbeeEvent)
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.Events (handler_)
-import React.Basic.Hooks (Component, useEffect, useEffectOnce, useState', (/\))
+import React.Basic.Hooks (Component, useEffect, useEffectOnce, useState, (/\))
 import React.Basic.Hooks as React
 import Web.Event.Event (EventType(..))
 import Web.Event.EventTarget (addEventListener, eventListener, removeEventListener)
@@ -64,8 +64,8 @@ component :: Sentry.Logger -> Component Props
 component logger = do
   loginComponent <- Login.login
   React.component "LoginModal" \(props ::Props) -> React.do
-    ipEntitlements /\ setIPEntitlements <- useState' Nothing
-    userEntitlements /\ setUserEntitlements <- useState' Nothing
+    ipEntitlements /\ setIPEntitlements <- useState Nothing
+    userEntitlements /\ setUserEntitlements <- useState Nothing
     let sendAnalytics :: Boolean -> Maybe User -> Effect Unit
         sendAnalytics sendArticle u = do
           foldMap (\user -> runEffectFn1 sendTriggerbeeEvent user.email) u
@@ -84,14 +84,8 @@ component logger = do
           case guard sendArticle (pure unit) *> props.initialArticle of
             Just a -> sendArticleAnalytics a.article u
             Nothing -> pure unit
-        setEntitlements token usr ip = do
-          let entitlementsWithToken entl old = fromMaybe Map.empty $
-                      (map (const token) <<< Set.toMap <$> entl) <|> old
-              fromUser = entitlementsWithToken usr userEntitlements
-              fromIP = entitlementsWithToken ip ipEntitlements
-          foldMap (setUserEntitlements <<< Just) $ usr $> fromUser
-          foldMap (setIPEntitlements <<< Just) $ ip $> fromIP
-          props.setEntitlements $ Map.union fromUser fromIP
+        entitlementsWithToken token entl old =
+          fromMaybe Map.empty $ (map (const token) <<< Set.toMap <$> entl) <|> old
         setUser user = do
           logger.setUser $ Just user
           props.setUser $ Just user
@@ -106,8 +100,7 @@ component logger = do
           sendAnalytics false $ Just user
 
     useEffect props.paywallCounter do
-      setUserEntitlements Nothing
-      props.setEntitlements $ fromMaybe Map.empty ipEntitlements
+      setUserEntitlements $ const Nothing
       pure mempty
 
     useEffectOnce do
@@ -148,18 +141,18 @@ component logger = do
                   -- No need to try again
                   Left LoginInvalidCredentials -> do
                     let nil = { userId: UUID.emptyUUID, authToken: Token "" }
-                    liftEffect $ setEntitlements nil Nothing $ Just Set.empty
+                    liftEffect $ setIPEntitlements $ Just <<< entitlementsWithToken nil (Just Set.empty)
                   Left _ -> pure unit
                   Right tok -> do
                     entitlements <- User.getUserEntitlements tok
-                    liftEffect $ setEntitlements tok Nothing $ hush entitlements
+                    liftEffect $ setIPEntitlements $ Just <<< entitlementsWithToken tok (hush entitlements)
 
           when (isNothing userEntitlements && isJust (join props.user)) do
             maybeToken <- Auth.loadToken
             case maybeToken of
               Just token -> do
                 entitlements <- User.getUserEntitlements token
-                liftEffect $ flip (setEntitlements token) Nothing $ hush entitlements
+                liftEffect $ setUserEntitlements $ Just <<< (entitlementsWithToken token $ hush entitlements)
               _ -> pure unit
 
           waitIPEntitlements
@@ -169,6 +162,12 @@ component logger = do
           props.setLoadingEntitlements false
           Aff.launchAff_ stopEntitlementsLoad
       else pure mempty
+
+    useEffect {i: maybe Set.empty Map.keys ipEntitlements, u: maybe Set.empty Map.keys userEntitlements} do
+      let u = fromMaybe Map.empty userEntitlements
+          i = fromMaybe Map.empty ipEntitlements
+      props.setEntitlements $ Map.union u i
+      pure mempty
 
     -- Add eventListener for ESC key, which closes the modal
     -- Remove the listener when the LoginModal is unmounted
