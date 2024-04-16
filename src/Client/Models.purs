@@ -5,8 +5,10 @@ import Prelude
 import Data.Date (Date)
 import Data.Maybe (Maybe)
 import Data.NonEmpty (NonEmpty)
+import Data.Map (Map)
 import Data.Tuple (Tuple)
 import Lettera.Models (ArticleStub, Category, Categories, FullArticle)
+import KSF.Api (UserAuth)
 import KSF.Sentry as Sentry
 import KSF.User (User)
 import Mosaico.Cache (Cache)
@@ -36,6 +38,10 @@ type State =
   , clickedArticle :: Maybe ArticleStub
   , modalView :: Maybe ModalView
   , user :: Maybe (Maybe User)
+  -- Usually from user data, but may also be IP address based.  Loaded
+  -- by need (by korsord or epaper components currently).
+  , entitlements :: Map String UserAuth
+  , loadingEntitlements :: Boolean
   , staticPage :: Maybe StaticPageResponse
   , feeds :: Feeds
   , ssrPreview :: Boolean

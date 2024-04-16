@@ -2,22 +2,19 @@ module Mosaico.Component.Korsord where
 
 import Prelude
 
-import Data.Either (hush)
 import Data.Foldable (any)
-import Data.Maybe (Maybe(..), isJust, fromMaybe,  maybe)
-import Data.Set as Set
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff as Aff
-import Effect.Class (liftEffect)
-import KSF.Auth (loadToken)
+import KSF.Api (UserAuth)
 import KSF.Paper (Paper(..))
 import KSF.Spinner (loadingSpinner)
-import KSF.User (User)
-import KSF.User as User
 import React.Basic (JSX)
 import React.Basic.DOM as DOM
 import React.Basic.Events (handler_)
-import React.Basic.Hooks (Component, useEffect, useState', (/\))
+import React.Basic.Hooks (Component, useEffect)
 import React.Basic.Hooks as React
 import Web.HTML as HTML
 import Web.HTML.Window as Window
@@ -25,37 +22,25 @@ import Web.HTML.Window as Window
 foreign import loadKorsord :: Effect Unit
 
 type Props =
-  { user :: Maybe (Maybe User)
+  { entitlements :: Map String UserAuth
+  , loadingEntitlements :: Boolean
   , paper :: Paper
   , paywall :: JSX
+  , paywallCounter :: Int
   }
 
 component :: Component Props
 component = do
-  React.component "Korsord" $ \props@{user, paper} -> React.do
-    entitlements /\ setEntitlements <- useState' Nothing
-    useEffect {l1: isJust user, l2: isJust <$> user} do
-      case user of
-        Just Nothing -> Aff.launchAff_ do
-          tokens <- User.loginIP paper
-          liftEffect case (hush tokens) of
-            Nothing -> setEntitlements $ Just mempty
-            Just auth -> do
-              Aff.launchAff_ $ do
-                ipEntitlements <- User.getUserEntitlements auth
-                liftEffect $ setEntitlements $ Just $ fromMaybe mempty $ hush ipEntitlements
-        Just _ -> do
-          tokens <- loadToken
-          maybe
-            (setEntitlements $ Just mempty)
-            (Aff.launchAff_ <<< (liftEffect <<< setEntitlements <<< Just
-                                 <<< fromMaybe Set.empty <<< hush <=< User.getUserEntitlements)) tokens
-        _ -> pure unit
-      pure $ pure unit
-    let isEntitled = (\entitlement -> any (flip Set.member $ entitlement) ["hbl-web", "vn-web", "on-web"]) <$> entitlements
+  React.component "Korsord" $ \props@{paywallCounter} -> React.do
+    let entitlement =
+          any (flip Map.member props.entitlements) ["hbl-web", "vn-web", "on-web"]
+        isEntitled = case {entitlement, loading: props.loadingEntitlements} of
+          {entitlement: true} -> Just true
+          {loading: true} -> Nothing
+          _ -> Just false
     useEffect isEntitled $ do
-        when (isEntitled == Just true) loadKorsord
-        pure $ pure unit
+      when entitlement loadKorsord
+      pure mempty
     pure $ render isEntitled props
 
 render :: Maybe Boolean -> Props -> JSX

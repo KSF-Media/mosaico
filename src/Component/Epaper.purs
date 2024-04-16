@@ -2,104 +2,69 @@ module Mosaico.Component.Epaper where
 
 import Prelude
 
-import Data.Either (hush)
 import Data.Foldable (lookup)
-import Data.Maybe (Maybe(..), isJust, isNothing, fromMaybe,  maybe)
-import Data.Set (Set)
-import Data.Set as Set
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..), isJust, isNothing)
+import Data.Tuple.Nested ((/\))
 import Data.UUID as UUID
-import Effect.Aff as Aff
-import Effect.Class (liftEffect)
-import KSF.Auth (loadToken)
+import Foreign.Object as Object
 import KSF.Api (UserAuth, Token(..))
 import KSF.Paper (Paper(..))
 import KSF.Paper as Paper
 import KSF.Spinner (loadingSpinner)
 import KSF.User (User)
-import KSF.User as User
 import React.Basic (JSX, fragment)
 import React.Basic.DOM as DOM
 import React.Basic.Events (EventHandler)
-import React.Basic.Hooks (Component, useEffect, useState', (/\))
-import React.Basic.Hooks as React
 
 type Props =
   { user :: Maybe (Maybe User)
+  , entitlements :: Map String UserAuth
+  , loadingEntitlements :: Boolean
   , paper :: Paper
   , onLogin :: EventHandler
   }
 
-type State =
-  { userAuth :: Maybe UserAuth
-  , entitlements :: Maybe (Set String)
-  }
+data AccessEntitlement = NoAccount | LoggedInNoAccess | Entitled UserAuth
 
-component :: Component Props
-component = do
-  initialTokens <- loadToken
-  React.component "Epaper" $ \props@{user, paper} -> React.do
-    entitlements /\ setEntitlements <- useState' Nothing
-    userAuth /\ setUserAuth <- useState' initialTokens
-    useEffect (_.uuid <$> join user) do
-      when (isNothing $ join user) $ Aff.launchAff_ do
-        tokens <- User.loginIP paper
-        liftEffect case (hush tokens) of
-          Nothing -> setEntitlements $ Nothing
-          Just auth -> do
-            setUserAuth $ Just auth
-            Aff.launchAff_ $ do
-              ipEntitlements <- User.getUserEntitlements auth
-              liftEffect $ setEntitlements $ hush ipEntitlements
-      when (isNothing entitlements && isJust (join user)) do
-        setEntitlements Nothing
-        tokens <- loadToken
-        setUserAuth tokens
-        maybe
-          (setEntitlements $ Just mempty)
-          (Aff.launchAff_ <<< (liftEffect <<< setEntitlements <<< Just
-                               <<< fromMaybe Set.empty <<< hush <=< User.getUserEntitlements)) tokens
-      pure $ pure unit
-    pure $ render (Just { userAuth, entitlements }) props
-
-render :: Maybe State -> Props -> JSX
-render state props =
+render :: Props -> JSX
+render props =
   DOM.div
     { className: "flex justify-center"
     , children:
       [ DOM.div
           { className: "w-full mosaico-epaper lg:w-240"
           , children:
-              [ renderPaper paper onLogin loading userAuth entitled
+              [ renderPaper props.paper props.onLogin loading $ getAuth paper
               , case paper of
-                    HBL -> renderPaper JUNIOR onLogin loading userAuth (isEntitledTo JUNIOR)
+                    HBL -> renderPaper JUNIOR props.onLogin loading $ getAuth JUNIOR
                     _ -> mempty
               ]
           }]
     }
   where
     paper = props.paper
-    onLogin = props.onLogin
-    userAuth = _.userAuth =<< state
-    entitled = isEntitledTo props.paper
-    entitlements = _.entitlements =<< state
-    loading = isNothing props.user || isJust userAuth && isNothing entitlements
+    loading = isNothing props.user || props.loadingEntitlements
     entitlementNeeded = [ HBL /\ "hbl-epaper"
                         , VN /\ "vn-epaper"
                         , ON /\ "on-epaper"
                         , JUNIOR /\ "junior-epaper"
                         ]
-    isEntitledTo p = fromMaybe false $
-                     Set.member <$> lookup p entitlementNeeded <*> (_.entitlements =<< state)
+    authForEntl p = flip Map.lookup props.entitlements =<< lookup p entitlementNeeded
+    getAuth p = case authForEntl p of
+      Just tokens -> Entitled tokens
+      Nothing -> if isJust $ join props.user then LoggedInNoAccess else NoAccount
 
-renderPaper :: Paper -> EventHandler -> Boolean -> Maybe UserAuth -> Boolean -> JSX
-renderPaper paper onLogin loading userAuth entitled =
+renderPaper :: Paper -> EventHandler -> Boolean -> AccessEntitlement -> JSX
+renderPaper paper onLogin loading entitlement =
   section
     [ DOM.a
         { className: "w-full h-auto bg-center bg-no-repeat sm:max-w-xs md:w-1/2 mosaico-epaper--teaser mosaico-epaper--bg-cover" <> if paper == JUNIOR then " mosaico-epaper__junior" else ""
-        , href: paperLink paper userAuth entitled
+        , href: paperLink paper entitlement
         , children: [ DOM.img { src: "https://cdn.ksfmedia.fi/mosaico/tablet-bg.png" } ]
         }
-    , epaperBody paper onLogin loading userAuth entitled
+    , epaperBody paper onLogin loading entitlement
     ]
 
 section :: Array JSX -> JSX
@@ -109,32 +74,35 @@ section children =
     , children
     }
 
-epaperBody :: Paper -> EventHandler -> Boolean -> Maybe UserAuth -> Boolean -> JSX
-epaperBody paper onLogin loading userAuth entitled =
+epaperBody :: Paper -> EventHandler -> Boolean -> AccessEntitlement -> JSX
+epaperBody paper onLogin loading entitlement =
   DOM.div
     { className: "flex flex-col px-8 pt-5 max-w-lg text-lg font-light leading-5 text-center md:max-w-md basis-1/2 mosaico-epaper--body font-roboto"
     , children: [ description paper, button ]
+    , _data: Object.singleton "test-epaperbody" ""
     }
     where
-      description = if entitled then entitledDescription else unentitledDescription
-      button = primaryOpenButton loading userAuth entitled
+      description = case entitlement of
+        Entitled _ -> entitledDescription
+        _          -> unentitledDescription
+      button = primaryOpenButton loading entitlement
 
-      primaryOpenButton :: Boolean -> Maybe UserAuth -> Boolean -> JSX
-      primaryOpenButton true _             _     = loadingSpinner
-      primaryOpenButton _    Nothing       _     = primaryButton onLogin "Logga in"
-      primaryOpenButton _    _             false = primaryLink (prenumereraLink paper) "Prenumerera"
-      primaryOpenButton _    (Just tokens) _     =
+      primaryOpenButton :: Boolean -> AccessEntitlement -> JSX
+      primaryOpenButton _    (Entitled tokens) =
         fragment
           [ primaryLink (latestEpaper paper tokens) "Öppna det senaste numret"
           , secondaryLink (epaperSite paper <> authQuery tokens) "Bläddra i arkivet"
           ]
+      primaryOpenButton true _                 = loadingSpinner
+      primaryOpenButton _    NoAccount         = primaryButton onLogin "Logga in"
+      primaryOpenButton _    LoggedInNoAccess  = primaryLink (prenumereraLink paper) "Prenumerera"
 
 authQuery :: UserAuth -> String
 authQuery { userId, authToken: (Token token) } = "?uuid=" <> UUID.toString userId <> "&token=" <> token
 
-paperLink :: Paper -> Maybe UserAuth -> Boolean -> String
-paperLink paper (Just tokens) true = latestEpaper paper tokens
-paperLink paper _ _ = prenumereraLink paper
+paperLink :: Paper -> AccessEntitlement -> String
+paperLink paper (Entitled tokens) = latestEpaper paper tokens
+paperLink paper _ = prenumereraLink paper
 
 prenumereraLink :: Paper -> String
 prenumereraLink paper = "https://prenumerera.ksfmedia.fi/#/" <> Paper.cssName paper
@@ -162,6 +130,7 @@ primaryButton onClick text =
     { onClick
     , className: "p-3 mr-2 ml-2 text-base font-normal tracking-wide text-white rounded border border-brand bg-brand"
     , children: [ DOM.text text ]
+    , _data: Object.singleton "test-primarybutton" ""
     }
 
 primaryLink :: String -> String -> JSX
@@ -170,6 +139,7 @@ primaryLink href text =
     { target: "_blank"
     , className: "p-3 mr-2 ml-2 text-base font-normal tracking-wide text-white rounded border border-brand bg-brand"
     , href
+    , _data: Object.singleton "test-primarylink" ""
     , children: [ DOM.text text ]
     }
 

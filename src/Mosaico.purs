@@ -30,6 +30,7 @@ import Mosaico.Client.Handlers (Handlers, clientHandlers, nullHandlers)
 import Mosaico.Client.Init (Components, JSProps, createPropsMemo, fromJSProps, getComponents, getInitialValues, initialState, staticComponents)
 import Mosaico.Client.Models (ModalView(..), Props, State)
 import Mosaico.Component.Article (InputArticle(..))
+import Mosaico.Component.Epaper as Epaper
 import Mosaico.Error as Error
 import Mosaico.Eval as Eval
 import Mosaico.Feed (ArticleFeed(..), routeFeed)
@@ -145,11 +146,19 @@ app = do
     pure $ fold
       [ components.userComponent
           { initialArticle: props.article
+          , user: state.user
           , onClose: setState _ { modalView = Nothing }
           , setUser: \u -> setState _ { user = Just u }
+          , setEntitlements: \e -> setState _ { entitlements = e }
+          , setLoadingEntitlements: \l -> setState _ { loadingEntitlements = l }
+          , needEntitlements: case state.route of
+                                Routes.EpaperPage  -> true
+                                Routes.KorsordPage -> true
+                                _                  -> false
           , opened: state.modalView == Just LoginModal
           , paper: mosaicoPaper
           , onPaywallEvent
+          , paywallCounter: state.paywallCounter
           }
       , components.consentComponent
           { setConsent: \c -> setState _ { consent = Just c }
@@ -246,8 +255,10 @@ render hooks components handlers props state =
              , user: state.user
              }
        Routes.EpaperPage -> mosaicoLayoutNoAside
-         $ components.epaperComponent
+         $ Epaper.render
              { user: state.user
+             , entitlements: state.entitlements
+             , loadingEntitlements: state.loadingEntitlements
              , paper: mosaicoPaper
              , onLogin: handlers.onLogin
              }
@@ -268,9 +279,11 @@ render hooks components handlers props state =
                  { className: "mosaico--static-page"
                  , children:
                      [ components.korsordComponent
-                         { user: state.user
+                         { entitlements: state.entitlements
+                         , loadingEntitlements: state.loadingEntitlements
                          , paper: mosaicoPaper
                          , paywall
+                         , paywallCounter: state.paywallCounter
                          }
                      ]
                  }

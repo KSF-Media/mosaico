@@ -14,6 +14,7 @@ import Data.Either (Either(..), either, hush, note)
 import Data.Enum (toEnum)
 import Data.Foldable (findMap, foldMap)
 import Data.Int as Int
+import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.NonEmpty (NonEmpty(..))
 import Data.Nullable (toMaybe)
@@ -38,7 +39,6 @@ import Mosaico.Cache as Cache
 import Mosaico.Client.Models (InitialValues, Props, State)
 import Mosaico.Component.Article as Article
 import Mosaico.Component.Consent as Consent
-import Mosaico.Component.Epaper as Epaper
 import Mosaico.Component.Header as Header
 import Mosaico.Component.Korsord as Korsord
 import Mosaico.Component.Search as Search
@@ -60,7 +60,6 @@ type Components =
   , searchComponent :: Search.Props -> JSX
   , webviewComponent :: Webview.Props -> JSX
   , articleComponent :: Article.Props -> JSX
-  , epaperComponent :: Epaper.Props -> JSX
   , headerComponent :: Header.Props -> JSX
   , paywallComponent :: Vetrina.Props -> JSX
   , korsordComponent :: Korsord.Props -> JSX
@@ -128,7 +127,6 @@ staticComponents =
     -- TODO
   , webviewComponent: const loadingSpinner
   , articleComponent: Article.pureComponent
-  , epaperComponent: Epaper.render Nothing
   , headerComponent: Header.render 0
   , paywallComponent: const loadingSpinner
   , korsordComponent: Korsord.render Nothing
@@ -167,7 +165,6 @@ getComponents initialValues = do
   searchComponent  <- Search.searchComponent
   webviewComponent <- Webview.webviewComponent
   articleComponent <- Article.component initialValues.cache
-  epaperComponent  <- Epaper.component
   headerComponent  <- Header.component
   paywallComponent <- Vetrina.component
   korsordComponent <- Korsord.component
@@ -178,7 +175,6 @@ getComponents initialValues = do
     , searchComponent
     , webviewComponent
     , articleComponent
-    , epaperComponent
     , headerComponent
     , paywallComponent
     , korsordComponent
@@ -192,6 +188,8 @@ initialState initialValues props initialRoute =
   , clickedArticle: articleToArticleStub <<< _.article <$> props.article
   , modalView: Nothing
   , user: Nothing
+  , entitlements: Map.empty
+  , loadingEntitlements: true
   , staticPage: map StaticPageResponse $
     { pageName:_, pageContent:_, pageScript: initialValues.staticPageScript }
     <$> case initialRoute of

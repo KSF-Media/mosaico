@@ -5,6 +5,7 @@ import Prelude
 import Data.Argonaut as JSON
 import Data.Either (Either(..), either, hush)
 import Data.Formatter.DateTime (format)
+import Data.Map as Map
 import Data.Maybe (Maybe(..), fromMaybe, isNothing, maybe, isJust)
 import Data.String as String
 import Data.String.Regex as Regex
@@ -106,6 +107,8 @@ defaultHandler env _ { guards: { clientRoute: route, clientip }, query} = do
           if a.articleType /= ErrorArticle then Just $ articleToArticleStub a.article else Nothing
         , modalView: Nothing
         , user: Nothing
+        , entitlements: Map.empty
+        , loadingEntitlements: true
         , staticPage
         , feeds: feedsFromInitial initialFeeds
         , ssrPreview: true

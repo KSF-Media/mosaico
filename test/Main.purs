@@ -9,6 +9,7 @@ import Effect.Class.Console (log)
 import Mosaico.Test.Account as Account
 import Mosaico.Test.Article as Article
 import Mosaico.Test.Embeds as Embeds
+import Mosaico.Test.Epaper as Epaper
 import Mosaico.Test.Frontpage as Frontpage
 import Mosaico.Test.Korsord as Korsord
 import Mosaico.Test.Layout as Layout
@@ -30,6 +31,8 @@ defaultArticleId = "df6e4abe-a43c-4a75-af04-52a09eb5e335"
 defaultPremiumArticleId :: String
 defaultPremiumArticleId = "cf100445-d2d8-418a-b190-79d0937bf7fe"
 
+-- Don't have too many tests doing logins in a sequence or the login
+-- service will start getting flaky.
 main :: Effect Unit
 main = launchAff_ do
   log "Test redirect"
@@ -134,6 +137,14 @@ main = launchAff_ do
   withBrowserPage Lettera.testDefaultListTitle
   log "Test categories"
   withBrowserPage Lettera.testCategoryLists
+
+  when (entitledUser /= "" && entitledPassword /= "") do
+    log "Test e-paper, navigation"
+    withDesktopBrowserPage $ Epaper.testEpaper Epaper.Navigation entitledUser entitledPassword
+    log "Test e-paper, direct"
+    withDesktopBrowserPage $ Epaper.testEpaper Epaper.Direct entitledUser entitledPassword
+    log "Test e-paper, SSO"
+    withDesktopBrowserPage $ Epaper.testEpaper Epaper.SSO entitledUser entitledPassword
   where
     withBrowser :: forall a. Aff Chrome.Browser -> (Chrome.Browser -> Aff a) -> Aff a
     withBrowser = flip bracket Chrome.close
