@@ -19,3 +19,7 @@ smartadserver.com, 2936, RESELLER
 smartadserver.com, 3668, RESELLER
 smartadserver.com, 3751, RESELLER
 sovrn.com, 257611, DIRECT, fafdf38b16bf6b2b
+
+#Bonnier
+google.com, pub-7514839373927339, RESELLER, f08c47fec0942fa0 #Bonnier
+bonniernews.se, 103, DIRECT #Hufvudstadsbladet AB
