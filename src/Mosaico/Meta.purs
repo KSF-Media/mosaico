@@ -36,12 +36,12 @@ staticPageTitle page paper =
     "kontakt", _         -> "Kontakta oss"
     "kundservice", _     -> "Kundservice"
     "nyhetsbrev", HBL    -> "Beställ HBL:s nyhetsbrev!"
-    "nyhetsbrev", ON     -> "Beställ Östnylands nyhetsbrev!"
+    "nyhetsbrev", ON     -> "Beställ Borgåbladets nyhetsbrev!"
     "nyhetsbrev", VN     -> "Beställ Västra Nylands nyhetsbrev!"
     "tipsa-oss", _       -> "Tipsa oss"
     "app", HBL           -> "Hufvudstadsbladets appar för Iphone, Ipad och Android"
     "app", VN            -> "Västra Nylands appar för Iphone, Ipad och Android"
-    "app", ON            -> "Östnylands appar för Iphone, Ipad och Android"
+    "app", ON            -> "Borgåbladets appar för Iphone, Ipad och Android"
     _, _                 -> Paper.paperName paper
 
 staticPageDescription :: String -> Paper -> Maybe String
@@ -49,10 +49,10 @@ staticPageDescription page paper =
     case page, paper of
       "nyhetsbrev", HBL -> Just "Här kan du beställa HBL:s nyhetsbrev. Nyhetsbreven kostar ingenting."
       "nyhetsbrev", VN  -> Just "Här kan du beställa Västra Nylands nyhetsbrev. Nyhetsbreven kostar ingenting."
-      "nyhetsbrev", ON  -> Just "Här kan du beställa Östnylands nyhetsbrev. Nyhetsbreven kostar ingenting."
+      "nyhetsbrev", ON  -> Just "Här kan du beställa Borgåbladets nyhetsbrev. Nyhetsbreven kostar ingenting."
       "app",        HBL -> Just "Med Hufvudstadsbladets appar har du tillgång till de senaste nyheterna dygnet runt. Alltid smidigt direkt i din mobil eller pekplatta."
       "app",        VN  -> Just "Med Västra Nylands appar har du tillgång till de senaste nyheterna dygnet runt. Alltid smidigt direkt i din mobil eller pekplatta."
-      "app",        ON  -> Just "Med Östnylands appar har du tillgång till de senaste nyheterna dygnet runt. Alltid smidigt direkt i din mobil eller pekplatta."
+      "app",        ON  -> Just "Med Borgåbladets appar har du tillgång till de senaste nyheterna dygnet runt. Alltid smidigt direkt i din mobil eller pekplatta."
       _, _ -> Nothing
 
 pageTitle :: Routes.MosaicoPage -> Maybe ArticleStub -> String
@@ -101,7 +101,7 @@ getMeta route _ =
     description = case route of
       Routes.KorsordPage | mosaicoPaper == HBL -> Just "Utmana dig själv med Hufvudstadsbladets digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
       Routes.KorsordPage | mosaicoPaper == VN -> Just "Utmana dig själv med Västra Nylands digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
-      Routes.KorsordPage | mosaicoPaper == ON -> Just "Utmana dig själv med Östnylands digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
+      Routes.KorsordPage | mosaicoPaper == ON -> Just "Utmana dig själv med Borgåbladets digitala pyssel i form av korsord, sudoku och andra logiska utmaningar."
       _ -> Paper.paperDescription mosaicoPaper
 
 staticPageMeta :: String -> JSX

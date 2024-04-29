@@ -33,7 +33,7 @@ const monoFonts = [
 const listOfIcons = {
   hbl: `url(../images/logo-hbl160.svg)`,
   vn: `url(../images/logo-vn.svg)`,
-  on: `url(../images/logo-on.svg)`,
+  on: `url(../images/logo-bbl.svg)`,
   menu: `url("../images/icon-mosaico-menu.svg")`,
   close: `url("../images/icon-close-mosaico.svg")`,
   search: `url("../images/icon-mosaico-search.svg")`,
@@ -152,7 +152,7 @@ module.exports = {
         500: "#00810a", // button-color-primary
       },
       hbl: "#f07e26",
-      on: "#518196",
+      on: "#216a9c",
       vn: "#c90c0f",
       neutral: "#00a1ab",
       brand: "var(--brand-color)", // defined in _site.scss

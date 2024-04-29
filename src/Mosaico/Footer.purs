@@ -196,7 +196,7 @@ ostnylandContactInfo commonFooter =
     }
   where
   firstColumn =
-    [ section "Kontakta Östnyland: "
+    [ section "Kontakta Borgåbladet: "
         [ DOM.text "Lundagatan 8"
         , DOM.br {}
         , DOM.text "06100 Borgå"
@@ -367,7 +367,7 @@ tel number =
 
 thirdColumn :: Array JSX
 thirdColumn =
-  [ section "" [ DOM.text "Hufvudstadsbladet Ab ger ut Hufvudstadsbladet, Västra Nyland, Östnyland och HBL Junior. Hufvudstadsbladet Ab ägs av Bonnier News och Konstsamfundet." ]
+  [ section "" [ DOM.text "Hufvudstadsbladet Ab ger ut Hufvudstadsbladet, Västra Nyland, Borgåbladet och HBL Junior. Hufvudstadsbladet Ab ägs av Bonnier News och Konstsamfundet." ]
   , section ""
       [ columnLink "https://www.ksfmedia.fi/jobba-hos-oss" [ DOM.text "Jobba hos oss" ]
       ]
