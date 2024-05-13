@@ -220,17 +220,17 @@
   {
     "route": "sommar",
     "paper": "hbl",
-    "destination": "https://www.ksfmedia.fi/hbl-lite-battre-sommar"
+    "destination": "https://www.ksfmedia.fi/hbl-sommar-2024"
   },
   {
     "route": "sommar",
     "paper": "vn",
-    "destination": "https://www.ksfmedia.fi/vn-sommar-2023"
+    "destination": "https://www.ksfmedia.fi/vastranyland-sommar-2024"
   },
   {
     "route": "sommar",
     "paper": "on",
-    "destination": "https://www.ksfmedia.fi/ostnyland-sommar"
+    "destination": "https://www.ksfmedia.fi/bbl-sommar-2024"
   },
   {
     "route": "hbljunior-nyhetspriset",
@@ -348,7 +348,7 @@
   {
     "route": "gratis",
     "paper": "hbl",
-    "destination": "https://www.ksfmedia.fi/en-manad-gratis-presidentval"
+    "destination": "https://www.ksfmedia.fi/hbl-redaktionens-leadskampanj-05-24"
   },
   {
     "route": "verona",
