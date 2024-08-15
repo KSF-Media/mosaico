@@ -6,6 +6,7 @@ COPY output /app/output
 COPY dist /app/dist
 COPY static /app/static
 COPY package.json /app/
+COPY yarn.lock /app/
 
 WORKDIR app
 RUN yarn install
